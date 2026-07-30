@@ -53,7 +53,7 @@ const advantages = [
 export default function AboutPage() {
   return (
     <>
-      <section className="relative flex h-[420px] items-end sm:h-[480px]">
+      <section className="relative flex h-[420px] items-end sm:h-[620px]">
         <Image
           src={business.teamMeetingTable}
           alt="The Magis Realty leadership team"
@@ -77,7 +77,7 @@ export default function AboutPage() {
             striving for excellence in every transaction.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button href="/contact" variant="gold">
+            <Button href="/contact" variant="primary">
               Contact Our Agents
             </Button>
             <Button href="/properties" variant="outline-light">
