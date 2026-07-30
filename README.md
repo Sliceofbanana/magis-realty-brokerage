@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Magis Realty & Brokerage
 
-## Getting Started
+A front-end-only Next.js build of the Magis Realty & Brokerage marketing site
+and agent/admin portal, generated from Figma exports for a client walkthrough.
+There is no backend, database, or real authentication — all data is static
+mock data in `lib/data/`, and forms/filters are client-side only.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> **Note on project location:** this project intentionally lives at
+> `Downloads/magis-realty-brokerage`, a sibling of the original
+> `Downloads/Magis Realty & Brokerage` folder (which still holds the source
+> Figma PNGs). The `&` in that folder name breaks npm/Next.js tooling on
+> Windows (`cmd.exe` treats `&` as a command separator), so `npm run dev` /
+> `npm run build` must be run from this folder, not the original one.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Structure
 
-## Learn More
+- `app/(public)/` — public marketing site (shares `PublicHeader` + `Footer`): home, about,
+  properties (+ detail), agents (+ profile), blog (+ detail), contact, FAQs, login.
+- `app/portal/` — agent/admin portal (shares a sidebar + top bar shell): dashboard, profile,
+  listings, leads, leaderboard, blogs, commissions, documents, settings (5 tabs).
+- `components/ui/` — shared primitives (Button, Badge, Card, Tabs, Accordion, Pagination, etc.)
+- `components/public/` — public-site components (header, footer, cards, forms)
+- `components/portal/` — portal shell components (sidebar, top bar, page header)
+- `lib/data/` — all mock content (properties, agents, blog posts, leads, transactions, etc.)
 
-To learn more about Next.js, take a look at the following resources:
+## Notes for the client
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Portal access is unified for this demo**: the portal sidebar shows every
+  section (including Users, Activity Log, and Commission Rules under
+  Settings) to any signed-in session — admin/agent permissions have not been
+  split apart yet, per current scope.
+- **Login bypass**: the `/login` page includes a "Skip Login (Demo)" button
+  that routes straight into `/portal` without credentials, for walkthrough
+  convenience. Remove this before any real deployment.
+- **Images** are placeholder photography from picsum.photos (seeded so they
+  stay consistent between reloads) — swap in real property/agent photography
+  in `lib/data/*.ts` before launch.
+- Forms validate client-side and show a success state on submit; nothing is
+  actually sent anywhere.

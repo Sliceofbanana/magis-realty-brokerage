@@ -2,25 +2,68 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #16233f;
+
+  /* Brand palette */
+  --color-navy-950: #0a1526;
+  --color-navy-900: #0e1f3a;
+  --color-navy-800: #142a4d;
+  --color-navy-700: #1c3a66;
+  --color-navy-600: #274d82;
+
+  --color-gold-600: #96702f;
+  --color-gold-500: #b8935a;
+  --color-gold-400: #cba86e;
+  --color-gold-300: #e0c99a;
+  --color-gold-100: #f5ecd9;
+
+  --color-cream-100: #f6ede0;
+  --color-cream-200: #efe0c6;
+
+  --color-sky-100: #e3ecfb;
+  --color-sky-200: #d3e2f8;
+
+  --color-offwhite: #f6f7f9;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-navy-950: var(--color-navy-950);
+  --color-navy-900: var(--color-navy-900);
+  --color-navy-800: var(--color-navy-800);
+  --color-navy-700: var(--color-navy-700);
+  --color-navy-600: var(--color-navy-600);
+
+  --color-gold-600: var(--color-gold-600);
+  --color-gold-500: var(--color-gold-500);
+  --color-gold-400: var(--color-gold-400);
+  --color-gold-300: var(--color-gold-300);
+  --color-gold-100: var(--color-gold-100);
+
+  --color-cream-100: var(--color-cream-100);
+  --color-cream-200: var(--color-cream-200);
+
+  --color-sky-100: var(--color-sky-100);
+  --color-sky-200: var(--color-sky-200);
+
+  --color-offwhite: var(--color-offwhite);
+
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+* {
+  scroll-behavior: smooth;
 }
