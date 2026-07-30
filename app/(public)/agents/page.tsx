@@ -37,7 +37,7 @@ export default function AgentsPage() {
     <>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <h1 className="font-serif text-3xl font-bold text-navy-900 sm:text-4xl">
-          Our Elite Advisors
+          You May Contact Our Agents
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-gray-500">
           Connect with the industry&rsquo;s most distinguished real estate
@@ -121,7 +121,7 @@ export default function AgentsPage() {
             exclusive listings and high-net-worth clientele.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Button href="/contact">Apply to Join</Button>
+            <Button href="/careers">Apply to Join</Button>
             <Button href="/about" variant="outline">
               Our Culture
             </Button>

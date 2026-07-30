@@ -67,3 +67,61 @@ h1, h2, h3, h4 {
 * {
   scroll-behavior: smooth;
 }
+
+@keyframes birthday-confetti-fall {
+  0% {
+    transform: translateY(-10%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(420px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes birthday-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes birthday-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-birthday-confetti {
+  animation-name: birthday-confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.animate-birthday-fade {
+  animation: birthday-fade-in 0.25s ease-out both;
+}
+
+.animate-birthday-scale {
+  animation: birthday-scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 32s linear infinite;
+}

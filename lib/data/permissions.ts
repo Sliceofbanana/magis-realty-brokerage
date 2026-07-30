@@ -28,6 +28,11 @@ export const permissionDefs: PermissionDef[] = [
     description: "Set attendance points, reward thresholds, and eligibility rates.",
   },
   {
+    key: "configure-birthdays",
+    label: "Configure Birthday Celebrations",
+    description: "Enable announcements, edit messages, and choose which roles get notified.",
+  },
+  {
     key: "set-agent-quotas",
     label: "Set Agent Quotas",
     description: "Assign and adjust per-agent sales quotas on the leaderboard.",
@@ -56,6 +61,7 @@ export const defaultRolePermissions: RolePermissionMatrix = {
     "view-activity-log",
     "configure-commissions",
     "configure-attendance",
+    "configure-birthdays",
     "set-agent-quotas",
     "export-reports",
     "manage-own-listings",

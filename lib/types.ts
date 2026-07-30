@@ -170,6 +170,7 @@ export type PermissionKey =
   | "view-activity-log"
   | "configure-commissions"
   | "configure-attendance"
+  | "configure-birthdays"
   | "set-agent-quotas"
   | "export-reports"
   | "manage-own-listings"

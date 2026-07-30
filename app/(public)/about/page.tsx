@@ -78,7 +78,7 @@ export default function AboutPage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button href="/contact" variant="gold">
-              Contact Our Experts
+              Contact Our Agents
             </Button>
             <Button href="/properties" variant="outline-light">
               View Portfolio

@@ -18,6 +18,8 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { AttendanceOverview } from "@/components/portal/AttendanceOverview";
 import { CommissionProgress } from "@/components/portal/CommissionProgress";
+import { BirthdayBanner } from "@/components/portal/BirthdayBanner";
+import { TodaysBirthdaysWidget } from "@/components/portal/TodaysBirthdaysWidget";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { recentInquiries, recentActivity } from "@/lib/data/misc";
@@ -34,6 +36,8 @@ const activityIcons = [UserPlus2, FileEdit, CheckCircle2];
 export default function PortalDashboardPage() {
   return (
     <div>
+      <BirthdayBanner />
+
       <h1 className="font-serif text-3xl font-bold text-navy-900">
         Welcome back, Agent Smith
       </h1>
@@ -87,6 +91,8 @@ export default function PortalDashboardPage() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         <div className="space-y-6">
+          <TodaysBirthdaysWidget />
+
           <div className="rounded-2xl border border-black/5 bg-white p-6 text-center shadow-sm">
             <h2 className="font-serif text-lg font-bold text-navy-900">Profile Status</h2>
             <div className="mt-4 flex justify-center">

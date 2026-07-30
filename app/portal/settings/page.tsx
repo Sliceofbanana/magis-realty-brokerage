@@ -21,6 +21,8 @@ import {
   Trophy,
   KeyRound,
   Lock,
+  Cake,
+  PartyPopper,
 } from "lucide-react";
 import { Tabs } from "@/components/ui/Tabs";
 import { Toggle } from "@/components/ui/Toggle";
@@ -31,6 +33,7 @@ import { portalUsers, activityLog } from "@/lib/data/users";
 import { attendanceConfig } from "@/lib/data/attendance";
 import { permissionDefs } from "@/lib/data/permissions";
 import { useRole } from "@/components/portal/RoleContext";
+import { useBirthdays } from "@/components/portal/BirthdayContext";
 import { PortalRole } from "@/lib/types";
 import { portraits } from "@/lib/stockPhotos";
 
@@ -59,6 +62,9 @@ export default function SettingsPage() {
     ...(hasPermission("configure-attendance")
       ? [{ id: "attendance", label: "Attendance Rules", icon: <CalendarCheck2 size={16} /> }]
       : []),
+    ...(hasPermission("configure-birthdays")
+      ? [{ id: "birthdays", label: "Birthday Celebrations", icon: <Cake size={16} /> }]
+      : []),
     ...(hasPermission("manage-permissions")
       ? [{ id: "permissions", label: "Permissions", icon: <KeyRound size={16} /> }]
       : []),
@@ -86,6 +92,7 @@ export default function SettingsPage() {
             if (active === "notifications") return <NotificationsTab />;
             if (active === "commission") return <CommissionTab />;
             if (active === "attendance") return <AttendanceTab />;
+            if (active === "birthdays") return <BirthdayTab />;
             if (active === "permissions") return <PermissionsTab />;
             return <GeneralTab />;
           }}
@@ -627,6 +634,170 @@ function AttendanceTab() {
               <span className="text-gray-500">Eligibility</span>
               <span className="font-semibold text-gold-600">
                 &ge;{attendanceConfig.eligibilityMinRate}% attendance
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BirthdayTab() {
+  const { config, updateConfig, celebrants } = useBirthdays();
+
+  function toggleRole(role: PortalRole) {
+    updateConfig({
+      notifyRoles: config.notifyRoles.includes(role)
+        ? config.notifyRoles.filter((r) => r !== role)
+        : [...config.notifyRoles, role],
+    });
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-navy-900">
+            <Cake size={18} className="text-gold-500" /> Birthday Celebrations
+          </h2>
+          <Toggle
+            checked={config.enabled}
+            onChange={(v) => updateConfig({ enabled: v })}
+            label="Enable birthday celebrations"
+          />
+        </div>
+        <p className="mt-1 text-sm text-gray-500">
+          Control the celebration modal, team banner, and greetings shown across the portal.
+        </p>
+
+        <div className="mt-6 border-t border-black/5 pt-6">
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+            Celebration Message
+          </label>
+          <p className="mb-2 text-xs text-gray-400">
+            Shown in the celebrant&rsquo;s modal. Use <code>{"{{name}}"}</code> to insert their first
+            name.
+          </p>
+          <textarea
+            rows={3}
+            value={config.messageTemplate}
+            onChange={(e) => updateConfig({ messageTemplate: e.target.value })}
+            className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+          />
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-black/5 pt-6 sm:grid-cols-2">
+          <div className="flex items-center justify-between rounded-lg bg-offwhite px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold text-navy-900">Confetti Animation</p>
+              <p className="text-xs text-gray-500">Play confetti in the celebration modal.</p>
+            </div>
+            <Toggle
+              checked={config.confettiEnabled}
+              onChange={(v) => updateConfig({ confettiEnabled: v })}
+              label="Confetti animation"
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-lg bg-offwhite px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold text-navy-900">Team Greetings</p>
+              <p className="text-xs text-gray-500">Allow teammates to post birthday messages.</p>
+            </div>
+            <Toggle
+              checked={config.greetingsEnabled}
+              onChange={(v) => updateConfig({ greetingsEnabled: v })}
+              label="Team greetings"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6 border-t border-black/5 pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-navy-900">Birthday Rewards</p>
+              <p className="text-xs text-gray-500">Show a reward or voucher in the celebration modal.</p>
+            </div>
+            <Toggle
+              checked={config.rewardsEnabled}
+              onChange={(v) => updateConfig({ rewardsEnabled: v })}
+              label="Birthday rewards"
+            />
+          </div>
+          {config.rewardsEnabled && (
+            <input
+              value={config.rewardMessage}
+              onChange={(e) => updateConfig({ rewardMessage: e.target.value })}
+              className="mt-3 w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+            />
+          )}
+        </div>
+
+        <div className="mt-6 border-t border-black/5 pt-6">
+          <p className="text-sm font-semibold text-navy-900">Notify These Roles</p>
+          <p className="text-xs text-gray-500">
+            Roles that see the banner, widget, and notification bell alert.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {matrixRoles.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => toggleRole(r)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  config.notifyRoles.includes(r)
+                    ? "bg-navy-900 text-white"
+                    : "border border-black/10 text-gray-500 hover:border-navy-900"
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <div className="rounded-2xl bg-navy-950 p-6 text-white">
+          <h3 className="flex items-center gap-2 font-semibold">
+            <PartyPopper size={16} className="text-gold-400" /> Today&rsquo;s Celebrants
+          </h3>
+          {celebrants.length === 0 ? (
+            <p className="mt-3 text-xs text-white/60">No birthdays today.</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {celebrants.map((c) => (
+                <li key={c.id} className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-sm">
+                    🎂
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">{c.name}</p>
+                    <p className="text-xs text-white/60">{c.position}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="rounded-2xl bg-offwhite p-6">
+          <h3 className="font-semibold text-navy-900">Rule Summary</h3>
+          <div className="mt-3 space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Status</span>
+              <span className={`font-semibold ${config.enabled ? "text-emerald-600" : "text-gray-400"}`}>
+                {config.enabled ? "Enabled" : "Disabled"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Notified Roles</span>
+              <span className="font-semibold text-navy-900">{config.notifyRoles.length} of 4</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Rewards</span>
+              <span className="font-semibold text-gold-600">
+                {config.rewardsEnabled ? "Enabled" : "Disabled"}
               </span>
             </div>
           </div>

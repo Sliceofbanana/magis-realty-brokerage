@@ -179,7 +179,7 @@ export default function HomePage() {
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-serif text-3xl font-bold text-navy-900">
-              Meet Our Elite Agents
+              You May Contact Our Agents
             </h2>
             <p className="mt-2 text-sm text-gray-500">
               The experts behind our most successful acquisitions.
@@ -240,9 +240,7 @@ export default function HomePage() {
             Receive exclusive invitations to off-market listings and bespoke
             market analysis directly to your inbox.
           </p>
-          <div className="mt-6 rounded-2xl bg-navy-950 p-6">
-            <NewsletterForm />
-          </div>
+          <NewsletterForm variant="light" className="mt-6" />
         </div>
       </section>
     </>

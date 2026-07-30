@@ -50,13 +50,16 @@ export function HomeHero() {
             <label htmlFor="hero-location" className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500">
               Location
             </label>
-            <input
+            <select
               id="hero-location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Where to?"
               className="w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
-            />
+            >
+              <option>North Cebu</option>
+              <option>Cebu City</option>
+              <option>South Cebu</option>
+            </select>
           </div>
           <div>
             <label htmlFor="hero-type" className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500">

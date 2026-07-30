@@ -1,13 +1,87 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Grid3x3, Menu, Search, LogOut, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { Bell, Grid3x3, Menu, Search, LogOut, ShieldCheck, Cake } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { portraits } from "@/lib/stockPhotos";
 import { PortalRole } from "@/lib/types";
 import { useRole } from "./RoleContext";
+import { useBirthdays } from "./BirthdayContext";
 
 const roles: PortalRole[] = ["Administrator", "Broker", "Agent", "Marketing"];
+
+function NotificationsMenu() {
+  const [open, setOpen] = useState(false);
+  const { celebrants, notificationsAllowed, openGreetingsPanel } = useBirthdays();
+  const birthdayNotifications = notificationsAllowed ? celebrants : [];
+  const count = birthdayNotifications.length;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Notifications"
+        aria-expanded={open}
+        className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-offwhite hover:text-navy-900"
+      >
+        <Bell size={18} />
+        {count > 0 && (
+          <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+            {count}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Close notifications"
+            className="fixed inset-0 z-30 cursor-default"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-xl border border-black/5 bg-white shadow-lg">
+            <div className="border-b border-black/5 px-4 py-3">
+              <p className="text-sm font-semibold text-navy-900">Notifications</p>
+            </div>
+            {count === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-gray-400">You&rsquo;re all caught up.</p>
+            ) : (
+              <ul>
+                {birthdayNotifications.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        openGreetingsPanel(c);
+                        setOpen(false);
+                      }}
+                      className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-offwhite"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+                        <Cake size={16} />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-navy-900">
+                          🎂 Birthday Celebration
+                        </span>
+                        <span className="mt-0.5 block text-xs text-gray-500">
+                          Today is {c.name}&rsquo;s Birthday! Be sure to send your warm wishes.
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { role, setRole } = useRole();
@@ -46,13 +120,7 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
             ))}
           </select>
         </label>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-offwhite hover:text-navy-900"
-        >
-          <Bell size={18} />
-        </button>
+        <NotificationsMenu />
         <button
           type="button"
           aria-label="Apps"
