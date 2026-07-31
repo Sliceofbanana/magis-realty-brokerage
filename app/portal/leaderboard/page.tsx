@@ -125,7 +125,7 @@ function SortHeader({
 function MyPerformanceCard({ row, period }: { row: Row; period: QuotaPeriod }) {
   const { stats } = row;
   return (
-    <div className="sticky top-2 z-20 rounded-2xl bg-navy-950 p-6 text-white shadow-lg">
+    <div className="rounded-2xl bg-navy-950 p-6 text-white shadow-lg">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-gold-400">
@@ -391,7 +391,7 @@ export default function LeaderboardPage() {
         </div>
         <div className="border-t border-black/5 p-4 text-center">
           <button type="button" className="text-sm font-semibold text-gold-600 hover:underline">
-            View Full Leaderboard (Top 100)
+            View Team Standings
           </button>
         </div>
       </div>
