@@ -222,11 +222,22 @@ export type AttendanceConfig = {
   rewardTiers: RewardTier[];
 };
 
+export type LeaderboardTeamId = "vanguard" | "skyline" | "horizon";
+
+export type LeaderboardTeam = {
+  id: LeaderboardTeamId;
+  name: string;
+  tone: "navy" | "gold" | "blue";
+  dot: string;
+  border: string;
+};
+
 export type LeaderboardAgent = {
   id: string;
   name: string;
   photo: string;
   region: string;
+  teamId: LeaderboardTeamId;
   units: number;
   leads: number;
   isYou?: boolean;

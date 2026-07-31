@@ -1,5 +1,11 @@
-import { LeaderboardAgent, QuotaPeriodId } from "@/lib/types";
+import { LeaderboardAgent, LeaderboardTeam, QuotaPeriodId } from "@/lib/types";
 import { portraits } from "@/lib/stockPhotos";
+
+export const leaderboardTeams: LeaderboardTeam[] = [
+  { id: "vanguard", name: "Team Vanguard", tone: "navy", dot: "bg-navy-900", border: "border-l-navy-900" },
+  { id: "skyline", name: "Team Skyline", tone: "gold", dot: "bg-gold-500", border: "border-l-gold-500" },
+  { id: "horizon", name: "Team Horizon", tone: "blue", dot: "bg-sky-400", border: "border-l-sky-400" },
+];
 
 export type QuotaPeriod = {
   id: QuotaPeriodId;
@@ -43,6 +49,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "Julian Vancore",
     photo: portraits.manSmilingWhiteShirt,
     region: "Central District",
+    teamId: "vanguard",
     units: 32,
     leads: 210,
     quota: { weekly: 2_300_000, monthly: 10_000_000, quarterly: 30_000_000 },
@@ -53,6 +60,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "Elena Rodriguez",
     photo: portraits.womanLaughingRed,
     region: "North Corridor",
+    teamId: "vanguard",
     units: 27,
     leads: 188,
     quota: { weekly: 2_150_000, monthly: 9_300_000, quarterly: 28_000_000 },
@@ -63,6 +71,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "Marcus Thorne",
     photo: portraits.manGlassesProfessional,
     region: "Bay Area",
+    teamId: "vanguard",
     units: 24,
     leads: 165,
     quota: { weekly: 2_000_000, monthly: 8_700_000, quarterly: 26_000_000 },
@@ -73,6 +82,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "Alex Sterling",
     photo: portraits.manConfidentSuit,
     region: "Upper East Side",
+    teamId: "skyline",
     units: 24,
     leads: 142,
     isYou: true,
@@ -84,6 +94,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "Sarah Jenkins",
     photo: portraits.womanSmilingCasual,
     region: "Downtown Hub",
+    teamId: "skyline",
     units: 21,
     leads: 118,
     quota: { weekly: 1_900_000, monthly: 8_300_000, quarterly: 25_000_000 },
@@ -94,6 +105,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "David Chen",
     photo: portraits.manCleanCutGray,
     region: "Silicon Valley",
+    teamId: "horizon",
     units: 19,
     leads: 205,
     quota: { weekly: 1_850_000, monthly: 8_000_000, quarterly: 24_000_000 },
@@ -104,6 +116,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "Isabella Ross",
     photo: portraits.womanStripedBlazer,
     region: "Chelsea District",
+    teamId: "horizon",
     units: 18,
     leads: 95,
     quota: { weekly: 1_850_000, monthly: 8_000_000, quarterly: 24_000_000 },
@@ -114,6 +127,7 @@ export const leaderboardAgents: LeaderboardAgent[] = [
     name: "Thomas Wright",
     photo: portraits.manCasualBeardedGlasses,
     region: "Brooklyn Heights",
+    teamId: "horizon",
     units: 17,
     leads: 112,
     quota: { weekly: 2_000_000, monthly: 8_700_000, quarterly: 26_000_000 },

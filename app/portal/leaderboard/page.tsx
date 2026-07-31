@@ -13,7 +13,7 @@ import {
   CalendarClock,
   TrendingUp,
 } from "lucide-react";
-import { leaderboardAgents, quotaPeriods, QuotaPeriod } from "@/lib/data/leaderboard";
+import { leaderboardAgents, leaderboardTeams, quotaPeriods, QuotaPeriod } from "@/lib/data/leaderboard";
 import {
   quotaStats,
   formatCompactUsd,
@@ -24,6 +24,7 @@ import {
 import { PageHeader } from "@/components/portal/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { LeaderboardAgent } from "@/lib/types";
+import { Badge } from "@/components/ui/Badge";
 
 type Row = {
   agent: LeaderboardAgent;
@@ -62,6 +63,26 @@ const statusConfig: Record<QuotaStatus, { label: string; badge: string; dot: str
     bar: "bg-red-500",
   },
 };
+
+function teamFor(teamId: LeaderboardAgent["teamId"]) {
+  return leaderboardTeams.find((t) => t.id === teamId) ?? leaderboardTeams[0];
+}
+
+function TeamTag({
+  teamId,
+  className = "",
+}: {
+  teamId: LeaderboardAgent["teamId"];
+  className?: string;
+}) {
+  const team = teamFor(teamId);
+  return (
+    <Badge tone={team.tone} className={className}>
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+      {team.name}
+    </Badge>
+  );
+}
 
 const tierLabel = (rank: number) =>
   rank === 1 ? "Platinum Top Performer" : rank === 2 ? "Silver Tier" : "Bronze Tier";
@@ -137,6 +158,7 @@ function MyPerformanceCard({ row, period }: { row: Row; period: QuotaPeriod }) {
               of {leaderboardAgents.length} agents &bull; {period.cycleLabel}
             </span>
           </p>
+          <TeamTag teamId={row.agent.teamId} className="mt-2" />
         </div>
         <StatusBadge status={stats.status} />
       </div>
@@ -230,6 +252,20 @@ export default function LeaderboardPage() {
     return [...rows].sort((a, b) => (sortDir === "asc" ? value(a) - value(b) : value(b) - value(a)));
   }, [rows, sortKey, sortDir]);
 
+  const teamGroups = useMemo(() => {
+    const groups = leaderboardTeams.map((team) => {
+      const teamRows = sortedRows.filter((r) => r.agent.teamId === team.id);
+      const totalAchieved = teamRows.reduce((sum, r) => sum + r.achieved, 0);
+      const totalQuota = teamRows.reduce((sum, r) => sum + r.quota, 0);
+      const avgProgress = totalQuota > 0 ? (totalAchieved / totalQuota) * 100 : 0;
+      return { team, rows: teamRows, totalAchieved, totalQuota, avgProgress };
+    });
+    return groups
+      .filter((g) => g.rows.length > 0)
+      .sort((a, b) => b.avgProgress - a.avgProgress)
+      .map((group, i) => ({ ...group, teamRank: i + 1 }));
+  }, [sortedRows]);
+
   const me = rows.find((row) => row.agent.isYou);
   const [first, second, third] = rows;
 
@@ -289,6 +325,7 @@ export default function LeaderboardPage() {
               <p className="mt-1 text-xs text-gray-400">
                 {Math.round(row.stats.progressPct)}% of {formatCompactUsd(row.quota)} quota
               </p>
+              <TeamTag teamId={row.agent.teamId} className="mt-2" />
             </div>
             <div
               className={`mt-4 flex h-28 flex-col items-center justify-center gap-2 rounded-2xl ${
@@ -305,9 +342,9 @@ export default function LeaderboardPage() {
       <div className="mt-8 rounded-2xl border border-black/5 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 p-6">
           <div>
-            <h2 className="font-serif text-lg font-bold text-navy-900">Quota Progress Rankings</h2>
+            <h2 className="font-serif text-lg font-bold text-navy-900">Team Standings</h2>
             <p className="mt-0.5 text-xs text-gray-400">
-              {period.cycleLabel} &bull; updates automatically as achievements are recorded
+              {period.cycleLabel} &bull; grouped by team, ranked by team quota progress
             </p>
           </div>
           <Button variant="outline" size="sm">
@@ -328,71 +365,111 @@ export default function LeaderboardPage() {
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wide">Status</th>
               </tr>
             </thead>
-            <tbody>
-              {sortedRows.map((row) => (
-                <tr
-                  key={row.agent.id}
-                  className={`border-t border-black/5 ${
-                    row.stats.status === "achieved"
-                      ? "bg-gold-100/40"
-                      : row.agent.isYou
-                        ? "bg-sky-100/40"
-                        : ""
-                  }`}
-                >
-                  <td className="px-6 py-4 font-semibold text-navy-900">{row.rank}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full">
-                        <Image src={row.agent.photo} alt={row.agent.name} fill className="object-cover" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-navy-900">
-                          {row.agent.name}
-                          {row.agent.isYou && (
-                            <span className="ml-2 rounded bg-gold-100 px-2 py-0.5 text-[10px] font-semibold text-gold-600">
-                              YOU
+            {teamGroups.map((group) => (
+              <tbody key={group.team.id}>
+                <tr className="border-t border-black/5 bg-offwhite">
+                  <td colSpan={8} className="px-6 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${group.team.dot}`}
+                        >
+                          <Trophy size={14} />
+                        </span>
+                        <div>
+                          <p className="flex items-center gap-2 font-serif text-sm font-bold text-navy-900">
+                            {group.team.name}
+                            <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-gray-500 shadow-sm">
+                              Team Rank #{group.teamRank}
                             </span>
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-400">{row.agent.region}</p>
+                          </p>
+                          <p className="text-xs text-gray-400">{group.rows.length} agents</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="text-[11px] uppercase tracking-wide text-gray-400">
+                            Team Achieved
+                          </p>
+                          <p className="text-sm font-bold text-navy-900">
+                            {formatCompactUsd(group.totalAchieved)} / {formatCompactUsd(group.totalQuota)}
+                          </p>
+                        </div>
+                        <div className="w-32">
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-black/10">
+                            <div
+                              className={`h-full rounded-full ${group.team.dot}`}
+                              style={{ width: `${Math.min(100, group.avgProgress)}%` }}
+                            />
+                          </div>
+                          <p className="mt-1 text-right text-xs font-bold text-navy-900">
+                            {Math.round(group.avgProgress)}%
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <ProgressBar stats={row.stats} className="w-28" />
-                      <span className="w-10 text-xs font-bold text-navy-900">
-                        {Math.round(row.stats.progressPct)}%
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-navy-900">
-                    {formatCompactUsd(row.achieved)}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {row.stats.remaining === 0 ? (
-                      <span className="font-semibold text-gold-600">Goal met</span>
-                    ) : (
-                      formatCompactUsd(row.stats.remaining)
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">{formatCompactUsd(row.quota)}</td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {row.stats.remaining === 0 ? "—" : formatCompactUsd(row.stats.requiredPerDay)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={row.stats.status} />
                   </td>
                 </tr>
-              ))}
-            </tbody>
+                {group.rows.map((row) => (
+                  <tr
+                    key={row.agent.id}
+                    className={`border-t border-black/5 border-l-4 ${group.team.border} ${
+                      row.stats.status === "achieved"
+                        ? "bg-gold-100/40"
+                        : row.agent.isYou
+                          ? "bg-sky-100/40"
+                          : ""
+                    }`}
+                  >
+                    <td className="px-6 py-4 font-semibold text-navy-900">{row.rank}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full">
+                          <Image src={row.agent.photo} alt={row.agent.name} fill className="object-cover" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-navy-900">
+                            {row.agent.name}
+                            {row.agent.isYou && (
+                              <span className="ml-2 rounded bg-gold-100 px-2 py-0.5 text-[10px] font-semibold text-gold-600">
+                                YOU
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-400">{row.agent.region}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <ProgressBar stats={row.stats} className="w-28" />
+                        <span className="w-10 text-xs font-bold text-navy-900">
+                          {Math.round(row.stats.progressPct)}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-navy-900">
+                      {formatCompactUsd(row.achieved)}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {row.stats.remaining === 0 ? (
+                        <span className="font-semibold text-gold-600">Goal met</span>
+                      ) : (
+                        formatCompactUsd(row.stats.remaining)
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">{formatCompactUsd(row.quota)}</td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {row.stats.remaining === 0 ? "—" : formatCompactUsd(row.stats.requiredPerDay)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={row.stats.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
           </table>
-        </div>
-        <div className="border-t border-black/5 p-4 text-center">
-          <button type="button" className="text-sm font-semibold text-gold-600 hover:underline">
-            View Team Standings
-          </button>
         </div>
       </div>
     </div>
