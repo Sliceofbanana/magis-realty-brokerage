@@ -22,35 +22,78 @@ import { BirthdayBanner } from "@/components/portal/BirthdayBanner";
 import { TodaysBirthdaysWidget } from "@/components/portal/TodaysBirthdaysWidget";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { recentInquiries, recentActivity } from "@/lib/data/misc";
 import { exteriors } from "@/lib/stockPhotos";
-
-const statusTone = {
-  New: "blue",
-  "Follow-up": "green",
-  Nurturing: "gray",
-} as const;
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { timeAgo } from "@/lib/format";
+import {
+  attendanceConfigWithTiers,
+  attendanceRecordWithMeeting,
+  fallbackAttendanceConfig,
+  toAttendanceConfig,
+  toAttendanceSessions,
+} from "@/lib/adapters/attendance";
+import { leadStatusLabel, leadStatusTone } from "@/lib/adapters/lead";
+import type { AttendanceSession } from "@/lib/types";
 
 const activityIcons = [UserPlus2, FileEdit, CheckCircle2];
 
-export default function PortalDashboardPage() {
+export default async function PortalDashboardPage() {
+  const session = await auth();
+  const firstName = session?.user?.name?.split(" ")[0] ?? "Agent";
+
+  const [
+    activeListings,
+    soldProperties,
+    totalLeads,
+    recentLeads,
+    recentActivityEntries,
+    attendanceConfigRow,
+    myAttendanceRecords,
+  ] = await Promise.all([
+    prisma.property.count({ where: { status: { not: "SOLD" } } }),
+    prisma.property.count({ where: { status: "SOLD" } }),
+    prisma.lead.count(),
+    prisma.lead.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 4,
+      include: { property: { select: { title: true } } },
+    }),
+    prisma.activityLogEntry.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
+    prisma.attendanceConfig.findUnique({
+      where: { id: "singleton" },
+      include: attendanceConfigWithTiers,
+    }),
+    session?.user?.id
+      ? prisma.attendanceRecord.findMany({
+          where: { agentId: session.user.id },
+          include: attendanceRecordWithMeeting,
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const attendanceConfig = attendanceConfigRow
+    ? toAttendanceConfig(attendanceConfigRow)
+    : fallbackAttendanceConfig;
+  const attendanceSessions: AttendanceSession[] = toAttendanceSessions(myAttendanceRecords);
+
   return (
     <div>
       <BirthdayBanner />
 
       <h1 className="font-serif text-3xl font-bold text-navy-900">
-        Welcome back, Agent Smith
+        Welcome back, {firstName}
       </h1>
       <p className="mt-1 text-sm text-gray-500">Here&rsquo;s what&rsquo;s happening today.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<Building2 size={20} />} label="Active Listings" value={12} iconBg="bg-sky-100 text-navy-700" />
-        <StatCard icon={<Tag size={20} />} label="Sold Properties" value={8} iconBg="bg-gold-100 text-gold-600" />
-        <StatCard icon={<Users size={20} />} label="Total Leads" value={45} iconBg="bg-sky-100 text-navy-700" />
+        <StatCard icon={<Building2 size={20} />} label="Active Listings" value={activeListings} iconBg="bg-sky-100 text-navy-700" />
+        <StatCard icon={<Tag size={20} />} label="Sold Properties" value={soldProperties} iconBg="bg-gold-100 text-gold-600" />
+        <StatCard icon={<Users size={20} />} label="Total Leads" value={totalLeads} iconBg="bg-sky-100 text-navy-700" />
         <StatCard icon={<CalendarDays size={20} />} label="Appointments" value={3} iconBg="bg-red-100 text-red-600" />
       </div>
 
-      <AttendanceOverview />
+      <AttendanceOverview sessions={attendanceSessions} config={attendanceConfig} />
 
       <CommissionProgress />
 
@@ -72,12 +115,21 @@ export default function PortalDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {recentInquiries.map((inquiry) => (
-                <tr key={inquiry.client} className="border-t border-black/5">
-                  <td className="px-6 py-4 font-semibold text-navy-900">{inquiry.client}</td>
-                  <td className="px-6 py-4 text-navy-700">{inquiry.property}</td>
+              {recentLeads.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-6 text-center text-gray-400">
+                    No inquiries yet.
+                  </td>
+                </tr>
+              )}
+              {recentLeads.map((lead) => (
+                <tr key={lead.id} className="border-t border-black/5">
+                  <td className="px-6 py-4 font-semibold text-navy-900">{lead.name}</td>
+                  <td className="px-6 py-4 text-navy-700">
+                    {lead.property?.title ?? lead.propertyLabel ?? "General Inquiry"}
+                  </td>
                   <td className="px-6 py-4">
-                    <Badge tone={statusTone[inquiry.status]}>{inquiry.status}</Badge>
+                    <Badge tone={leadStatusTone[lead.status]}>{leadStatusLabel[lead.status]}</Badge>
                   </td>
                   <td className="px-6 py-4 text-right text-gray-400">
                     <MoreVertical size={16} />
@@ -146,16 +198,19 @@ export default function PortalDashboardPage() {
         <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
           <h2 className="font-serif text-lg font-bold text-navy-900">Recent Activity</h2>
           <ul className="mt-5 space-y-5">
-            {recentActivity.map((activity, i) => {
+            {recentActivityEntries.length === 0 && (
+              <li className="text-sm text-gray-400">No recent activity yet.</li>
+            )}
+            {recentActivityEntries.map((activity, i) => {
               const Icon = activityIcons[i % activityIcons.length];
               return (
-                <li key={activity.title} className="flex gap-3">
+                <li key={activity.id} className="flex gap-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 text-navy-700">
                     <Icon size={14} />
                   </span>
                   <div>
-                    <p className="text-sm text-navy-900">{activity.title}</p>
-                    <p className="mt-0.5 text-xs text-gray-400">{activity.time}</p>
+                    <p className="text-sm text-navy-900">{activity.action}</p>
+                    <p className="mt-0.5 text-xs text-gray-400">{timeAgo(activity.createdAt)}</p>
                   </div>
                 </li>
               );

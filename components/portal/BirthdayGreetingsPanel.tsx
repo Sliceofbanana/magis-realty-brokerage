@@ -87,13 +87,13 @@ export function BirthdayGreetingsPanel() {
                     <p className="text-[11px] text-gray-400">{timeAgo(g.timestamp)}</p>
                   </div>
                   <p className="mt-0.5 text-sm text-gray-600">{g.message}</p>
-                  <div className="mt-2 flex gap-1.5">
+                  <div className="mt-2 flex flex-wrap gap-1.5">
                     {REACTIONS.map((emoji) => (
                       <button
                         key={emoji}
                         type="button"
                         onClick={() => addReaction(g.id, emoji)}
-                        className="flex items-center gap-1 rounded-full border border-black/10 bg-white px-2 py-0.5 text-xs hover:border-gold-400"
+                        className="flex shrink-0 items-center gap-1 rounded-full border border-black/10 bg-white px-2 py-0.5 text-xs hover:border-gold-400"
                       >
                         <span>{emoji}</span>
                         {!!g.reactions[emoji] && (

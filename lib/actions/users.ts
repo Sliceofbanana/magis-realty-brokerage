@@ -15,7 +15,7 @@ export type AdminUserRow = {
 };
 
 /** Requires manage-users; throws if the caller isn't an Administrator. */
-async function requireAdmin() {
+export async function requireAdmin() {
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMINISTRATOR") {
     throw new Error("Not authorized.");

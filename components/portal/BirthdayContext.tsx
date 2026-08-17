@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, useSyncExternalStore } from "react";
+import { useSession } from "next-auth/react";
 import { BirthdayConfig, BirthdayGreeting, ReactionEmoji, TeamMember } from "@/lib/types";
 import { team as defaultTeam, defaultBirthdayConfig } from "@/lib/data/team";
 import { celebrantsToday, todayKey } from "@/lib/birthdays";
@@ -75,6 +76,7 @@ const BirthdayContext = createContext<BirthdayContextValue | null>(null);
 
 export function BirthdayProvider({ children }: { children: React.ReactNode }) {
   const { role } = useRole();
+  const { data: session } = useSession();
   const [config, setConfig] = useState<BirthdayConfig>(defaultBirthdayConfig);
   const [activePanelCelebrant, setActivePanelCelebrant] = useState<TeamMember | null>(null);
   // Bumped after writing a dismissal flag so the useSyncExternalStore reads
@@ -82,7 +84,14 @@ export function BirthdayProvider({ children }: { children: React.ReactNode }) {
   // fire a "storage" event on their own.
   const [, forceSync] = useState(0);
 
-  const currentUser = defaultTeam.find((m) => m.isYou) ?? defaultTeam[0];
+  // Matches the real logged-in user against the mock team roster by name —
+  // the birthday system itself still runs on lib/data/team.ts, not Postgres
+  // (a separate, larger migration), but "who is currently logged in" must
+  // reflect the real session rather than a hardcoded "isYou" flag.
+  const currentUser =
+    defaultTeam.find((m) => m.name === session?.user?.name) ??
+    defaultTeam.find((m) => m.isYou) ??
+    defaultTeam[0];
   const today = useMemo(() => new Date(), []);
   const key = todayKey(today);
 

@@ -20,15 +20,15 @@ export function HomeHero() {
 
   return (
     <section className="relative">
-      <div className="relative h-[560px] w-full sm:h-[600px]">
+      <div className="relative h-140 w-full sm:h-150">
         <Image
-          src="/images/landing-page-photo.png"
+          src="/images/hero.webp"
           alt="Aerial view of a luxury coastal resort property at dusk"
           fill
           priority
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/30 to-navy-950/10" />
+        <div className="absolute inset-0 bg-linear-to-t from-navy-950/90 via-navy-950/30 to-navy-950/10" />
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
           <h1 className="max-w-2xl font-serif text-4xl font-bold leading-tight text-white sm:text-5xl">
             Discover Your Legacy Through{" "}

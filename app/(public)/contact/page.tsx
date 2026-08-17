@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail } from "lucide-react";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { Card } from "@/components/ui/Card";
 import { exteriors } from "@/lib/stockPhotos";
+import { submitInquiryAction } from "@/lib/actions/leads";
 
 export const metadata = { title: "Contact Us | Magis Realty & Brokerage" };
 
@@ -32,6 +33,18 @@ const contactFields: FormField[] = [
 ];
 
 export default function ContactPage() {
+  async function submitContactInquiry(values: Record<string, string>) {
+    "use server";
+    return submitInquiryAction({
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      message: values.message,
+      interest: values.interest,
+      source: "Contact Page",
+    });
+  }
+
   return (
     <>
       <section className="relative flex h-[320px] items-center sm:h-[360px]">
@@ -66,6 +79,7 @@ export default function ContactPage() {
               submitLabel="Send Inquiry"
               className="mt-6"
               successMessage="One of our luxury specialists will reach out shortly."
+              action={submitContactInquiry}
             />
           </Card>
 

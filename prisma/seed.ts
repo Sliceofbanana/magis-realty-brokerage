@@ -63,6 +63,9 @@ type SeedPerson = {
     activeListings?: number;
     region?: string;
     teamId?: string;
+    yearsExperience?: number;
+    propertiesSoldValue?: string;
+    clientSatisfaction?: string;
   };
 };
 
@@ -129,6 +132,9 @@ const people: SeedPerson[] = [
       topPerformer: clara.topPerformer,
       publicVerified: clara.verified,
       activeListings: clara.activeListings,
+      yearsExperience: clara.yearsExperience,
+      propertiesSoldValue: clara.propertiesSoldValue,
+      clientSatisfaction: clara.clientSatisfaction,
     },
   },
   {
@@ -152,6 +158,9 @@ const people: SeedPerson[] = [
       topPerformer: alexander.topPerformer,
       publicVerified: alexander.verified,
       activeListings: alexander.activeListings,
+      yearsExperience: alexander.yearsExperience,
+      propertiesSoldValue: alexander.propertiesSoldValue,
+      clientSatisfaction: alexander.clientSatisfaction,
       region: leaderboardById.get("alex-sterling")?.region,
       teamId: leaderboardById.get("alex-sterling")?.teamId,
     },
@@ -177,6 +186,9 @@ const people: SeedPerson[] = [
       topPerformer: marcus.topPerformer,
       publicVerified: marcus.verified,
       activeListings: marcus.activeListings,
+      yearsExperience: marcus.yearsExperience,
+      propertiesSoldValue: marcus.propertiesSoldValue,
+      clientSatisfaction: marcus.clientSatisfaction,
       region: leaderboardById.get("marcus-thorne")?.region,
       teamId: leaderboardById.get("marcus-thorne")?.teamId,
     },
@@ -202,6 +214,9 @@ const people: SeedPerson[] = [
       topPerformer: elena.topPerformer,
       publicVerified: elena.verified,
       activeListings: elena.activeListings,
+      yearsExperience: elena.yearsExperience,
+      propertiesSoldValue: elena.propertiesSoldValue,
+      clientSatisfaction: elena.clientSatisfaction,
       region: leaderboardById.get("elena-rodriguez")?.region,
       teamId: leaderboardById.get("elena-rodriguez")?.teamId,
     },
@@ -345,6 +360,9 @@ async function seedUsers() {
           topPerformer: person.agentProfile.topPerformer ?? false,
           publicVerified: person.agentProfile.publicVerified ?? false,
           activeListings: person.agentProfile.activeListings ?? 0,
+          yearsExperience: person.agentProfile.yearsExperience,
+          propertiesSoldValue: person.agentProfile.propertiesSoldValue,
+          clientSatisfaction: person.agentProfile.clientSatisfaction,
           region: person.agentProfile.region,
           teamId: person.agentProfile.teamId,
         },
@@ -360,6 +378,9 @@ async function seedUsers() {
           topPerformer: person.agentProfile.topPerformer ?? false,
           publicVerified: person.agentProfile.publicVerified ?? false,
           activeListings: person.agentProfile.activeListings ?? 0,
+          yearsExperience: person.agentProfile.yearsExperience,
+          propertiesSoldValue: person.agentProfile.propertiesSoldValue,
+          clientSatisfaction: person.agentProfile.clientSatisfaction,
           region: person.agentProfile.region,
           teamId: person.agentProfile.teamId,
         },

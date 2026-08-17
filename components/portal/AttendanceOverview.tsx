@@ -8,7 +8,7 @@ import {
   CalendarClock,
   History,
 } from "lucide-react";
-import { attendanceConfig, attendanceSessions } from "@/lib/data/attendance";
+import { AttendanceConfig, AttendanceSession } from "@/lib/types";
 import {
   attendanceSummary,
   formatSessionDate,
@@ -79,8 +79,14 @@ function TypeCard({
   );
 }
 
-export function AttendanceOverview() {
-  const summary = attendanceSummary(attendanceSessions, attendanceConfig);
+export function AttendanceOverview({
+  sessions,
+  config,
+}: {
+  sessions: AttendanceSession[];
+  config: AttendanceConfig;
+}) {
+  const summary = attendanceSummary(sessions, config);
   const { meetings, pks, nextTier } = summary;
   const overallBadge = badgeConfig[summary.overallBadge];
 
@@ -90,13 +96,13 @@ export function AttendanceOverview() {
         <div>
           <h2 className="font-serif text-xl font-bold text-navy-900">Attendance Performance</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Meetings &amp; Product Knowledge Seminars &bull; {attendanceConfig.periodLabel}
+            Meetings &amp; Product Knowledge Seminars &bull; {config.periodLabel}
           </p>
         </div>
         <Badge tone={summary.eligible ? "green" : "red"}>
           {summary.eligible
             ? `Reward Eligible — ${Math.round(summary.overallRate)}% attendance`
-            : `Below ${attendanceConfig.eligibilityMinRate}% requirement`}
+            : `Below ${config.eligibilityMinRate}% requirement`}
         </Badge>
       </div>
 
@@ -154,7 +160,7 @@ export function AttendanceOverview() {
           </p>
 
           <div className="mt-4 flex gap-2 border-t border-white/10 pt-4">
-            {[...attendanceConfig.rewardTiers]
+            {[...config.rewardTiers]
               .sort((a, b) => a.points - b.points)
               .map((tier) => {
                 const earned = summary.totalPoints >= tier.points;

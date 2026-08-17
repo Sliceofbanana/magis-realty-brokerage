@@ -16,7 +16,7 @@ export function FeaturedAgentCard({ agent }: { agent: Agent }) {
         sizes="(min-width: 1024px) 33vw, 100vw"
         className="object-cover transition-transform duration-300 group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/10 to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-t from-navy-950/90 via-navy-950/10 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-5 text-white">
         <span className="inline-flex items-center gap-1 rounded-full bg-gold-500 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide">
           <Award size={12} /> Top Performer

@@ -4,6 +4,8 @@ import { FormEvent, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+type SubmitVariant = "primary" | "gold" | "outline" | "outline-light" | "ghost";
+
 export type FormField = {
   name: string;
   label: string;
@@ -23,23 +25,33 @@ export function SimpleForm({
   successTitle = "Thank you!",
   successMessage = "We've received your message and will be in touch shortly.",
   className = "",
+  action,
 }: {
   fields: FormField[];
   submitLabel: string;
-  submitVariant?: "gold" | "primary";
+  submitVariant?: SubmitVariant;
   successTitle?: string;
   successMessage?: string;
   className?: string;
+  /**
+   * Optional real backend call. When provided, a validated submit invokes
+   * this with the form's current values instead of just faking success —
+   * used to wire this shared component to a real Server Action per-page
+   * without changing every consumer's markup.
+   */
+  action?: (values: Record<string, string>) => Promise<{ error?: string } | void>;
 }) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [pending, setPending] = useState(false);
 
   function handleChange(name: string, value: string) {
     setValues((prev) => ({ ...prev, [name]: value }));
   }
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const nextErrors: Record<string, string> = {};
 
@@ -53,9 +65,20 @@ export function SimpleForm({
     }
 
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length === 0) {
-      setSubmitted(true);
+    setFormError("");
+    if (Object.keys(nextErrors).length > 0) return;
+
+    if (action) {
+      setPending(true);
+      const result = await action(values).catch(() => ({ error: "Something went wrong. Please try again." }));
+      setPending(false);
+      if (result?.error) {
+        setFormError(result.error);
+        return;
+      }
     }
+
+    setSubmitted(true);
   }
 
   if (submitted) {
@@ -131,9 +154,13 @@ export function SimpleForm({
         );
       })}
 
+      {formError && (
+        <p className="sm:col-span-2 text-sm text-red-600">{formError}</p>
+      )}
+
       <div className="sm:col-span-2">
-        <Button type="submit" variant={submitVariant} className="w-full sm:w-auto">
-          {submitLabel}
+        <Button type="submit" variant={submitVariant} disabled={pending} className="w-full sm:w-auto">
+          {pending ? "Sending…" : submitLabel}
         </Button>
       </div>
     </form>

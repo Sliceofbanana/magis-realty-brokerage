@@ -2,20 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, ArrowRight } from "lucide-react";
-import { blogPosts, getPostBySlug } from "@/lib/data/blog";
 import { BlogCard } from "@/components/public/BlogCard";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { interiors, exteriors } from "@/lib/stockPhotos";
-
-export function generateStaticParams() {
-  return blogPosts.map((p) => ({ slug: p.slug }));
-}
+import { prisma } from "@/lib/prisma";
+import { blogPostWithAuthor, toBlogPost } from "@/lib/adapters/blog";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await prisma.blogPost.findUnique({ where: { slug }, select: { title: true } });
   return { title: post ? `${post.title} | Magis Realty & Brokerage` : "Article Not Found" };
 }
 
@@ -25,11 +22,19 @@ export default async function BlogDetailsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
-  if (!post) notFound();
+  const row = await prisma.blogPost.findUnique({ where: { slug }, include: blogPostWithAuthor });
+  if (!row) notFound();
+  const post = toBlogPost(row);
 
-  const trending = blogPosts.filter((p) => p.id !== post.id).slice(0, 3);
-  const related = blogPosts.filter((p) => p.id !== post.id).slice(0, 3);
+  const otherRows = await prisma.blogPost.findMany({
+    where: { id: { not: post.id } },
+    include: blogPostWithAuthor,
+    orderBy: { publishedAt: "desc" },
+    take: 3,
+  });
+  const others = otherRows.map(toBlogPost);
+  const trending = others;
+  const related = others;
   const [firstHalf, ...restParagraphs] = post.content;
   const [midParagraph, ...tailParagraphs] = restParagraphs;
 

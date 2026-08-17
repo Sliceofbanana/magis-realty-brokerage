@@ -13,20 +13,18 @@ import {
   Share2,
   ExternalLink,
 } from "lucide-react";
-import { properties, getPropertyBySlug } from "@/lib/data/properties";
 import { getAgentBySlug } from "@/lib/data/agents";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
+import { submitInquiryAction } from "@/lib/actions/leads";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/format";
-
-export function generateStaticParams() {
-  return properties.map((p) => ({ slug: p.slug }));
-}
+import { prisma } from "@/lib/prisma";
+import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const property = getPropertyBySlug(slug);
+  const property = await prisma.property.findUnique({ where: { slug }, select: { title: true } });
   return { title: property ? `${property.title} | Magis Realty & Brokerage` : "Property Not Found" };
 }
 
@@ -50,12 +48,35 @@ export default async function PropertyDetailsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const property = getPropertyBySlug(slug);
-  if (!property) notFound();
+  const row = await prisma.property.findUnique({
+    where: { slug },
+    include: propertyWithRelations,
+  });
+  if (!row) notFound();
+  const property = toProperty(row);
 
   const agent = getAgentBySlug(property.agentId);
-  const similar = properties.filter((p) => p.id !== property.id).slice(0, 3);
+  const similarRows = await prisma.property.findMany({
+    where: { id: { not: property.id } },
+    include: propertyWithRelations,
+    orderBy: { createdAt: "desc" },
+    take: 3,
+  });
+  const similar = similarRows.map(toProperty);
   const galleryImages = [property.image, ...property.gallery].slice(0, 4);
+  const propertyTitle = property.title;
+
+  async function submitPropertyInquiry(values: Record<string, string>) {
+    "use server";
+    return submitInquiryAction({
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      message: values.message,
+      propertyLabel: propertyTitle,
+      source: "Property Details",
+    });
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -217,7 +238,12 @@ export default async function PropertyDetailsPage({
             <h3 className="mt-6 font-serif text-lg font-bold text-navy-900">
               Inquire About This Property
             </h3>
-            <SimpleForm fields={inquiryFields} submitLabel="Send Inquiry" className="mt-4 grid-cols-1" />
+            <SimpleForm
+              fields={inquiryFields}
+              submitLabel="Send Inquiry"
+              className="mt-4 grid-cols-1"
+              action={submitPropertyInquiry}
+            />
 
             <div className="mt-4 flex flex-col gap-2 border-t border-black/5 pt-4 text-sm">
               <button

@@ -14,16 +14,3 @@ export const leadershipTeam = [
   { name: "Mark Anthony Co", title: "Founder & President", photo: portraits.olderManGlasses },
   { name: "Sofia L. Reyes", title: "Founder & President", photo: portraits.womanSmilingCasual },
 ];
-
-export const recentInquiries = [
-  { client: "Marcus Sterling", property: "Azure Horizon Penthouse", status: "New" as const },
-  { client: "Lydia Thorne", property: "Veridian Estate Villa", status: "Follow-up" as const },
-  { client: "Jonathan Reed", property: "The Gilded Heights", status: "New" as const },
-  { client: "Sarah Jenkins", property: "Modern Sanctuary II", status: "Nurturing" as const },
-];
-
-export const recentActivity = [
-  { title: "New Lead: Sarah Johnson inquired about Oceanview Villa", time: "2 hours ago" },
-  { title: "Contract Updated: Closing documents for Unit 402, Marble Tower have been revised.", time: "5 hours ago" },
-  { title: "Deal Closed: Agent Smith finalized the sale of 88 Highgate Circle.", time: "Yesterday" },
-];

@@ -87,6 +87,11 @@ enum AttendanceStatus {
   UPCOMING
 }
 
+enum AttendanceCheckInMode {
+  QR
+  BUTTON
+}
+
 /// Maps to the front-end's literal emoji: PARTY=🎉 CAKE=🎂 HEART=❤️ CLAP=👏
 enum ReactionEmoji {
   PARTY
@@ -119,6 +124,7 @@ model User {
   photo         String?
   phone         String?
   position      String?
+  primaryOffice String?
   birthDate     DateTime?  @db.Date
   /// Demo-only convenience flag ("isYou" badges in the UI). Drop once real
   /// sessions identify the current user instead of a flagged seed row.
@@ -137,6 +143,8 @@ model User {
   commissionRecords         CommissionRecord[]
   agentQuotas               AgentQuota[]
   attendanceRecords         AttendanceRecord[]
+  createdMeetings           Meeting[]           @relation("MeetingCreator")
+  permissionOverrides       UserPermission[]
   badges                    AgentBadge[]
   birthdayGreetingsReceived BirthdayGreeting[]  @relation("Celebrant")
   birthdayGreetingsSent     BirthdayGreeting[]  @relation("GreetingAuthor")
@@ -198,6 +206,20 @@ model RolePermission {
   granted    Boolean       @default(true)
 
   @@unique([role, permission])
+}
+
+/// Per-user override on top of a user's role default (RolePermission). A
+/// user's effective grant for a permission is this row's `granted` value if
+/// one exists, else their role's RolePermission default.
+model UserPermission {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission PermissionKey
+  granted    Boolean       @default(true)
+
+  @@unique([userId, permission])
+  @@index([userId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -264,6 +286,8 @@ model Lead {
   priority LeadPriority @default(MEDIUM)
   /// Feeds the "Lead Sources" chart: web / referral / open-house / social.
   source   String?
+  /// Free-text inquiry body submitted with the lead-capture form.
+  message  String?
 
   propertyId String?
   property   Property? @relation(fields: [propertyId], references: [id])
@@ -370,6 +394,17 @@ model AgentProfile {
   publicVerified Boolean          @default(false)
   region         String?
   activeListings Int              @default(0)
+  /// Public bio-page stats — free-text so they can read "450M+" / "99.8%".
+  yearsExperience     Int?
+  propertiesSoldValue String?
+  clientSatisfaction  String?
+  /// Private "My Profile" fields — licensing + social, not shown publicly.
+  prcLicense        String?
+  dhsudRegistration String?
+  languages         String[] @default([])
+  linkedinUrl       String?
+  facebookUrl       String?
+  instagramUrl      String?
   teamId         String?
   team           LeaderboardTeam? @relation(fields: [teamId], references: [id])
 
@@ -466,10 +501,14 @@ model RewardTier {
 }
 
 model Meeting {
-  id    String         @id @default(cuid())
-  type  AttendanceType
-  title String
-  date  DateTime       @db.Date
+  id           String                @id @default(cuid())
+  type         AttendanceType
+  title        String
+  date         DateTime              @db.Date
+  checkInMode  AttendanceCheckInMode @default(BUTTON)
+  checkInToken String                @unique @default(cuid())
+  createdById  String?
+  createdBy    User?                 @relation("MeetingCreator", fields: [createdById], references: [id])
 
   attendanceRecords AttendanceRecord[]
 
@@ -477,12 +516,13 @@ model Meeting {
 }
 
 model AttendanceRecord {
-  id        String           @id @default(cuid())
-  meetingId String
-  meeting   Meeting          @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-  agentId   String
-  agent     User             @relation(fields: [agentId], references: [id])
-  status    AttendanceStatus
+  id          String           @id @default(cuid())
+  meetingId   String
+  meeting     Meeting          @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  agentId     String
+  agent       User             @relation(fields: [agentId], references: [id])
+  status      AttendanceStatus
+  checkedInAt DateTime?
 
   @@unique([meetingId, agentId])
   @@index([agentId])

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 import {
   SlidersHorizontal,
@@ -35,7 +34,7 @@ import { permissionDefs } from "@/lib/data/permissions";
 import { useRole } from "@/components/portal/RoleContext";
 import { useBirthdays } from "@/components/portal/BirthdayContext";
 import { PortalRole } from "@/lib/types";
-import { portraits } from "@/lib/stockPhotos";
+import type { PermissionKey } from "@prisma/client";
 import {
   listPortalUsers,
   approveUserAction,
@@ -44,6 +43,19 @@ import {
   reactivateUserAction,
   type AdminUserRow,
 } from "@/lib/actions/users";
+import {
+  getMyProfileAction,
+  updateProfileAction,
+  updatePasswordAction,
+  type MyProfile,
+} from "@/lib/actions/profile";
+import {
+  listUserPermissions,
+  setUserPermissionAction,
+  type UserPermissionRow,
+} from "@/lib/actions/permissions";
+
+const matrixRoles: PortalRole[] = ["Administrator", "Broker", "Agent", "Marketing"];
 
 const adminRoleTone: Record<AdminUserRow["role"], "gold" | "blue" | "gray" | "navy"> = {
   ADMINISTRATOR: "gold",
@@ -127,33 +139,115 @@ export default function SettingsPage() {
 }
 
 function GeneralTab() {
+  const [profile, setProfile] = useState<MyProfile | null>(null);
+  const [loadError, setLoadError] = useState("");
+
+  const [fullName, setFullName] = useState("");
+  const [title, setTitle] = useState("");
+  const [phone, setPhone] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  useEffect(() => {
+    getMyProfileAction()
+      .then((p) => {
+        if (!p) {
+          setLoadError("Couldn't load your profile.");
+          return;
+        }
+        setProfile(p);
+        setFullName(p.name);
+        setTitle(p.position ?? "");
+        setPhone(p.phone ?? "");
+      })
+      .catch(() => setLoadError("Couldn't load your profile."));
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    setSaveError("");
+    const result = await updateProfileAction({ name: fullName, position: title, phone });
+    setSaving(false);
+    if (result.error) {
+      setSaveError(result.error);
+      return;
+    }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  async function handlePasswordUpdate() {
+    setPasswordError("");
+    setPasswordMessage("");
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords don't match.");
+      return;
+    }
+    setPasswordSaving(true);
+    const result = await updatePasswordAction(currentPassword, newPassword);
+    setPasswordSaving(false);
+    if (result.error) {
+      setPasswordError(result.error);
+      return;
+    }
+    setPasswordMessage("Password updated.");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  }
+
+  if (loadError) {
+    return <p className="text-sm text-red-600">{loadError}</p>;
+  }
+
+  if (!profile) {
+    return <p className="text-sm text-gray-400">Loading…</p>;
+  }
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
         <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="font-serif text-lg font-bold text-navy-900">Profile Information</h2>
-            <Button size="sm">Save Changes</Button>
+            <Button size="sm" onClick={handleSave} disabled={saving}>
+              {saving ? "Saving…" : saved ? "Saved!" : "Save Changes"}
+            </Button>
           </div>
-          <div className="mt-5 flex flex-col gap-5 sm:flex-row">
-            <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl">
-              <Image src={portraits.manCleanCutGray} alt="Profile" fill className="object-cover" />
-            </div>
+          <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-start">
+            <Avatar src={profile.photo ?? undefined} name={fullName} size={80} />
             <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Full Name" defaultValue="Julian Thorne" />
-              <Field label="Title" defaultValue="Senior Portfolio Manager" />
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                  Full Name
+                </label>
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                  Title
+                </label>
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
-          <div className="mt-4">
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
-              Professional Bio
-            </label>
-            <textarea
-              rows={3}
-              defaultValue="Elite partner at Magis Realty specializing in high-net-worth commercial acquisitions and luxury residential estates in the metropolitan district."
-              className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
-            />
-          </div>
+          {saveError && <p className="mt-3 text-sm text-red-600">{saveError}</p>}
         </div>
 
         <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
@@ -163,25 +257,25 @@ function GeneralTab() {
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-navy-900">
                 <Mail size={14} /> Primary Email Address
               </p>
-              <div className="mt-1.5 flex gap-2">
+              <div className="mt-1.5">
                 <input
-                  defaultValue="j.thorne@magisrealty.com"
-                  className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900"
+                  value={profile.email}
+                  disabled
+                  className="w-full rounded-lg border border-black/10 bg-gray-100 px-4 py-2.5 text-sm text-gray-500"
                 />
-                <Button variant="outline" size="sm">Change</Button>
               </div>
-              <p className="mt-1 text-xs text-emerald-600">Verified professional email</p>
+              <p className="mt-1 text-xs text-gray-400">Contact an administrator to change your login email</p>
             </div>
             <div>
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-navy-900">
                 <Phone size={14} /> Mobile Phone Number
               </p>
-              <div className="mt-1.5 flex gap-2">
+              <div className="mt-1.5">
                 <input
-                  defaultValue="+1 (555) 012-3456"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900"
                 />
-                <Button variant="outline" size="sm">Change</Button>
               </div>
               <p className="mt-1 text-xs text-gray-400">Used for 2FA and client notifications</p>
             </div>
@@ -191,10 +285,51 @@ function GeneralTab() {
         <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
           <h2 className="font-serif text-lg font-bold text-navy-900">Security &amp; Privacy</h2>
           <div className="mt-5 space-y-4">
-            <Field label="Current Password" type="password" defaultValue="password123" />
-            <Field label="New Password" type="password" placeholder="Min. 12 characters" />
-            <Field label="Confirm New Password" type="password" placeholder="Re-enter password" />
-            <Button variant="outline" className="w-full sm:w-auto">Update Password</Button>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                Current Password
+              </label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Min. 12 characters"
+                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter password"
+                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+              />
+            </div>
+            {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+            {passwordMessage && <p className="text-sm text-emerald-600">{passwordMessage}</p>}
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={handlePasswordUpdate}
+              disabled={passwordSaving || !currentPassword || !newPassword}
+            >
+              {passwordSaving ? "Updating…" : "Update Password"}
+            </Button>
           </div>
         </div>
       </div>
@@ -905,92 +1040,115 @@ function BirthdayTab() {
   );
 }
 
-const matrixRoles: PortalRole[] = ["Administrator", "Broker", "Agent", "Marketing"];
+function toPermissionEnumKey(key: string): PermissionKey {
+  return key.replace(/-/g, "_").toUpperCase() as PermissionKey;
+}
 
 function PermissionsTab() {
-  const { matrix, togglePermission } = useRole();
+  const [users, setUsers] = useState<UserPermissionRow[] | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<{ key: string; message: string } | null>(null);
+
+  function load() {
+    listUserPermissions()
+      .then(setUsers)
+      .catch(() => setLoadError("Couldn't load permissions. You may need Administrator access."));
+  }
+
+  useEffect(load, []);
+
+  async function toggle(userId: string, permissionKey: string, next: boolean) {
+    const cellKey = `${userId}:${permissionKey}`;
+    setBusyKey(cellKey);
+    setRowError(null);
+    const result = await setUserPermissionAction(userId, toPermissionEnumKey(permissionKey), next);
+    setBusyKey(null);
+    if (result.error) {
+      setRowError({ key: cellKey, message: result.error });
+      return;
+    }
+    load();
+  }
 
   return (
     <div className="rounded-2xl border border-black/5 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 p-6">
-        <div>
-          <h2 className="font-serif text-lg font-bold text-navy-900">Role Permissions</h2>
-          <p className="text-sm text-gray-500">
-            Control which capabilities each role can access. Changes apply across the portal
-            immediately — use the &ldquo;Viewing as&rdquo; switcher to preview any role.
-          </p>
-        </div>
-        <Button size="sm">Save Matrix</Button>
+      <div className="border-b border-black/5 p-6">
+        <h2 className="font-serif text-lg font-bold text-navy-900">User Permissions</h2>
+        <p className="text-sm text-gray-500">
+          What each active user can access across the portal. Toggle any permission on or off for
+          an individual person — this overrides their role&rsquo;s default.
+        </p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-175 text-left text-sm">
-          <thead>
-            <tr className="text-xs uppercase tracking-wide text-gray-400">
-              <th className="px-6 py-3 font-medium">Permission</th>
-              {matrixRoles.map((r) => (
-                <th key={r} className="px-4 py-3 text-center font-medium">
-                  {r}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {permissionDefs.map((def) => (
-              <tr key={def.key} className="border-t border-black/5">
-                <td className="px-6 py-4">
-                  <p className="font-semibold text-navy-900">{def.label}</p>
-                  <p className="mt-0.5 max-w-xs text-xs text-gray-400">{def.description}</p>
-                </td>
-                {matrixRoles.map((r) => {
-                  const locked = def.adminLocked && r === "Administrator";
-                  return (
-                    <td key={r} className="px-4 py-4">
-                      <div className="flex justify-center">
-                        <Toggle
-                          checked={matrix[r].includes(def.key)}
-                          onChange={() => togglePermission(r, def.key)}
-                          disabled={locked}
-                          label={`${def.label} for ${r}`}
-                        />
-                      </div>
-                    </td>
-                  );
-                })}
+
+      {loadError && <p className="px-6 py-6 text-sm text-red-600">{loadError}</p>}
+
+      {!loadError && !users && (
+        <p className="px-6 py-10 text-center text-sm text-gray-400">Loading permissions…</p>
+      )}
+
+      {users && users.length === 0 && (
+        <p className="px-6 py-10 text-center text-sm text-gray-400">No active users yet.</p>
+      )}
+
+      {users && users.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] text-left text-sm">
+            <thead>
+              <tr className="text-xs uppercase tracking-wide text-gray-400">
+                <th className="sticky left-0 bg-white px-6 py-3 font-medium">User</th>
+                {permissionDefs.map((def) => (
+                  <th key={def.key} className="px-3 py-3 text-center font-medium">
+                    <span title={def.description}>{def.label}</span>
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} className="border-t border-black/5">
+                  <td className="sticky left-0 bg-white px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={user.photo ?? undefined} initials={getInitials(user.name)} size={32} />
+                      <div>
+                        <p className="font-semibold text-navy-900">{user.name}</p>
+                        <p className="text-xs text-gray-400">{user.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  {permissionDefs.map((def) => {
+                    const cellKey = `${user.id}:${def.key}`;
+                    const granted = user.permissions[toPermissionEnumKey(def.key)] ?? false;
+                    const locked = def.adminLocked && user.role === "ADMINISTRATOR";
+                    return (
+                      <td key={def.key} className="px-3 py-4">
+                        <div className="flex flex-col items-center gap-1">
+                          <Toggle
+                            checked={granted}
+                            disabled={locked || busyKey === cellKey}
+                            onChange={(v) => toggle(user.id, def.key, v)}
+                            label={`${def.label} for ${user.name}`}
+                          />
+                          {rowError?.key === cellKey && (
+                            <p className="max-w-24 text-center text-[10px] leading-tight text-red-600">
+                              {rowError.message}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <div className="border-t border-black/5 p-4 text-xs text-gray-400">
         <Lock size={12} className="mr-1 inline" />
         &ldquo;Manage Permissions&rdquo; is always retained by Administrators and cannot be revoked.
       </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  type = "text",
-  defaultValue,
-  placeholder,
-}: {
-  label: string;
-  type?: string;
-  defaultValue?: string;
-  placeholder?: string;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
-        {label}
-      </label>
-      <input
-        type={type}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
-      />
     </div>
   );
 }

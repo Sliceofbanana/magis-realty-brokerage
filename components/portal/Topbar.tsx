@@ -2,14 +2,10 @@
 
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { Bell, Grid3x3, Menu, Search, LogOut, ShieldCheck, Cake } from "lucide-react";
+import { Bell, Grid3x3, Menu, Search, LogOut, Cake } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
-import { PortalRole } from "@/lib/types";
 import { logoutAction } from "@/lib/actions/auth";
-import { useRole } from "./RoleContext";
 import { useBirthdays } from "./BirthdayContext";
-
-const roles: PortalRole[] = ["Administrator", "Broker", "Agent", "Marketing"];
 
 function NotificationsMenu() {
   const [open, setOpen] = useState(false);
@@ -84,7 +80,6 @@ function NotificationsMenu() {
 }
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
-  const { role, setRole } = useRole();
   const { data: session } = useSession();
   return (
     <header className="flex h-20 items-center gap-4 border-b border-black/5 bg-white px-4 sm:px-6">
@@ -106,21 +101,6 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-4">
-        <label className="hidden items-center gap-2 rounded-lg bg-offwhite px-3 py-2 text-xs font-medium text-gray-500 md:flex">
-          <ShieldCheck size={14} className="text-gold-600" />
-          Viewing as
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as PortalRole)}
-            className="bg-transparent text-xs font-semibold text-navy-900 focus:outline-none"
-          >
-            {roles.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-        </label>
         <NotificationsMenu />
         <button
           type="button"

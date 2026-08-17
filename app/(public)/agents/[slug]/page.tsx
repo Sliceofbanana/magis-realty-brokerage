@@ -1,20 +1,20 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Mail, Phone, Building2, Home } from "lucide-react";
-import { agents, getAgentBySlug } from "@/lib/data/agents";
-import { testimonials } from "@/lib/data/agents";
 import { TestimonialCard } from "@/components/public/TestimonialCard";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
-
-export function generateStaticParams() {
-  return agents.map((a) => ({ slug: a.slug }));
-}
+import { submitInquiryAction } from "@/lib/actions/leads";
+import { prisma } from "@/lib/prisma";
+import { agentWithProfile, toAgent } from "@/lib/adapters/agent";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const agent = getAgentBySlug(slug);
-  return { title: agent ? `${agent.name} | Magis Realty & Brokerage` : "Agent Not Found" };
+  const row = await prisma.user.findFirst({
+    where: { agentProfile: { slug } },
+    select: { name: true },
+  });
+  return { title: row ? `${row.name} | Magis Realty & Brokerage` : "Agent Not Found" };
 }
 
 const consultationFields: FormField[] = [
@@ -45,8 +45,26 @@ export default async function AgentProfilePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const agent = getAgentBySlug(slug);
-  if (!agent) notFound();
+  const row = await prisma.user.findFirst({
+    where: { agentProfile: { slug, bio: { isEmpty: false } } },
+    include: agentWithProfile,
+  });
+  if (!row) notFound();
+  const agent = toAgent(row);
+  const agentId = row.id;
+  const testimonials = await prisma.testimonial.findMany();
+
+  async function submitAgentConsultation(values: Record<string, string>) {
+    "use server";
+    return submitInquiryAction({
+      name: values.name,
+      email: values.email,
+      message: values.message,
+      interest: values.interest,
+      agentId,
+      source: "Agent Profile",
+    });
+  }
 
   return (
     <>
@@ -130,6 +148,7 @@ export default async function AgentProfilePage({
               className="mt-4 grid-cols-1"
               successTitle="Request received"
               successMessage="We've notified the agent — expect a response within 2 business hours."
+              action={submitAgentConsultation}
             />
             <p className="mt-4 text-center text-[11px] text-gray-400">
               Strictly confidential advisory.
