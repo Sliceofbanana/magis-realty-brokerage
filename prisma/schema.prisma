@@ -1,0 +1,582 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────
+
+enum PortalRole {
+  ADMINISTRATOR
+  BROKER
+  AGENT
+  MARKETING
+}
+
+/// PENDING is the Odoo-style agent-registration gate: new agent sign-ups
+/// land here and cannot log in until an admin flips them to ACTIVE.
+enum UserStatus {
+  PENDING
+  ACTIVE
+  DEACTIVATED
+  REJECTED
+}
+
+enum PermissionKey {
+  MANAGE_USERS
+  MANAGE_PERMISSIONS
+  VIEW_ACTIVITY_LOG
+  CONFIGURE_COMMISSIONS
+  CONFIGURE_ATTENDANCE
+  CONFIGURE_BIRTHDAYS
+  SET_AGENT_QUOTAS
+  EXPORT_REPORTS
+  MANAGE_OWN_LISTINGS
+  MANAGE_BLOGS
+}
+
+enum PropertyStatus {
+  FOR_SALE
+  SOLD
+  PENDING
+  EXCLUSIVE
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFIED
+  FOLLOW_UP
+  CONTACTED
+}
+
+enum LeadPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum QuotaPeriodId {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+}
+
+enum AttendancePeriod {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum AttendanceType {
+  MEETING
+  PKS
+}
+
+enum AttendanceStatus {
+  ATTENDED
+  MISSED
+  UPCOMING
+}
+
+/// Maps to the front-end's literal emoji: PARTY=🎉 CAKE=🎂 HEART=❤️ CLAP=👏
+enum ReactionEmoji {
+  PARTY
+  CAKE
+  HEART
+  CLAP
+}
+
+enum BadgeType {
+  SALES_OF_THE_MONTH
+  ELITE_SELLER
+  VOLUME_LEADER
+  FIRST_SALE
+  THREE_MONTH_STREAK
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Auth core — Auth.js (NextAuth) Prisma-adapter shape. Wired up in Phase 2;
+// defined now so every other model's relations to User compile today.
+// ─────────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  emailVerified DateTime?
+  name          String
+  passwordHash  String?
+  role          PortalRole @default(AGENT)
+  status        UserStatus @default(PENDING)
+  photo         String?
+  phone         String?
+  position      String?
+  birthDate     DateTime?  @db.Date
+  /// Demo-only convenience flag ("isYou" badges in the UI). Drop once real
+  /// sessions identify the current user instead of a flagged seed row.
+  isYou         Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  agentProfile AgentProfile?
+
+  listedProperties          Property[]         @relation("ListingAgent")
+  assignedLeads             Lead[]              @relation("AssignedAgent")
+  authoredBlogPosts         BlogPost[]          @relation("BlogAuthor")
+  commissionRecords         CommissionRecord[]
+  agentQuotas               AgentQuota[]
+  attendanceRecords         AttendanceRecord[]
+  badges                    AgentBadge[]
+  birthdayGreetingsReceived BirthdayGreeting[]  @relation("Celebrant")
+  birthdayGreetingsSent     BirthdayGreeting[]  @relation("GreetingAuthor")
+  birthdayReactions         BirthdayReaction[]
+  activityLogEntries        ActivityLogEntry[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// RBAC — seeded 1:1 from lib/data/permissions.ts's defaultRolePermissions,
+// admin-editable at runtime via the Settings screen already built for it.
+// ─────────────────────────────────────────────────────────────────────────
+
+model RolePermission {
+  id         String        @id @default(cuid())
+  role       PortalRole
+  permission PermissionKey
+  granted    Boolean       @default(true)
+
+  @@unique([role, permission])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Listings
+// ─────────────────────────────────────────────────────────────────────────
+
+model Property {
+  id           String         @id @default(cuid())
+  slug         String         @unique
+  title        String
+  collection   String?
+  status       PropertyStatus @default(FOR_SALE)
+  type         PropertyType
+  location     String
+  address      String
+  price        Decimal        @db.Decimal(14, 2)
+  pricePerSqft Decimal?       @db.Decimal(10, 2)
+  beds         Int            @default(0)
+  baths        Float          @default(0)
+  area         Int
+  parking      Int            @default(0)
+  verified     Boolean        @default(false)
+  description  String[]
+  amenities    String[]
+
+  agentId String
+  agent   User   @relation("ListingAgent", fields: [agentId], references: [id])
+
+  images            PropertyImage[]
+  leads             Lead[]
+  commissionRecords CommissionRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([status])
+  @@index([type])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  isCover    Boolean  @default(false)
+  sortOrder  Int      @default(0)
+
+  @@index([propertyId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Leads
+// ─────────────────────────────────────────────────────────────────────────
+
+model Lead {
+  id       String       @id @default(cuid())
+  name     String
+  email    String
+  phone    String
+  /// Free-text segment shown under the name, e.g. "Buyer • First-time".
+  type     String?
+  status   LeadStatus   @default(NEW)
+  priority LeadPriority @default(MEDIUM)
+  /// Feeds the "Lead Sources" chart: web / referral / open-house / social.
+  source   String?
+
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+  /// Denormalized display name for inquiries about a property that isn't
+  /// (or isn't yet) a row in Property — mirrors CommissionRecord.propertyLabel.
+  propertyLabel String?
+
+  agentId String?
+  agent   User?   @relation("AssignedAgent", fields: [agentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Content
+// ─────────────────────────────────────────────────────────────────────────
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  category    String
+  authorId    String?
+  author      User?    @relation("BlogAuthor", fields: [authorId], references: [id])
+  content     String[]
+  pullQuote   String?
+  tags        String[]
+  image       String?
+  readTime    String?
+  publishedAt DateTime @default(now())
+
+  @@index([authorId])
+}
+
+model FaqCategory {
+  id    String    @id @default(cuid())
+  slug  String    @unique
+  label String
+  icon  String?
+  items FaqItem[]
+}
+
+model FaqItem {
+  id         String      @id @default(cuid())
+  categoryId String
+  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  question   String
+  answer     String
+  sortOrder  Int         @default(0)
+
+  @@index([categoryId])
+}
+
+model DocumentFile {
+  id         String   @id @default(cuid())
+  name       String
+  category   String
+  type       String
+  size       String
+  url        String?
+  uploadedAt DateTime @default(now())
+}
+
+model Testimonial {
+  id    String @id @default(cuid())
+  quote String
+  name  String
+  role  String
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Agent public profile + team-based leaderboard
+// ─────────────────────────────────────────────────────────────────────────
+
+model LeaderboardTeam {
+  id     String @id
+  name   String
+  tone   String
+  dot    String
+  border String
+
+  agents AgentProfile[]
+}
+
+/// Public-directory-only fields, split off User so Admin/Marketing accounts
+/// (which never get a public agent page) don't carry these as null columns.
+model AgentProfile {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug           String           @unique
+  quote          String?
+  bio            String[]
+  specialties    Json?
+  rating         Float            @default(0)
+  reviewCount    Int              @default(0)
+  specialization String?
+  topPerformer   Boolean          @default(false)
+  publicVerified Boolean          @default(false)
+  region         String?
+  activeListings Int              @default(0)
+  teamId         String?
+  team           LeaderboardTeam? @relation(fields: [teamId], references: [id])
+
+  @@index([teamId])
+}
+
+model QuotaPeriod {
+  id         String        @id @default(cuid())
+  periodId   QuotaPeriodId
+  label      String
+  cycleLabel String
+  start      DateTime      @db.Date
+  end        DateTime      @db.Date
+  asOf       DateTime      @db.Date
+  isActive   Boolean       @default(true)
+
+  quotas AgentQuota[]
+
+  @@index([periodId, isActive])
+}
+
+model AgentQuota {
+  id            String      @id @default(cuid())
+  agentId       String
+  agent         User        @relation(fields: [agentId], references: [id])
+  quotaPeriodId String
+  quotaPeriod   QuotaPeriod @relation(fields: [quotaPeriodId], references: [id])
+  quotaAmount   Decimal     @db.Decimal(14, 2)
+  /// "achieved" is intentionally NOT a column — derive it by summing this
+  /// agent's CommissionRecord.earned within quotaPeriod's [start, end].
+
+  @@unique([agentId, quotaPeriodId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Commissions — tranche releases. released/remaining/status stay derived
+// (see lib/commissions.ts's commissionReleaseSummary) rather than stored.
+// ─────────────────────────────────────────────────────────────────────────
+
+model CommissionRecord {
+  id            String    @id @default(cuid())
+  agentId       String
+  agent         User      @relation(fields: [agentId], references: [id])
+  propertyId    String?
+  property      Property? @relation(fields: [propertyId], references: [id])
+  propertyLabel String
+  closedDate    DateTime  @db.Date
+  earned        Decimal   @db.Decimal(14, 2)
+
+  releases CommissionRelease[]
+
+  @@index([agentId])
+  @@index([closedDate])
+}
+
+model CommissionRelease {
+  id       String           @id @default(cuid())
+  recordId String
+  record   CommissionRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  date     DateTime         @db.Date
+  amount   Decimal          @db.Decimal(14, 2)
+  note     String?
+
+  @@index([recordId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Attendance — event-based: one Meeting is shared by many agents, each with
+// their own AttendanceRecord (attended/missed/upcoming).
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Single-row settings table (id is always the literal "singleton").
+model AttendanceConfig {
+  id                 String           @id @default("singleton")
+  period             AttendancePeriod
+  periodLabel        String
+  periodStart        DateTime         @db.Date
+  asOf               DateTime         @db.Date
+  pointsPerMeeting   Int
+  pointsPerPks       Int
+  eligibilityMinRate Float
+
+  rewardTiers RewardTier[]
+}
+
+model RewardTier {
+  id       String           @id @default(cuid())
+  configId String
+  config   AttendanceConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  points   Int
+  label    String
+
+  @@index([configId])
+}
+
+model Meeting {
+  id    String         @id @default(cuid())
+  type  AttendanceType
+  title String
+  date  DateTime       @db.Date
+
+  attendanceRecords AttendanceRecord[]
+
+  @@index([date])
+}
+
+model AttendanceRecord {
+  id        String           @id @default(cuid())
+  meetingId String
+  meeting   Meeting          @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  agentId   String
+  agent     User             @relation(fields: [agentId], references: [id])
+  status    AttendanceStatus
+
+  @@unique([meetingId, agentId])
+  @@index([agentId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Birthdays
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Single-row settings table (id is always the literal "singleton").
+model BirthdayConfig {
+  id               String       @id @default("singleton")
+  enabled          Boolean      @default(true)
+  messageTemplate  String
+  confettiEnabled  Boolean      @default(true)
+  greetingsEnabled Boolean      @default(true)
+  rewardsEnabled   Boolean      @default(true)
+  rewardMessage    String?
+  notifyRoles      PortalRole[]
+}
+
+model BirthdayGreeting {
+  id          String   @id @default(cuid())
+  celebrantId String
+  celebrant   User     @relation("Celebrant", fields: [celebrantId], references: [id])
+  authorId    String
+  author      User     @relation("GreetingAuthor", fields: [authorId], references: [id])
+  message     String
+  createdAt   DateTime @default(now())
+
+  reactions BirthdayReaction[]
+
+  @@index([celebrantId])
+}
+
+/// Tracks *who* reacted (not just a count), so duplicate reacts can be
+/// prevented and per-emoji totals can be derived with a simple group-by.
+model BirthdayReaction {
+  id         String           @id @default(cuid())
+  greetingId String
+  greeting   BirthdayGreeting @relation(fields: [greetingId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  emoji      ReactionEmoji
+
+  @@unique([greetingId, userId, emoji])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Badges — new: requested by the backend master prompt, no front-end yet.
+// ─────────────────────────────────────────────────────────────────────────
+
+model Badge {
+  id          String    @id @default(cuid())
+  type        BadgeType @unique
+  label       String
+  description String
+  icon        String?
+
+  awards AgentBadge[]
+}
+
+/// No uniqueness constraint on (agentId, badgeId): recurring badges like
+/// "Sales of the Month" should be re-awardable each period. Application
+/// logic (a later phase) is responsible for not re-awarding one-time
+/// badges like "First Sale" twice.
+model AgentBadge {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     User     @relation(fields: [agentId], references: [id])
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  awardedAt DateTime @default(now())
+  note      String?
+
+  @@index([agentId])
+  @@index([badgeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Activity log
+// ─────────────────────────────────────────────────────────────────────────
+
+model ActivityLogEntry {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  /// Denormalized name/email snapshot so history survives user deletion.
+  userLabel String
+  action    String
+  module    String
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}

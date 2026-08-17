@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Bell, Grid3x3, Menu, Search, LogOut, ShieldCheck, Cake } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
-import { portraits } from "@/lib/stockPhotos";
 import { PortalRole } from "@/lib/types";
+import { logoutAction } from "@/lib/actions/auth";
 import { useRole } from "./RoleContext";
 import { useBirthdays } from "./BirthdayContext";
 
@@ -85,6 +85,7 @@ function NotificationsMenu() {
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { role, setRole } = useRole();
+  const { data: session } = useSession();
   return (
     <header className="flex h-20 items-center gap-4 border-b border-black/5 bg-white px-4 sm:px-6">
       <button
@@ -130,17 +131,25 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
         </button>
 
         <div className="flex items-center gap-2">
-          <Avatar src={portraits.manCasualBeardedGlasses} name="Agent Smith" size={36} />
-          <span className="hidden text-sm font-semibold text-navy-900 sm:block">Agent Smith</span>
+          <Avatar
+            src={session?.user?.photo ?? undefined}
+            name={session?.user?.name ?? undefined}
+            size={36}
+          />
+          <span className="hidden text-sm font-semibold text-navy-900 sm:block">
+            {session?.user?.name ?? "…"}
+          </span>
         </div>
 
-        <Link
-          href="/login"
-          className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-navy-900"
-          title="Log out"
-        >
-          <LogOut size={16} />
-        </Link>
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-navy-900"
+            title="Log out"
+          >
+            <LogOut size={16} />
+          </button>
+        </form>
       </div>
     </header>
   );

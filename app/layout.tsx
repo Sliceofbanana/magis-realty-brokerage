@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
+import { AuthSessionProvider } from "@/components/providers/AuthSessionProvider";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -24,13 +25,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // No server-side session fetch here on purpose: calling auth() would make
+  // every route dynamic, including the fully static public marketing pages.
+  // The portal layout fetches its own session (that subtree is already
+  // dynamic/protected by middleware); this outer provider just gives
+  // next-auth/react a context to hydrate into if a nested one isn't present.
   return (
     <html
       lang="en"
       className={`${playfair.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-navy-900">
-        {children}
+        <AuthSessionProvider session={null}>{children}</AuthSessionProvider>
       </body>
     </html>
   );

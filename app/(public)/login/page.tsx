@@ -2,25 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
+import { loginAction, demoLoginAction, type ActionState } from "@/lib/actions/auth";
+
+const isDev = process.env.NODE_ENV !== "production";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!email || !password) {
-      setError("Enter your email and password to continue.");
-      return;
-    }
-    setError("");
-    router.push("/portal");
-  }
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(loginAction, null);
+  const [demoState, demoAction, demoPending] = useActionState<ActionState, FormData>(
+    () => demoLoginAction(),
+    null
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -55,7 +48,7 @@ export default function LoginPage() {
             Please enter your credentials to access the portal.
           </p>
 
-          <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+          <form action={formAction} className="mt-8 space-y-5">
             <div>
               <label
                 htmlFor="email"
@@ -65,10 +58,9 @@ export default function LoginPage() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="agent@magisrealty.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
             </div>
@@ -86,42 +78,45 @@ export default function LoginPage() {
               </div>
               <input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
             </div>
 
-            {error && <p className="text-xs text-red-600">{error}</p>}
+            {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
 
             <label className="flex items-center gap-2 text-sm text-gray-600">
               <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-navy-900" />
               Remember this device
             </label>
 
-            <Button type="submit" className="w-full">
-              Enter Portal
+            <Button type="submit" disabled={pending} className="w-full">
+              {pending ? "Signing In…" : "Enter Portal"}
             </Button>
           </form>
 
-          <div className="my-6 border-t border-black/10" />
-
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => router.push("/portal")}
-          >
-            Skip Login (Demo)
-          </Button>
-          <p className="mt-2 text-center text-[11px] text-gray-400">
-            Bypasses authentication for this presentation build.
-          </p>
+          {isDev && (
+            <>
+              <div className="my-6 border-t border-black/10" />
+              <form action={demoAction}>
+                <Button type="submit" variant="outline" disabled={demoPending} className="w-full">
+                  {demoPending ? "Signing In…" : "Skip Login (Demo)"}
+                </Button>
+              </form>
+              {demoState?.error && (
+                <p className="mt-2 text-center text-xs text-red-600">{demoState.error}</p>
+              )}
+              <p className="mt-2 text-center text-[11px] text-gray-400">
+                Signs in as the seeded demo agent. Dev builds only.
+              </p>
+            </>
+          )}
 
           <p className="mt-6 text-center text-sm text-gray-600">
             New to the network?{" "}
-            <Link href="/contact" className="font-semibold text-navy-900 hover:text-gold-600">
+            <Link href="/register" className="font-semibold text-navy-900 hover:text-gold-600">
               Request Access
             </Link>
           </p>

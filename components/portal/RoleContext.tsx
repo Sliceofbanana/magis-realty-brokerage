@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
+import { PortalRole as PrismaPortalRole } from "@prisma/client";
 import { PermissionKey, PortalRole, RolePermissionMatrix } from "@/lib/types";
 import { defaultRolePermissions } from "@/lib/data/permissions";
 
@@ -14,8 +16,33 @@ type RoleContextValue = {
 
 const RoleContext = createContext<RoleContextValue | null>(null);
 
+const sessionRoleToPortalRole: Record<PrismaPortalRole, PortalRole> = {
+  ADMINISTRATOR: "Administrator",
+  BROKER: "Broker",
+  AGENT: "Agent",
+  MARKETING: "Marketing",
+};
+
 export function RoleProvider({ children }: { children: React.ReactNode }) {
-  const [role, setRole] = useState<PortalRole>("Administrator");
+  const { data: session } = useSession();
+  const sessionRole = session?.user?.role
+    ? sessionRoleToPortalRole[session.user.role]
+    : undefined;
+
+  // Defaults to the signed-in user's real role; falls back to Administrator
+  // only while the session is still resolving on first client render.
+  const [role, setRole] = useState<PortalRole>(sessionRole ?? "Administrator");
+
+  // Re-sync `role` when the session's role changes (e.g. resolves after
+  // first render). Setting state during render — rather than in an effect —
+  // is the React-recommended way to adjust state from a changed prop; it
+  // re-renders before commit instead of scheduling an extra effect pass.
+  const [syncedSessionRole, setSyncedSessionRole] = useState(sessionRole);
+  if (sessionRole !== syncedSessionRole) {
+    setSyncedSessionRole(sessionRole);
+    if (sessionRole) setRole(sessionRole);
+  }
+
   const [matrix, setMatrix] = useState<RolePermissionMatrix>(defaultRolePermissions);
 
   const value = useMemo<RoleContextValue>(
