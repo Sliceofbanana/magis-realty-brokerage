@@ -1,16 +1,42 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { X } from "lucide-react";
+import { Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { createPropertyAction, type CreatePropertyResult } from "@/lib/actions/properties";
+import {
+  createPropertyAction,
+  updatePropertyAction,
+  type CreatePropertyResult,
+} from "@/lib/actions/properties";
+import type { Property } from "@/lib/types";
 
 type AgentOption = { id: string; name: string; role: string };
 
-export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
+const statusToEnum: Record<Property["status"], string> = {
+  "For Sale": "FOR_SALE",
+  Exclusive: "EXCLUSIVE",
+  Pending: "PENDING",
+  Sold: "SOLD",
+};
+
+const typeToEnum: Record<Property["type"], string> = {
+  Residential: "RESIDENTIAL",
+  Commercial: "COMMERCIAL",
+};
+
+export function CreateListingForm({
+  agents,
+  property,
+}: {
+  agents: AgentOption[];
+  /** When provided, the form opens in edit mode for this listing instead of creating a new one. */
+  property?: Property & { agentUserId: string };
+}) {
+  const isEdit = !!property;
   const [open, setOpen] = useState(false);
+  const action = isEdit ? updatePropertyAction.bind(null, property.id) : createPropertyAction;
   const [state, formAction, pending] = useActionState<CreatePropertyResult, FormData>(
-    createPropertyAction,
+    action,
     null as unknown as CreatePropertyResult
   );
 
@@ -22,7 +48,18 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Add New Listing</Button>
+      {isEdit ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Edit listing"
+          className="text-gray-400 hover:text-navy-900"
+        >
+          <Pencil size={16} />
+        </button>
+      ) : (
+        <Button onClick={() => setOpen(true)}>Add New Listing</Button>
+      )}
 
       {open && (
         <div
@@ -34,7 +71,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
           <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
               <h2 id="create-listing-title" className="font-serif text-lg font-bold text-navy-900">
-                Add New Listing
+                {isEdit ? "Edit Listing" : "Add New Listing"}
               </h2>
               <button
                 type="button"
@@ -54,6 +91,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                 <input
                   id="title"
                   name="title"
+                  defaultValue={property?.title}
                   className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                 />
               </div>
@@ -66,6 +104,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                   <input
                     id="collection"
                     name="collection"
+                    defaultValue={property?.collection}
                     placeholder="Skyline Collection"
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
@@ -77,7 +116,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                   <select
                     id="agentId"
                     name="agentId"
-                    defaultValue=""
+                    defaultValue={property?.agentUserId ?? ""}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   >
                     <option value="" disabled>
@@ -100,7 +139,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                   <select
                     id="status"
                     name="status"
-                    defaultValue="FOR_SALE"
+                    defaultValue={property ? statusToEnum[property.status] : "FOR_SALE"}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   >
                     <option value="FOR_SALE">For Sale</option>
@@ -116,7 +155,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                   <select
                     id="type"
                     name="type"
-                    defaultValue="RESIDENTIAL"
+                    defaultValue={property ? typeToEnum[property.type] : "RESIDENTIAL"}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   >
                     <option value="RESIDENTIAL">Residential</option>
@@ -133,6 +172,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                   <input
                     id="location"
                     name="location"
+                    defaultValue={property?.location}
                     placeholder="Bonifacio Global City, Taguig"
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
@@ -144,6 +184,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                   <input
                     id="address"
                     name="address"
+                    defaultValue={property?.address}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
                 </div>
@@ -159,6 +200,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                     name="price"
                     type="number"
                     min={0}
+                    defaultValue={property?.price}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
                 </div>
@@ -171,6 +213,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                     name="pricePerSqft"
                     type="number"
                     min={0}
+                    defaultValue={property?.pricePerSqft || undefined}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
                 </div>
@@ -183,6 +226,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                     name="area"
                     type="number"
                     min={0}
+                    defaultValue={property?.area}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
                 </div>
@@ -198,6 +242,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                     name="beds"
                     type="number"
                     min={0}
+                    defaultValue={property?.beds}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
                 </div>
@@ -211,6 +256,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                     type="number"
                     min={0}
                     step="0.5"
+                    defaultValue={property?.baths}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
                 </div>
@@ -223,6 +269,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                     name="parking"
                     type="number"
                     min={0}
+                    defaultValue={property?.parking}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
                 </div>
@@ -236,6 +283,7 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                   id="description"
                   name="description"
                   rows={4}
+                  defaultValue={property?.description.join("\n\n")}
                   className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                 />
               </div>
@@ -247,27 +295,30 @@ export function CreateListingForm({ agents }: { agents: AgentOption[] }) {
                 <input
                   id="amenities"
                   name="amenities"
+                  defaultValue={property?.amenities.join(", ")}
                   placeholder="Infinity Pool, 24/7 Concierge, Smart Home"
                   className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                 />
               </div>
 
-              <div>
-                <label htmlFor="image" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
-                  Cover Image URL (optional)
-                </label>
-                <input
-                  id="image"
-                  name="image"
-                  placeholder="/images/..."
-                  className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
-                />
-              </div>
+              {!isEdit && (
+                <div>
+                  <label htmlFor="image" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                    Cover Image URL (optional)
+                  </label>
+                  <input
+                    id="image"
+                    name="image"
+                    placeholder="/images/..."
+                    className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                  />
+                </div>
+              )}
 
               {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
 
               <Button type="submit" disabled={pending} className="w-full">
-                {pending ? "Creating…" : "Create Listing"}
+                {pending ? "Saving…" : isEdit ? "Save Changes" : "Create Listing"}
               </Button>
             </form>
           </div>

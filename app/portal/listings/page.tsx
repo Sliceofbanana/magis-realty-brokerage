@@ -17,6 +17,13 @@ export default async function ListingsAdminPage() {
     }),
   ]);
   const properties = rows.map(toProperty);
+  const agentUserIdByPropertyId = Object.fromEntries(rows.map((r) => [r.id, r.agentId]));
 
-  return <ListingsAdminView properties={properties} agents={agents} />;
+  return (
+    <ListingsAdminView
+      properties={properties}
+      agents={agents}
+      agentUserIdByPropertyId={agentUserIdByPropertyId}
+    />
+  );
 }

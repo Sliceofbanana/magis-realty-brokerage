@@ -269,6 +269,30 @@ export default function LeaderboardPage() {
   const me = rows.find((row) => row.agent.isYou);
   const [first, second, third] = rows;
 
+  function exportCsv() {
+    const header = ["Rank", "Agent", "Region", "Team", "Progress %", "Achieved", "Remaining", "Quota"];
+    const rows = sortedRows.map((row) => [
+      String(row.rank),
+      row.agent.name,
+      row.agent.region,
+      leaderboardTeams.find((t) => t.id === row.agent.teamId)?.name ?? "",
+      String(Math.round(row.stats.progressPct)),
+      String(row.achieved),
+      String(row.stats.remaining),
+      String(row.quota),
+    ]);
+    const csv = [header, ...rows]
+      .map((line) => line.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leaderboard-${period.id}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -347,7 +371,7 @@ export default function LeaderboardPage() {
               {period.cycleLabel} &bull; grouped by team, ranked by team quota progress
             </p>
           </div>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={exportCsv}>
             <Download size={14} /> Export
           </Button>
         </div>

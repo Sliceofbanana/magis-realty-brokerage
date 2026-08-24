@@ -34,6 +34,7 @@ import {
   toAttendanceSessions,
 } from "@/lib/adapters/attendance";
 import { leadStatusLabel, leadStatusTone } from "@/lib/adapters/lead";
+import { commissionRecordInclude, toCommissionRecord } from "@/lib/adapters/commission";
 import type { AttendanceSession } from "@/lib/types";
 
 const activityIcons = [UserPlus2, FileEdit, CheckCircle2];
@@ -50,9 +51,10 @@ export default async function PortalDashboardPage() {
     recentActivityEntries,
     attendanceConfigRow,
     myAttendanceRecords,
+    myCommissionRecords,
   ] = await Promise.all([
-    prisma.property.count({ where: { status: { not: "SOLD" } } }),
-    prisma.property.count({ where: { status: "SOLD" } }),
+    prisma.property.count({ where: { status: { not: "SOLD" }, archived: false } }),
+    prisma.property.count({ where: { status: "SOLD", archived: false } }),
     prisma.lead.count(),
     prisma.lead.findMany({
       orderBy: { createdAt: "desc" },
@@ -70,12 +72,20 @@ export default async function PortalDashboardPage() {
           include: attendanceRecordWithMeeting,
         })
       : Promise.resolve([]),
+    session?.user?.id
+      ? prisma.commissionRecord.findMany({
+          where: { agentId: session.user.id },
+          include: commissionRecordInclude,
+          orderBy: { closedDate: "desc" },
+        })
+      : Promise.resolve([]),
   ]);
 
   const attendanceConfig = attendanceConfigRow
     ? toAttendanceConfig(attendanceConfigRow)
     : fallbackAttendanceConfig;
   const attendanceSessions: AttendanceSession[] = toAttendanceSessions(myAttendanceRecords);
+  const commissionRecords = myCommissionRecords.map(toCommissionRecord);
 
   return (
     <div>
@@ -95,7 +105,7 @@ export default async function PortalDashboardPage() {
 
       <AttendanceOverview sessions={attendanceSessions} config={attendanceConfig} />
 
-      <CommissionProgress />
+      <CommissionProgress records={commissionRecords} />
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">

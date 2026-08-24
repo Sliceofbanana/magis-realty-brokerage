@@ -18,6 +18,7 @@ export const properties: Property[] = [
     area: 3850,
     parking: 3,
     verified: true,
+    archived: false,
     image: interiors.penthouseLivingRoomView,
     gallery: [interiors.brightLivingRoom, interiors.whiteModernKitchen, interiors.officeLounge],
     description: [
@@ -50,6 +51,7 @@ export const properties: Property[] = [
     area: 2100,
     parking: 2,
     verified: true,
+    archived: false,
     image: exteriors.whiteVillaPoolDay,
     gallery: [exteriors.whiteVillaPoolDayAlt, interiors.brightLivingRoom],
     description: [
@@ -80,6 +82,7 @@ export const properties: Property[] = [
     area: 1450,
     parking: 1,
     verified: true,
+    archived: false,
     image: interiors.brightCondoLivingRoom,
     gallery: [interiors.whiteModernKitchen],
     description: [
@@ -105,6 +108,7 @@ export const properties: Property[] = [
     area: 5200,
     parking: 4,
     verified: true,
+    archived: false,
     image: exteriors.darkModernHouseDuskAlt,
     gallery: [interiors.officeLounge, interiors.penthouseLivingRoomView],
     description: [
@@ -130,6 +134,7 @@ export const properties: Property[] = [
     area: 185,
     parking: 2,
     verified: true,
+    archived: false,
     image: exteriors.darkModernHouseDusk,
     gallery: [interiors.brightLivingRoom],
     description: [
@@ -154,6 +159,7 @@ export const properties: Property[] = [
     area: 1200,
     parking: 20,
     verified: true,
+    archived: false,
     image: exteriors.glassOfficeTowers,
     gallery: [interiors.officeLounge],
     description: [
@@ -178,6 +184,7 @@ export const properties: Property[] = [
     area: 450,
     parking: 4,
     verified: true,
+    archived: false,
     image: exteriors.resortPoolNight,
     gallery: [interiors.brightLivingRoom],
     description: [
@@ -202,6 +209,7 @@ export const properties: Property[] = [
     area: 620,
     parking: 4,
     verified: true,
+    archived: false,
     image: exteriors.suburbanHouseDay,
     gallery: [exteriors.contemporaryHouseFence],
     description: [

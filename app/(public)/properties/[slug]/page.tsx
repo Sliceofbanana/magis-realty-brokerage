@@ -52,12 +52,12 @@ export default async function PropertyDetailsPage({
     where: { slug },
     include: propertyWithRelations,
   });
-  if (!row) notFound();
+  if (!row || row.archived) notFound();
   const property = toProperty(row);
 
   const agent = getAgentBySlug(property.agentId);
   const similarRows = await prisma.property.findMany({
-    where: { id: { not: property.id } },
+    where: { id: { not: property.id }, archived: false },
     include: propertyWithRelations,
     orderBy: { createdAt: "desc" },
     take: 3,

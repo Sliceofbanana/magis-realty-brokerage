@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Wallet, Banknote, HandCoins, ReceiptText, History } from "lucide-react";
-import { commissionRecords } from "@/lib/data/commissionReleases";
 import {
   commissionReleaseSummary,
   formatReleaseDate,
@@ -9,6 +8,7 @@ import {
 import { formatCurrency } from "@/lib/format";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { Badge } from "@/components/ui/Badge";
+import type { CommissionRecord } from "@/lib/types";
 
 const statusConfig: Record<ReleaseStatus, { label: string; tone: "green" | "gold" | "blue"; bar: string }> = {
   "fully-released": { label: "Fully Released", tone: "green", bar: "bg-emerald-500" },
@@ -16,8 +16,8 @@ const statusConfig: Record<ReleaseStatus, { label: string; tone: "green" | "gold
   "pending-initial": { label: "Pending Initial Release", tone: "blue", bar: "bg-navy-600" },
 };
 
-export function CommissionProgress() {
-  const summary = commissionReleaseSummary(commissionRecords);
+export function CommissionProgress({ records }: { records: CommissionRecord[] }) {
+  const summary = commissionReleaseSummary(records);
   const overall = statusConfig[summary.overallStatus];
 
   return (

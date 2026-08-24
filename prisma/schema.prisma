@@ -242,6 +242,7 @@ model Property {
   area         Int
   parking      Int            @default(0)
   verified     Boolean        @default(false)
+  archived     Boolean        @default(false)
   description  String[]
   amenities    String[]
 
@@ -458,6 +459,20 @@ model CommissionRecord {
 
   @@index([agentId])
   @@index([closedDate])
+}
+
+/// Single-row settings table (id is always the literal "singleton").
+model CommissionRules {
+  id                     String   @id @default("singleton")
+  brokerageSplitPercent  Decimal  @db.Decimal(5, 2)
+  referralFeePercent     Decimal  @db.Decimal(5, 2)
+  tierThreshold          Decimal  @db.Decimal(14, 2)
+  tierBonusPercent       Decimal  @db.Decimal(5, 2)
+  withholdingTaxPercent  Decimal  @db.Decimal(5, 2)
+  transactionFee         Decimal  @db.Decimal(10, 2)
+  effectiveDate          DateTime @db.Date
+  autoCalculationEnabled Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
 }
 
 model CommissionRelease {

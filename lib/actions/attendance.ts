@@ -5,6 +5,54 @@ import { AttendanceCheckInMode, AttendanceStatus, AttendanceType } from "@prisma
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/actions/users";
+import { attendanceConfigWithTiers, fallbackAttendanceConfig, toAttendanceConfig } from "@/lib/adapters/attendance";
+import type { AttendanceConfig } from "@/lib/types";
+
+/** Returns the singleton AttendanceConfig (+ reward tiers) for the Settings > Attendance Rules tab. */
+export async function getAttendanceConfig(): Promise<AttendanceConfig> {
+  const row = await prisma.attendanceConfig.findUnique({
+    where: { id: "singleton" },
+    include: attendanceConfigWithTiers,
+  });
+  return row ? toAttendanceConfig(row) : fallbackAttendanceConfig;
+}
+
+export type AttendanceConfigUpdateInput = {
+  pointsPerMeeting: number;
+  pointsPerPks: number;
+  eligibilityMinRate: number;
+  rewardTiers: { points: number; label: string }[];
+};
+
+export type AttendanceConfigUpdateResult = { error?: string; success?: boolean };
+
+/** Admin-only: updates the singleton AttendanceConfig row and replaces its reward tiers. */
+export async function updateAttendanceConfigAction(
+  values: AttendanceConfigUpdateInput
+): Promise<AttendanceConfigUpdateResult> {
+  await requireAdmin();
+
+  await prisma.$transaction([
+    prisma.attendanceConfig.update({
+      where: { id: "singleton" },
+      data: {
+        pointsPerMeeting: values.pointsPerMeeting,
+        pointsPerPks: values.pointsPerPks,
+        eligibilityMinRate: values.eligibilityMinRate,
+      },
+    }),
+    prisma.rewardTier.deleteMany({ where: { configId: "singleton" } }),
+    prisma.rewardTier.createMany({
+      data: values.rewardTiers.map((t) => ({ configId: "singleton", points: t.points, label: t.label })),
+    }),
+  ]);
+
+  revalidatePath("/portal/settings");
+  revalidatePath("/portal");
+  revalidatePath("/portal/attendance");
+
+  return { success: true };
+}
 
 export type CreateMeetingResult = { error?: string; success?: boolean };
 

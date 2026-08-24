@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { LayoutGrid, List, Pencil, Archive, History } from "lucide-react";
-import { Property } from "@/lib/types";
+import { LayoutGrid, List, Archive, ArchiveRestore, History, X } from "lucide-react";
+import { Property, CommissionRecord } from "@/lib/types";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { CreateListingForm } from "@/components/portal/CreateListingForm";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/format";
+import { formatReleaseDate } from "@/lib/commissions";
+import { archivePropertyFormAction, getPropertyCommissionHistory } from "@/lib/actions/properties";
 
 type AgentOption = { id: string; name: string; role: string };
 
-const filters = ["All", "Active", "Sold", "Pending"] as const;
+const filters = ["All", "Active", "Sold", "Pending", "Archived"] as const;
 
 function displayStatus(status: string) {
   if (status === "For Sale" || status === "Exclusive") return "Active";
@@ -20,18 +22,72 @@ function displayStatus(status: string) {
 
 const statusTone = { Active: "navy", Sold: "green", Pending: "gold" } as const;
 
+function HistoryPanel({ property, onClose }: { property: Property; onClose: () => void }) {
+  const [records, setRecords] = useState<CommissionRecord[] | null>(null);
+
+  useEffect(() => {
+    getPropertyCommissionHistory(property.id).then(setRecords);
+  }, [property.id]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-navy-950/70 p-4"
+    >
+      <div className="relative max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
+          <h2 className="font-serif text-lg font-bold text-navy-900">{property.title} — History</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="text-gray-400 hover:text-navy-900">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="space-y-4 px-6 py-5">
+          {records === null && <p className="text-sm text-gray-400">Loading…</p>}
+          {records?.length === 0 && (
+            <p className="text-sm text-gray-400">No commission record linked yet.</p>
+          )}
+          {records?.map((r) => (
+            <div key={r.id} className="rounded-xl bg-offwhite p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-navy-900">Closed {formatReleaseDate(r.closedDate)}</p>
+                <p className="font-serif text-base font-bold text-gold-600">{formatCurrency(r.earned)}</p>
+              </div>
+              {r.releases.length > 0 && (
+                <ul className="mt-3 space-y-2 border-t border-black/5 pt-3">
+                  {r.releases.map((rel) => (
+                    <li key={rel.id} className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">{formatReleaseDate(rel.date)}</span>
+                      <span className="font-semibold text-emerald-600">+{formatCurrency(rel.amount)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ListingsAdminView({
   properties,
   agents,
+  agentUserIdByPropertyId,
 }: {
   properties: Property[];
   agents: AgentOption[];
+  agentUserIdByPropertyId: Record<string, string>;
 }) {
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
+  const [historyFor, setHistoryFor] = useState<Property | null>(null);
 
   const filtered = useMemo(() => {
-    if (filter === "All") return properties;
-    return properties.filter((p) => displayStatus(p.status) === filter);
+    if (filter === "Archived") return properties.filter((p) => p.archived);
+    const active = properties.filter((p) => !p.archived);
+    if (filter === "All") return active;
+    return active.filter((p) => displayStatus(p.status) === filter);
   }, [properties, filter]);
 
   return (
@@ -43,7 +99,7 @@ export function ListingsAdminView({
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Status:</span>
           {filters.map((f) => (
             <button
@@ -86,8 +142,9 @@ export function ListingsAdminView({
               >
                 <div className="relative h-40 w-full">
                   <Image src={property.image} alt={property.title} fill className="object-cover" />
-                  <div className="absolute left-3 top-3">
+                  <div className="absolute left-3 top-3 flex gap-1.5">
                     <Badge tone={statusTone[status]}>{status.toUpperCase()}</Badge>
+                    {property.archived && <Badge tone="gray">ARCHIVED</Badge>}
                   </div>
                 </div>
                 <div className="p-4">
@@ -114,19 +171,31 @@ export function ListingsAdminView({
                         {formatCurrency(property.price)}
                       </p>
                     </div>
-                    <div className="flex gap-1 text-gray-400">
+                    <div className="flex items-center gap-2 text-gray-400">
                       {status === "Sold" ? (
-                        <span aria-label="History (coming soon)" title="Coming soon" className="cursor-not-allowed opacity-40">
+                        <button
+                          type="button"
+                          onClick={() => setHistoryFor(property)}
+                          aria-label="View history"
+                          className="hover:text-navy-900"
+                        >
                           <History size={16} />
-                        </span>
+                        </button>
                       ) : (
-                        <span aria-label="Edit (coming soon)" title="Coming soon" className="cursor-not-allowed opacity-40">
-                          <Pencil size={16} />
-                        </span>
+                        <CreateListingForm
+                          agents={agents}
+                          property={{ ...property, agentUserId: agentUserIdByPropertyId[property.id] }}
+                        />
                       )}
-                      <span aria-label="Archive (coming soon)" title="Coming soon" className="cursor-not-allowed opacity-40">
-                        <Archive size={16} />
-                      </span>
+                      <form action={archivePropertyFormAction.bind(null, property.id, !property.archived)}>
+                        <button
+                          type="submit"
+                          aria-label={property.archived ? "Unarchive listing" : "Archive listing"}
+                          className="hover:text-navy-900"
+                        >
+                          {property.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+                        </button>
+                      </form>
                     </div>
                   </div>
                 </div>
@@ -135,6 +204,8 @@ export function ListingsAdminView({
           })
         )}
       </div>
+
+      {historyFor && <HistoryPanel property={historyFor} onClose={() => setHistoryFor(null)} />}
     </div>
   );
 }

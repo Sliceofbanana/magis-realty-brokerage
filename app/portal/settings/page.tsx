@@ -29,11 +29,10 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { activityLog } from "@/lib/data/users";
-import { attendanceConfig } from "@/lib/data/attendance";
 import { permissionDefs } from "@/lib/data/permissions";
 import { useRole } from "@/components/portal/RoleContext";
 import { useBirthdays } from "@/components/portal/BirthdayContext";
-import { PortalRole } from "@/lib/types";
+import { PortalRole, AttendanceConfig } from "@/lib/types";
 import type { PermissionKey } from "@prisma/client";
 import {
   listPortalUsers,
@@ -54,6 +53,12 @@ import {
   setUserPermissionAction,
   type UserPermissionRow,
 } from "@/lib/actions/permissions";
+import { getAttendanceConfig, updateAttendanceConfigAction } from "@/lib/actions/attendance";
+import {
+  getCommissionRules,
+  updateCommissionRulesAction,
+  type CommissionRules,
+} from "@/lib/actions/commissionRules";
 
 const matrixRoles: PortalRole[] = ["Administrator", "Broker", "Agent", "Marketing"];
 
@@ -673,13 +678,47 @@ function NotificationsTab() {
 }
 
 function CommissionTab() {
+  const [rules, setRules] = useState<CommissionRules | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    getCommissionRules().then(setRules);
+  }, []);
+
+  function update<K extends keyof CommissionRules>(key: K, value: CommissionRules[K]) {
+    setRules((prev) => (prev ? { ...prev, [key]: value } : prev));
+    setSaved(false);
+  }
+
+  async function save() {
+    if (!rules) return;
+    setSaving(true);
+    setError("");
+    const result = await updateCommissionRulesAction(rules);
+    setSaving(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    setSaved(true);
+  }
+
+  if (!rules) {
+    return <p className="py-10 text-center text-sm text-gray-400">Loading commission rules…</p>;
+  }
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
       <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-lg font-bold text-navy-900">Commission Structure</h2>
-          <Badge tone="navy">Configuring</Badge>
+          <Button size="sm" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : saved ? "Saved" : "Save Rules"}
+          </Button>
         </div>
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
         <div className="mt-6">
           <div className="flex items-center justify-between">
@@ -687,9 +726,14 @@ function CommissionTab() {
               <p className="text-sm font-semibold text-navy-900">Brokerage Split</p>
               <p className="text-xs text-gray-500">Standard percentage retained by the brokerage per transaction.</p>
             </div>
-            <p className="font-serif text-xl font-bold text-gold-600">20%</p>
+            <p className="font-serif text-xl font-bold text-gold-600">{rules.brokerageSplitPercent}%</p>
           </div>
-          <input type="range" defaultValue={20} className="mt-3 w-full accent-gold-500" />
+          <input
+            type="range"
+            value={rules.brokerageSplitPercent}
+            onChange={(e) => update("brokerageSplitPercent", Number(e.target.value))}
+            className="mt-3 w-full accent-gold-500"
+          />
         </div>
 
         <div className="mt-6 border-t border-black/5 pt-6">
@@ -698,9 +742,14 @@ function CommissionTab() {
               <p className="text-sm font-semibold text-navy-900">Referral Fees</p>
               <p className="text-xs text-gray-500">Payout for external lead referrals.</p>
             </div>
-            <p className="font-serif text-xl font-bold text-gold-600">10%</p>
+            <p className="font-serif text-xl font-bold text-gold-600">{rules.referralFeePercent}%</p>
           </div>
-          <input type="range" defaultValue={10} className="mt-3 w-full accent-gold-500" />
+          <input
+            type="range"
+            value={rules.referralFeePercent}
+            onChange={(e) => update("referralFeePercent", Number(e.target.value))}
+            className="mt-3 w-full accent-gold-500"
+          />
         </div>
 
         <div className="mt-6 border-t border-black/5 pt-6">
@@ -708,13 +757,25 @@ function CommissionTab() {
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-lg bg-offwhite p-4">
               <p className="text-[11px] uppercase text-gray-400">Sales Threshold (PHP)</p>
-              <p className="mt-1 font-serif text-lg font-bold text-navy-900">5,000,000</p>
-              <p className="mt-1 text-xs text-gray-500">Agent split increases to 85% after this amount.</p>
+              <input
+                type="number"
+                min={0}
+                value={rules.tierThreshold}
+                onChange={(e) => update("tierThreshold", Number(e.target.value))}
+                className="mt-1 w-full bg-transparent font-serif text-lg font-bold text-navy-900 focus:outline-none"
+              />
+              <p className="mt-1 text-xs text-gray-500">Sales volume threshold for the bonus tier.</p>
             </div>
             <div className="rounded-lg bg-offwhite p-4">
               <p className="text-[11px] uppercase text-gray-400">Bonus Percentage</p>
-              <p className="mt-1 font-serif text-lg font-bold text-navy-900">5%</p>
-              <p className="mt-1 text-xs text-gray-500">Additional bonus for top 3 monthly performers.</p>
+              <input
+                type="number"
+                min={0}
+                value={rules.tierBonusPercent}
+                onChange={(e) => update("tierBonusPercent", Number(e.target.value))}
+                className="mt-1 w-full bg-transparent font-serif text-lg font-bold text-navy-900 focus:outline-none"
+              />
+              <p className="mt-1 text-xs text-gray-500">Additional bonus for top performers.</p>
             </div>
           </div>
         </div>
@@ -729,7 +790,13 @@ function CommissionTab() {
             <div>
               <label className="text-xs text-white/60">Withholding Tax (VAT)</label>
               <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2">
-                <input defaultValue={12} className="w-full bg-transparent text-sm text-white focus:outline-none" />
+                <input
+                  type="number"
+                  min={0}
+                  value={rules.withholdingTaxPercent}
+                  onChange={(e) => update("withholdingTaxPercent", Number(e.target.value))}
+                  className="w-full bg-transparent text-sm text-white focus:outline-none"
+                />
                 <span className="text-sm text-white/60">%</span>
               </div>
             </div>
@@ -737,7 +804,13 @@ function CommissionTab() {
               <label className="text-xs text-white/60">Transaction Processing Fee</label>
               <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2">
                 <span className="text-sm text-white/60">₱</span>
-                <input defaultValue={2500} className="w-full bg-transparent text-sm text-white focus:outline-none" />
+                <input
+                  type="number"
+                  min={0}
+                  value={rules.transactionFee}
+                  onChange={(e) => update("transactionFee", Number(e.target.value))}
+                  className="w-full bg-transparent text-sm text-white focus:outline-none"
+                />
               </div>
               <p className="mt-1 text-xs text-white/40">Flat fee per closed transaction for admin costs.</p>
             </div>
@@ -749,11 +822,23 @@ function CommissionTab() {
           <div className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Effective Date</span>
-              <span className="font-semibold text-navy-900">Jan 01, 2024</span>
+              <span className="font-semibold text-navy-900">
+                {new Date(`${rules.effectiveDate}T00:00:00`).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "2-digit",
+                  year: "numeric",
+                })}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Auto-Calculation</span>
-              <span className="font-semibold text-gold-600">Enabled</span>
+              <button
+                type="button"
+                onClick={() => update("autoCalculationEnabled", !rules.autoCalculationEnabled)}
+                className={`font-semibold ${rules.autoCalculationEnabled ? "text-gold-600" : "text-gray-400"}`}
+              >
+                {rules.autoCalculationEnabled ? "Enabled" : "Disabled"}
+              </button>
             </div>
           </div>
         </div>
@@ -763,13 +848,61 @@ function CommissionTab() {
 }
 
 function AttendanceTab() {
+  const [config, setConfig] = useState<AttendanceConfig | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    getAttendanceConfig().then(setConfig);
+  }, []);
+
+  function update<K extends keyof AttendanceConfig>(key: K, value: AttendanceConfig[K]) {
+    setConfig((prev) => (prev ? { ...prev, [key]: value } : prev));
+    setSaved(false);
+  }
+
+  function updateTier(index: number, points: number) {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const rewardTiers = prev.rewardTiers.map((t, i) => (i === index ? { ...t, points } : t));
+      return { ...prev, rewardTiers };
+    });
+    setSaved(false);
+  }
+
+  async function save() {
+    if (!config) return;
+    setSaving(true);
+    setError("");
+    const result = await updateAttendanceConfigAction({
+      pointsPerMeeting: config.pointsPerMeeting,
+      pointsPerPks: config.pointsPerPks,
+      eligibilityMinRate: config.eligibilityMinRate,
+      rewardTiers: config.rewardTiers,
+    });
+    setSaving(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    setSaved(true);
+  }
+
+  if (!config) {
+    return <p className="py-10 text-center text-sm text-gray-400">Loading attendance rules…</p>;
+  }
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
       <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-lg font-bold text-navy-900">Attendance &amp; Reward Rules</h2>
-          <Button size="sm">Save Rules</Button>
+          <Button size="sm" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : saved ? "Saved" : "Save Rules"}
+          </Button>
         </div>
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         <p className="mt-1 text-sm text-gray-500">
           Configure how meeting and PKS attendance is scored and rewarded. Changes apply to every
           agent&rsquo;s dashboard immediately.
@@ -779,7 +912,10 @@ function AttendanceTab() {
           <div className="rounded-lg bg-offwhite p-4">
             <p className="text-[11px] uppercase text-gray-400">Points per Meeting</p>
             <input
-              defaultValue={attendanceConfig.pointsPerMeeting}
+              type="number"
+              min={0}
+              value={config.pointsPerMeeting}
+              onChange={(e) => update("pointsPerMeeting", Number(e.target.value))}
               className="mt-1 w-full bg-transparent font-serif text-lg font-bold text-navy-900 focus:outline-none"
             />
             <p className="mt-1 text-xs text-gray-500">Awarded for each attended meeting.</p>
@@ -787,7 +923,10 @@ function AttendanceTab() {
           <div className="rounded-lg bg-offwhite p-4">
             <p className="text-[11px] uppercase text-gray-400">Points per PKS Session</p>
             <input
-              defaultValue={attendanceConfig.pointsPerPks}
+              type="number"
+              min={0}
+              value={config.pointsPerPks}
+              onChange={(e) => update("pointsPerPks", Number(e.target.value))}
               className="mt-1 w-full bg-transparent font-serif text-lg font-bold text-navy-900 focus:outline-none"
             />
             <p className="mt-1 text-xs text-gray-500">Awarded for each attended seminar.</p>
@@ -798,13 +937,16 @@ function AttendanceTab() {
           <p className="text-sm font-semibold text-navy-900">Reward Thresholds</p>
           <p className="text-xs text-gray-500">Point totals required to unlock each reward tier.</p>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {attendanceConfig.rewardTiers.map((tier) => (
+            {config.rewardTiers.map((tier, i) => (
               <div key={tier.label} className="rounded-lg bg-offwhite p-4">
                 <p className="flex items-center gap-1.5 text-[11px] uppercase text-gray-400">
                   <Trophy size={12} className="text-gold-500" /> {tier.label}
                 </p>
                 <input
-                  defaultValue={tier.points}
+                  type="number"
+                  min={0}
+                  value={tier.points}
+                  onChange={(e) => updateTier(i, Number(e.target.value))}
                   className="mt-1 w-full bg-transparent font-serif text-lg font-bold text-navy-900 focus:outline-none"
                 />
               </div>
@@ -821,12 +963,13 @@ function AttendanceTab() {
               </p>
             </div>
             <p className="font-serif text-xl font-bold text-gold-600">
-              {attendanceConfig.eligibilityMinRate}%
+              {config.eligibilityMinRate}%
             </p>
           </div>
           <input
             type="range"
-            defaultValue={attendanceConfig.eligibilityMinRate}
+            value={config.eligibilityMinRate}
+            onChange={(e) => update("eligibilityMinRate", Number(e.target.value))}
             className="mt-3 w-full accent-gold-500"
           />
         </div>
@@ -838,11 +981,13 @@ function AttendanceTab() {
             <CalendarCheck2 size={16} className="text-gold-400" /> Attendance Period
           </h3>
           <p className="mt-1 text-xs text-white/60">
-            Points and rates reset at the start of each period.
+            Points and rates reset at the start of each period. Changing the active cycle isn&rsquo;t
+            supported from this tab yet.
           </p>
           <select
-            defaultValue={attendanceConfig.period}
-            className="mt-4 w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none"
+            value={config.period}
+            disabled
+            className="mt-4 w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none disabled:opacity-60"
           >
             <option value="monthly" className="text-navy-900">Monthly</option>
             <option value="quarterly" className="text-navy-900">Quarterly</option>
@@ -855,18 +1000,18 @@ function AttendanceTab() {
           <div className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Active Period</span>
-              <span className="font-semibold text-navy-900">{attendanceConfig.periodLabel}</span>
+              <span className="font-semibold text-navy-900">{config.periodLabel}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Meeting / PKS Points</span>
               <span className="font-semibold text-navy-900">
-                {attendanceConfig.pointsPerMeeting} / {attendanceConfig.pointsPerPks} pts
+                {config.pointsPerMeeting} / {config.pointsPerPks} pts
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Eligibility</span>
               <span className="font-semibold text-gold-600">
-                &ge;{attendanceConfig.eligibilityMinRate}% attendance
+                &ge;{config.eligibilityMinRate}% attendance
               </span>
             </div>
           </div>

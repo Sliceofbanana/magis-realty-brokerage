@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PropertiesPage() {
   const rows = await prisma.property.findMany({
+    where: { archived: false },
     include: propertyWithRelations,
     orderBy: { createdAt: "desc" },
   });

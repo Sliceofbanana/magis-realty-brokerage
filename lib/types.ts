@@ -14,6 +14,7 @@ export type Property = {
   area: number;
   parking: number;
   verified: boolean;
+  archived: boolean;
   image: string;
   gallery: string[];
   description: string[];
@@ -91,6 +92,7 @@ export type Transaction = {
   property: string;
   location: string;
   image: string;
+  closedDate: string;
   salePrice: number;
   commissionPercent: number;
   commissionAmount: number;

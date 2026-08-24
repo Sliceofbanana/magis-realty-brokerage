@@ -40,6 +40,7 @@ export function toProperty(p: PropertyWithRelations): Property {
     area: p.area,
     parking: p.parking,
     verified: p.verified,
+    archived: p.archived,
     image: sortedImages[0]?.url || exteriors.glassOfficeTowers,
     gallery: sortedImages.slice(1).map((img) => img.url),
     description: p.description,

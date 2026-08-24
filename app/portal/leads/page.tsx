@@ -14,6 +14,7 @@ export default async function LeadsAdminPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.property.findMany({
+      where: { archived: false },
       orderBy: { title: "asc" },
       select: { id: true, title: true },
     }),
