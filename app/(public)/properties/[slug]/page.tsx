@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { getAgentBySlug } from "@/lib/data/agents";
 import { PropertyCard } from "@/components/public/PropertyCard";
+import { PropertyGalleryCarousel } from "@/components/public/PropertyGalleryCarousel";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { submitInquiryAction } from "@/lib/actions/leads";
 import { Badge } from "@/components/ui/Badge";
@@ -63,8 +64,9 @@ export default async function PropertyDetailsPage({
     take: 3,
   });
   const similar = similarRows.map(toProperty);
-  const galleryImages = [property.image, ...property.gallery].slice(0, 4);
+  const galleryImages = [property.image, ...property.gallery];
   const propertyTitle = property.title;
+  const propertyId = property.id;
 
   async function submitPropertyInquiry(values: Record<string, string>) {
     "use server";
@@ -74,6 +76,7 @@ export default async function PropertyDetailsPage({
       phone: values.phone,
       message: values.message,
       propertyLabel: propertyTitle,
+      propertyId,
       source: "Property Details",
     });
   }
@@ -118,23 +121,7 @@ export default async function PropertyDetailsPage({
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-3 sm:h-105 sm:grid-cols-[1.4fr_1fr]">
-        <div className="relative h-64 overflow-hidden rounded-2xl sm:h-full">
-          <Image src={property.image} alt={property.title} fill className="object-cover" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:h-full">
-          {galleryImages.slice(1, 5).map((src, i) => (
-            <div key={src + i} className="relative h-32 overflow-hidden rounded-2xl sm:h-full">
-              <Image src={src} alt={`${property.title} photo ${i + 2}`} fill className="object-cover" />
-              {i === 3 && (
-                <div className="absolute inset-0 flex items-center justify-center bg-navy-950/60 text-sm font-semibold text-white">
-                  +12 More
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <PropertyGalleryCarousel images={galleryImages} title={property.title} />
 
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
         <div>

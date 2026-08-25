@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { signIn, signOut } from "@/auth";
+import { createNotification } from "@/lib/actions/notifications";
 
 export type ActionState = { error?: string } | null;
 
@@ -92,6 +93,13 @@ export async function registerAction(_prevState: ActionState, formData: FormData
       role: "AGENT",
       status: "PENDING",
     },
+  });
+
+  await createNotification({
+    type: "NEW_REGISTRATION",
+    title: "New registration request",
+    body: `${name} requested an agent account and is awaiting approval`,
+    link: "/portal/settings",
   });
 
   redirect("/register/success");

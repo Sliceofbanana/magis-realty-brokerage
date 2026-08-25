@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import {
   SlidersHorizontal,
-  User,
   Clock,
   Bell,
   Wallet,
@@ -12,13 +11,8 @@ import {
   ShieldCheck,
   Monitor,
   Smartphone,
-  UserX,
-  UserCheck,
-  Check,
-  X as XIcon,
   CalendarCheck2,
   Trophy,
-  KeyRound,
   Lock,
   Cake,
   PartyPopper,
@@ -29,30 +23,15 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { activityLog } from "@/lib/data/users";
-import { permissionDefs } from "@/lib/data/permissions";
 import { useRole } from "@/components/portal/RoleContext";
 import { useBirthdays } from "@/components/portal/BirthdayContext";
 import { PortalRole, AttendanceConfig } from "@/lib/types";
-import type { PermissionKey } from "@prisma/client";
-import {
-  listPortalUsers,
-  approveUserAction,
-  rejectUserAction,
-  deactivateUserAction,
-  reactivateUserAction,
-  type AdminUserRow,
-} from "@/lib/actions/users";
 import {
   getMyProfileAction,
   updateProfileAction,
   updatePasswordAction,
   type MyProfile,
 } from "@/lib/actions/profile";
-import {
-  listUserPermissions,
-  setUserPermissionAction,
-  type UserPermissionRow,
-} from "@/lib/actions/permissions";
 import { getAttendanceConfig, updateAttendanceConfigAction } from "@/lib/actions/attendance";
 import {
   getCommissionRules,
@@ -62,37 +41,11 @@ import {
 
 const matrixRoles: PortalRole[] = ["Administrator", "Broker", "Agent", "Marketing"];
 
-const adminRoleTone: Record<AdminUserRow["role"], "gold" | "blue" | "gray" | "navy"> = {
-  ADMINISTRATOR: "gold",
-  BROKER: "blue",
-  AGENT: "gray",
-  MARKETING: "navy",
-};
-
-const statusDisplay: Record<AdminUserRow["status"], { label: string; dot: string; text: string }> = {
-  PENDING: { label: "Pending Approval", dot: "bg-amber-500", text: "text-amber-600" },
-  ACTIVE: { label: "Active", dot: "bg-emerald-500", text: "text-emerald-600" },
-  DEACTIVATED: { label: "Deactivated", dot: "bg-gray-300", text: "text-gray-400" },
-  REJECTED: { label: "Rejected", dot: "bg-red-400", text: "text-red-500" },
-};
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
-
 export default function SettingsPage() {
   const { role, hasPermission } = useRole();
 
   const tabs = [
     { id: "general", label: "General", icon: <SlidersHorizontal size={16} /> },
-    ...(hasPermission("manage-users")
-      ? [{ id: "users", label: "Users", icon: <User size={16} /> }]
-      : []),
     ...(hasPermission("view-activity-log")
       ? [{ id: "activity", label: "Activity Log", icon: <Clock size={16} /> }]
       : []),
@@ -105,9 +58,6 @@ export default function SettingsPage() {
       : []),
     ...(hasPermission("configure-birthdays")
       ? [{ id: "birthdays", label: "Birthday Celebrations", icon: <Cake size={16} /> }]
-      : []),
-    ...(hasPermission("manage-permissions")
-      ? [{ id: "permissions", label: "Permissions", icon: <KeyRound size={16} /> }]
       : []),
   ];
 
@@ -128,13 +78,11 @@ export default function SettingsPage() {
       <div className="mt-6">
         <Tabs key={role} tabs={tabs}>
           {(active) => {
-            if (active === "users") return <UsersTab />;
             if (active === "activity") return <ActivityTab />;
             if (active === "notifications") return <NotificationsTab />;
             if (active === "commission") return <CommissionTab />;
             if (active === "attendance") return <AttendanceTab />;
             if (active === "birthdays") return <BirthdayTab />;
-            if (active === "permissions") return <PermissionsTab />;
             return <GeneralTab />;
           }}
         </Tabs>
@@ -385,151 +333,6 @@ function GeneralTab() {
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function UsersTab() {
-  const [users, setUsers] = useState<AdminUserRow[] | null>(null);
-  const [loadError, setLoadError] = useState("");
-  const [pendingId, setPendingId] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  function load() {
-    listPortalUsers()
-      .then(setUsers)
-      .catch(() => setLoadError("Couldn't load users. You may need Administrator access."));
-  }
-
-  useEffect(load, []);
-
-  function runAction(userId: string, action: (id: string) => Promise<void>) {
-    setPendingId(userId);
-    startTransition(async () => {
-      await action(userId);
-      load();
-      setPendingId(null);
-    });
-  }
-
-  const pendingCount = users?.filter((u) => u.status === "PENDING").length ?? 0;
-
-  return (
-    <div className="rounded-2xl border border-black/5 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 p-6">
-        <div>
-          <h2 className="font-serif text-lg font-bold text-navy-900">User Management</h2>
-          <p className="text-sm text-gray-500">
-            Approve new agent applications and manage platform accounts.
-          </p>
-        </div>
-        {pendingCount > 0 && (
-          <Badge tone="gold">
-            {pendingCount} Pending Approval{pendingCount === 1 ? "" : "s"}
-          </Badge>
-        )}
-      </div>
-
-      {loadError && <p className="px-6 py-6 text-sm text-red-600">{loadError}</p>}
-
-      {!loadError && !users && (
-        <p className="px-6 py-10 text-center text-sm text-gray-400">Loading users…</p>
-      )}
-
-      {users && users.length === 0 && (
-        <p className="px-6 py-10 text-center text-sm text-gray-400">No users yet.</p>
-      )}
-
-      {users && users.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-150 text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-wide text-gray-400">
-                <th className="px-6 py-3 font-medium">User Profile</th>
-                <th className="px-6 py-3 font-medium">Role</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-                <th className="px-6 py-3 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => {
-                const status = statusDisplay[user.status];
-                const busy = isPending && pendingId === user.id;
-                return (
-                  <tr key={user.id} className="border-t border-black/5">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar src={user.photo ?? undefined} initials={getInitials(user.name)} size={36} />
-                        <div>
-                          <p className="font-semibold text-navy-900">{user.name}</p>
-                          <p className="text-xs text-gray-400">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge tone={adminRoleTone[user.role]}>{user.role}</Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`flex items-center gap-1.5 text-sm ${status.text}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end gap-3 text-gray-400">
-                        {user.status === "PENDING" && (
-                          <>
-                            <button
-                              type="button"
-                              aria-label="Approve agent"
-                              disabled={busy}
-                              onClick={() => runAction(user.id, approveUserAction)}
-                              className="text-emerald-600 hover:text-emerald-700 disabled:opacity-40"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              type="button"
-                              aria-label="Reject application"
-                              disabled={busy}
-                              onClick={() => runAction(user.id, rejectUserAction)}
-                              className="text-red-500 hover:text-red-600 disabled:opacity-40"
-                            >
-                              <XIcon size={16} />
-                            </button>
-                          </>
-                        )}
-                        {user.status === "ACTIVE" && (
-                          <button
-                            type="button"
-                            aria-label="Deactivate user"
-                            disabled={busy}
-                            onClick={() => runAction(user.id, deactivateUserAction)}
-                            className="hover:text-red-600 disabled:opacity-40"
-                          >
-                            <UserX size={15} />
-                          </button>
-                        )}
-                        {(user.status === "DEACTIVATED" || user.status === "REJECTED") && (
-                          <button
-                            type="button"
-                            aria-label="Reactivate user"
-                            disabled={busy}
-                            onClick={() => runAction(user.id, reactivateUserAction)}
-                            className="text-emerald-600 hover:text-emerald-700 disabled:opacity-40"
-                          >
-                            <UserCheck size={15} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
@@ -1180,119 +983,6 @@ function BirthdayTab() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function toPermissionEnumKey(key: string): PermissionKey {
-  return key.replace(/-/g, "_").toUpperCase() as PermissionKey;
-}
-
-function PermissionsTab() {
-  const [users, setUsers] = useState<UserPermissionRow[] | null>(null);
-  const [loadError, setLoadError] = useState("");
-  const [busyKey, setBusyKey] = useState<string | null>(null);
-  const [rowError, setRowError] = useState<{ key: string; message: string } | null>(null);
-
-  function load() {
-    listUserPermissions()
-      .then(setUsers)
-      .catch(() => setLoadError("Couldn't load permissions. You may need Administrator access."));
-  }
-
-  useEffect(load, []);
-
-  async function toggle(userId: string, permissionKey: string, next: boolean) {
-    const cellKey = `${userId}:${permissionKey}`;
-    setBusyKey(cellKey);
-    setRowError(null);
-    const result = await setUserPermissionAction(userId, toPermissionEnumKey(permissionKey), next);
-    setBusyKey(null);
-    if (result.error) {
-      setRowError({ key: cellKey, message: result.error });
-      return;
-    }
-    load();
-  }
-
-  return (
-    <div className="rounded-2xl border border-black/5 bg-white shadow-sm">
-      <div className="border-b border-black/5 p-6">
-        <h2 className="font-serif text-lg font-bold text-navy-900">User Permissions</h2>
-        <p className="text-sm text-gray-500">
-          What each active user can access across the portal. Toggle any permission on or off for
-          an individual person — this overrides their role&rsquo;s default.
-        </p>
-      </div>
-
-      {loadError && <p className="px-6 py-6 text-sm text-red-600">{loadError}</p>}
-
-      {!loadError && !users && (
-        <p className="px-6 py-10 text-center text-sm text-gray-400">Loading permissions…</p>
-      )}
-
-      {users && users.length === 0 && (
-        <p className="px-6 py-10 text-center text-sm text-gray-400">No active users yet.</p>
-      )}
-
-      {users && users.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-wide text-gray-400">
-                <th className="sticky left-0 bg-white px-6 py-3 font-medium">User</th>
-                {permissionDefs.map((def) => (
-                  <th key={def.key} className="px-3 py-3 text-center font-medium">
-                    <span title={def.description}>{def.label}</span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-t border-black/5">
-                  <td className="sticky left-0 bg-white px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar src={user.photo ?? undefined} initials={getInitials(user.name)} size={32} />
-                      <div>
-                        <p className="font-semibold text-navy-900">{user.name}</p>
-                        <p className="text-xs text-gray-400">{user.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  {permissionDefs.map((def) => {
-                    const cellKey = `${user.id}:${def.key}`;
-                    const granted = user.permissions[toPermissionEnumKey(def.key)] ?? false;
-                    const locked = def.adminLocked && user.role === "ADMINISTRATOR";
-                    return (
-                      <td key={def.key} className="px-3 py-4">
-                        <div className="flex flex-col items-center gap-1">
-                          <Toggle
-                            checked={granted}
-                            disabled={locked || busyKey === cellKey}
-                            onChange={(v) => toggle(user.id, def.key, v)}
-                            label={`${def.label} for ${user.name}`}
-                          />
-                          {rowError?.key === cellKey && (
-                            <p className="max-w-24 text-center text-[10px] leading-tight text-red-600">
-                              {rowError.message}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div className="border-t border-black/5 p-4 text-xs text-gray-400">
-        <Lock size={12} className="mr-1 inline" />
-        &ldquo;Manage Permissions&rdquo; is always retained by Administrators and cannot be revoked.
       </div>
     </div>
   );

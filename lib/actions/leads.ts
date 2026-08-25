@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { LeadPriority, LeadStatus } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/actions/notifications";
 
 export type InquiryInput = {
   name: string;
@@ -58,6 +59,15 @@ export async function submitInquiryAction(input: InquiryInput): Promise<InquiryR
         : `New lead: ${name} submitted an inquiry via ${input.source}`,
       module: "Leads",
     },
+  });
+
+  await createNotification({
+    type: "NEW_LEAD",
+    title: "New lead",
+    body: input.propertyLabel
+      ? `${name} inquired about ${input.propertyLabel}`
+      : `${name} submitted an inquiry via ${input.source}`,
+    link: "/portal/leads",
   });
 
   revalidatePath("/portal");

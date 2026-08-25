@@ -153,24 +153,6 @@ export default async function PortalDashboardPage() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         <div className="space-y-6">
-          <TodaysBirthdaysWidget />
-
-          <div className="rounded-2xl border border-black/5 bg-white p-6 text-center shadow-sm">
-            <h2 className="font-serif text-lg font-bold text-navy-900">Profile Status</h2>
-            <div className="mt-4 flex justify-center">
-              <ProgressRing percent={85} />
-            </div>
-            <p className="mt-4 text-sm text-gray-500">
-              Almost there! Complete your bio to finish your professional profile.
-            </p>
-            <Link
-              href="/portal/profile"
-              className="mt-2 inline-block text-sm font-semibold text-gold-600 hover:underline"
-            >
-              Complete Now
-            </Link>
-          </div>
-
           <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
             <h2 className="font-serif text-lg font-bold text-navy-900">Quick Actions</h2>
             <div className="mt-4 space-y-3">
@@ -184,7 +166,7 @@ export default async function PortalDashboardPage() {
                 <ChevronRight size={16} />
               </Link>
               <Link
-                href="/portal/profile"
+                href="/portal/settings"
                 className="flex items-center justify-between rounded-lg bg-gold-500 px-4 py-3 text-sm font-semibold text-white hover:bg-gold-600"
               >
                 <span className="flex items-center gap-2">
@@ -202,6 +184,24 @@ export default async function PortalDashboardPage() {
                 <ChevronRight size={16} />
               </Link>
             </div>
+          </div>
+
+          <TodaysBirthdaysWidget />
+
+          <div className="rounded-2xl border border-black/5 bg-white p-6 text-center shadow-sm">
+            <h2 className="font-serif text-lg font-bold text-navy-900">Profile Status</h2>
+            <div className="mt-4 flex justify-center">
+              <ProgressRing percent={85} />
+            </div>
+            <p className="mt-4 text-sm text-gray-500">
+              Almost there! Complete your bio to finish your professional profile.
+            </p>
+            <Link
+              href="/portal/settings"
+              className="mt-2 inline-block text-sm font-semibold text-gold-600 hover:underline"
+            >
+              Complete Now
+            </Link>
           </div>
         </div>
 

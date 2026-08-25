@@ -8,16 +8,32 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
 
 const amenityOptions = ["Pool", "Security", "Gym", "Smart Home", "Garden", "Wine"];
+const regionOptions = ["Any Region", "North Cebu", "Central Cebu", "South Cebu"];
+const sortOptions = [
+  { value: "newest", label: "Newest Listings" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+] as const;
 const PAGE_SIZE = 6;
 
-export function PropertiesFilterView({ properties }: { properties: Property[] }) {
-  const [types, setTypes] = useState<string[]>([]);
+export function PropertiesFilterView({
+  properties,
+  initialLocation,
+  initialType,
+}: {
+  properties: Property[];
+  initialLocation?: string;
+  initialType?: string;
+}) {
+  const [types, setTypes] = useState<string[]>(initialType ? [initialType] : []);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000000);
   const [beds, setBeds] = useState("Any");
-  const [location, setlocations] = useState("Any");
+  const [region, setRegion] = useState(initialLocation ?? "Any Region");
   const [baths, setBaths] = useState("Any");
   const [amenities, setAmenities] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]["value"]>("newest");
+  const [showMap, setShowMap] = useState(false);
   const [page, setPage] = useState(1);
 
   function toggle(list: string[], setList: (v: string[]) => void, value: string) {
@@ -26,8 +42,9 @@ export function PropertiesFilterView({ properties }: { properties: Property[] })
   }
 
   const filtered = useMemo(() => {
-    return properties.filter((p) => {
+    const result = properties.filter((p) => {
       if (types.length && !types.includes(p.type)) return false;
+      if (region !== "Any Region" && p.region !== region) return false;
       if (p.price < minPrice || p.price > maxPrice) return false;
       if (beds !== "Any" && p.beds < Number(beds)) return false;
       if (baths !== "Any" && p.baths < Number(baths)) return false;
@@ -40,10 +57,17 @@ export function PropertiesFilterView({ properties }: { properties: Property[] })
         return false;
       return true;
     });
-  }, [properties, types, minPrice, maxPrice, beds, baths, amenities]);
+
+    if (sortBy === "price-asc") return [...result].sort((a, b) => a.price - b.price);
+    if (sortBy === "price-desc") return [...result].sort((a, b) => b.price - a.price);
+    return result; // "newest" — already ordered by createdAt desc from the server
+  }, [properties, types, region, minPrice, maxPrice, beds, baths, amenities, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const mapQuery =
+    region !== "Any Region" ? `${region}, Philippines` : "Cebu, Philippines";
 
   function resetAll() {
     setTypes([]);
@@ -51,7 +75,7 @@ export function PropertiesFilterView({ properties }: { properties: Property[] })
     setMaxPrice(10000000);
     setBeds("Any");
     setBaths("Any");
-    setlocations("Any");
+    setRegion("Any Region");
     setAmenities([]);
     setPage(1);
   }
@@ -68,13 +92,30 @@ export function PropertiesFilterView({ properties }: { properties: Property[] })
             estates across the region&rsquo;s most prestigious locations.
           </p>
         </div>
-        <div className="flex shrink-0 gap-3">
-          <Button variant="outline" size="sm">
-            <Map size={14} /> Show Map
+        <div className="flex shrink-0 items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowMap((v) => !v)}
+            className={showMap ? "bg-navy-900 text-white" : ""}
+          >
+            <Map size={14} /> {showMap ? "Show List" : "Show Map"}
           </Button>
-          <Button variant="outline" size="sm">
-            Newest Listings <ChevronDown size={14} />
-          </Button>
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as (typeof sortOptions)[number]["value"])}
+              aria-label="Sort properties"
+              className="appearance-none rounded-lg border border-black/10 bg-white py-2 pl-4 pr-9 text-sm font-semibold text-navy-900 hover:border-black/20 focus:outline-none"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
         </div>
       </div>
 
@@ -186,19 +227,19 @@ export function PropertiesFilterView({ properties }: { properties: Property[] })
               </select>
             </div>
               <div className="col-span-2">
-                <label htmlFor="location" className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Location
+                <label htmlFor="region" className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Region
                 </label>
                 <select
-                  id="location"
-                  value={location}
+                  id="region"
+                  value={region}
                   onChange={(e) => {
-                    setlocations(e.target.value);
+                    setRegion(e.target.value);
                     setPage(1);
                   }}
-                  className="mt-2 w-full rounded-lg border border-black/10 bg-gray-50 px-2 py-2 text-s text-navy-900"
+                  className="mt-2 w-full rounded-lg border border-black/10 bg-gray-50 px-2 py-2 text-sm text-navy-900"
                 >
-                  {["Select Location", "North Cebu", "Cebu City", "South Cebu"].map((v) => (
+                  {regionOptions.map((v) => (
                     <option key={v}>{v}</option>
                   ))}
                 </select>
@@ -236,7 +277,17 @@ export function PropertiesFilterView({ properties }: { properties: Property[] })
           <p className="mb-4 text-sm text-gray-500">
             Showing {paged.length} of {filtered.length} properties
           </p>
-          {paged.length === 0 ? (
+
+          {showMap ? (
+            <div className="overflow-hidden rounded-2xl border border-black/5 shadow-sm">
+              <iframe
+                title="Map of filtered properties"
+                src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
+                className="h-[520px] w-full border-0"
+                loading="lazy"
+              />
+            </div>
+          ) : paged.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-black/10 p-12 text-center text-sm text-gray-500">
               No properties match your filters. Try resetting them.
             </div>
@@ -248,7 +299,7 @@ export function PropertiesFilterView({ properties }: { properties: Property[] })
             </div>
           )}
 
-          {totalPages > 1 && (
+          {!showMap && totalPages > 1 && (
             <div className="mt-10">
               <Pagination page={page} totalPages={totalPages} onChange={setPage} />
             </div>

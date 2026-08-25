@@ -19,6 +19,7 @@ export const properties: Property[] = [
     parking: 3,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: interiors.penthouseLivingRoomView,
     gallery: [interiors.brightLivingRoom, interiors.whiteModernKitchen, interiors.officeLounge],
     description: [
@@ -52,6 +53,7 @@ export const properties: Property[] = [
     parking: 2,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: exteriors.whiteVillaPoolDay,
     gallery: [exteriors.whiteVillaPoolDayAlt, interiors.brightLivingRoom],
     description: [
@@ -83,6 +85,7 @@ export const properties: Property[] = [
     parking: 1,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: interiors.brightCondoLivingRoom,
     gallery: [interiors.whiteModernKitchen],
     description: [
@@ -109,6 +112,7 @@ export const properties: Property[] = [
     parking: 4,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: exteriors.darkModernHouseDuskAlt,
     gallery: [interiors.officeLounge, interiors.penthouseLivingRoomView],
     description: [
@@ -135,6 +139,7 @@ export const properties: Property[] = [
     parking: 2,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: exteriors.darkModernHouseDusk,
     gallery: [interiors.brightLivingRoom],
     description: [
@@ -160,6 +165,7 @@ export const properties: Property[] = [
     parking: 20,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: exteriors.glassOfficeTowers,
     gallery: [interiors.officeLounge],
     description: [
@@ -185,6 +191,7 @@ export const properties: Property[] = [
     parking: 4,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: exteriors.resortPoolNight,
     gallery: [interiors.brightLivingRoom],
     description: [
@@ -210,6 +217,7 @@ export const properties: Property[] = [
     parking: 4,
     verified: true,
     archived: false,
+    region: "Central Cebu",
     image: exteriors.suburbanHouseDay,
     gallery: [exteriors.contemporaryHouseFence],
     description: [

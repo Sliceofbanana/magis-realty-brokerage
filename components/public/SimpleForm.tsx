@@ -26,6 +26,7 @@ export function SimpleForm({
   successMessage = "We've received your message and will be in touch shortly.",
   className = "",
   action,
+  initialValues,
 }: {
   fields: FormField[];
   submitLabel: string;
@@ -40,8 +41,10 @@ export function SimpleForm({
    * without changing every consumer's markup.
    */
   action?: (values: Record<string, string>) => Promise<{ error?: string } | void>;
+  /** Pre-fills field values on mount, e.g. a role picked from a link elsewhere on the page. */
+  initialValues?: Record<string, string>;
 }) {
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);

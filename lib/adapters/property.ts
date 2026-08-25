@@ -14,6 +14,12 @@ const typeLabel: Record<string, Property["type"]> = {
   COMMERCIAL: "Commercial",
 };
 
+const regionLabel: Record<string, Property["region"]> = {
+  NORTH: "North Cebu",
+  CENTRAL: "Central Cebu",
+  SOUTH: "South Cebu",
+};
+
 export const propertyWithRelations = {
   images: true,
   agent: { include: { agentProfile: true } },
@@ -31,6 +37,7 @@ export function toProperty(p: PropertyWithRelations): Property {
     collection: p.collection ?? "",
     status: statusLabel[p.status] ?? "For Sale",
     type: typeLabel[p.type] ?? "Residential",
+    region: regionLabel[p.region] ?? "Central Cebu",
     location: p.location,
     address: p.address,
     price: Number(p.price),

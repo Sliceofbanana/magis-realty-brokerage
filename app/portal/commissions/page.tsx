@@ -6,7 +6,7 @@ import { CommissionsAdminView } from "@/components/portal/CommissionsAdminView";
 export const dynamic = "force-dynamic";
 
 export default async function CommissionsAdminPage() {
-  const [records, agents] = await Promise.all([
+  const [records, agents, properties] = await Promise.all([
     prisma.commissionRecord.findMany({
       include: commissionRecordInclude,
       orderBy: { closedDate: "desc" },
@@ -15,6 +15,11 @@ export default async function CommissionsAdminPage() {
       where: { status: "ACTIVE", role: { in: ["ADMINISTRATOR", "BROKER", "AGENT"] } },
       orderBy: { name: "asc" },
       select: { id: true, name: true, role: true },
+    }),
+    prisma.property.findMany({
+      where: { archived: false },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true, price: true },
     }),
   ]);
 
@@ -44,6 +49,7 @@ export default async function CommissionsAdminPage() {
       totalEarned={summary.totalEarned}
       remaining={summary.remaining}
       agents={agents}
+      properties={properties.map((p) => ({ id: p.id, title: p.title, price: Number(p.price) }))}
     />
   );
 }

@@ -63,6 +63,51 @@ export function commissionReleaseSummary(
   };
 }
 
+export type CommissionRulesLike = {
+  brokerageSplitPercent: number;
+  tierThreshold: number;
+  tierBonusPercent: number;
+  withholdingTaxPercent: number;
+  transactionFee: number;
+};
+
+export type CommissionSplitBreakdown = {
+  grossCommission: number;
+  agentSplitPercent: number;
+  tierBonusApplied: boolean;
+  agentEarned: number;
+  estimatedWithholdingTax: number;
+  transactionFee: number;
+};
+
+/**
+ * Derives what an agent actually takes home from a sale price + the agreed
+ * commission %, using the brokerage's Commission Rules for the split and
+ * tier bonus — the deal-specific rate (commissionPercent) is the only input
+ * that can't come from the rules themselves, since it varies by listing
+ * agreement. Tax/fee are informational only (not subtracted from `earned`).
+ */
+export function computeCommissionSplit(
+  salePrice: number,
+  commissionPercent: number,
+  rules: CommissionRulesLike
+): CommissionSplitBreakdown {
+  const grossCommission = salePrice * (commissionPercent / 100);
+  const tierBonusApplied = salePrice >= rules.tierThreshold && rules.tierThreshold > 0;
+  const agentSplitPercent =
+    100 - rules.brokerageSplitPercent + (tierBonusApplied ? rules.tierBonusPercent : 0);
+  const agentEarned = grossCommission * (agentSplitPercent / 100);
+
+  return {
+    grossCommission,
+    agentSplitPercent,
+    tierBonusApplied,
+    agentEarned,
+    estimatedWithholdingTax: grossCommission * (rules.withholdingTaxPercent / 100),
+    transactionFee: rules.transactionFee,
+  };
+}
+
 export function formatReleaseDate(date: string) {
   return new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
     month: "long",

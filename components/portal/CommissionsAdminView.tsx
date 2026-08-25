@@ -13,6 +13,7 @@ import type { Transaction } from "@/lib/types";
 const statusTone = { Paid: "green", Pending: "gold", "In Review": "blue" } as const;
 
 type AgentOption = { id: string; name: string; role: string };
+type PropertyOption = { id: string; title: string; price: number };
 
 function quarterOf(dateIso: string) {
   const month = Number(dateIso.slice(5, 7));
@@ -44,11 +45,13 @@ export function CommissionsAdminView({
   totalEarned,
   remaining,
   agents,
+  properties,
 }: {
   transactions: Transaction[];
   totalEarned: number;
   remaining: number;
   agents: AgentOption[];
+  properties: PropertyOption[];
 }) {
   const [quarter, setQuarter] = useState("All Quarters");
 
@@ -67,7 +70,7 @@ export function CommissionsAdminView({
             <Button variant="outline" size="sm" onClick={() => exportTransactionsPdf(filtered)}>
               <Download size={14} /> Export PDF
             </Button>
-            <CreateCommissionForm agents={agents} />
+            <CreateCommissionForm agents={agents} properties={properties} />
           </div>
         }
       />

@@ -11,7 +11,7 @@
  * fragile fuzzy name-matching in code.
  */
 import "dotenv/config";
-import { Prisma, PortalRole, UserStatus, PropertyStatus, PropertyType, LeadStatus, LeadPriority, QuotaPeriodId, AttendancePeriod, AttendanceType, AttendanceStatus, BadgeType, PermissionKey } from "@prisma/client";
+import { Prisma, PortalRole, UserStatus, PropertyStatus, PropertyType, CebuRegion, LeadStatus, LeadPriority, QuotaPeriodId, AttendancePeriod, AttendanceType, AttendanceStatus, BadgeType, PermissionKey } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { hashPassword } from "../lib/password";
 
@@ -23,7 +23,6 @@ import { agents, testimonials } from "../lib/data/agents";
 import { blogPosts } from "../lib/data/blog";
 import { faqCategories } from "../lib/data/faqs";
 import { leads } from "../lib/data/leads";
-import { documents } from "../lib/data/documents";
 import { activityLog } from "../lib/data/users";
 import { commissionRecords } from "../lib/data/commissionReleases";
 import { attendanceConfig, attendanceSessions } from "../lib/data/attendance";
@@ -432,6 +431,7 @@ async function seedProperties(idByEmail: Map<string, string>) {
         collection: p.collection,
         status: toPropertyStatus(p.status),
         type: p.type.toUpperCase() as PropertyType,
+        region: toCebuRegion(p.region),
         location: p.location,
         address: p.address,
         price: p.price,
@@ -451,6 +451,7 @@ async function seedProperties(idByEmail: Map<string, string>) {
         collection: p.collection,
         status: toPropertyStatus(p.status),
         type: p.type.toUpperCase() as PropertyType,
+        region: toCebuRegion(p.region),
         location: p.location,
         address: p.address,
         price: p.price,
@@ -484,6 +485,10 @@ async function seedProperties(idByEmail: Map<string, string>) {
 
 function toPropertyStatus(status: string): PropertyStatus {
   return status.replace(/\s+/g, "_").toUpperCase() as PropertyStatus;
+}
+
+function toCebuRegion(region: string): CebuRegion {
+  return region.replace(/\s*Cebu\s*/i, "").toUpperCase() as CebuRegion;
 }
 
 async function seedLeads(propertyIdBySlug: Map<string, string>) {
@@ -557,15 +562,10 @@ async function seedBlogAndContent() {
     });
   }
 
+  // DocumentFile rows now require a real Cloudinary upload (uploadedById,
+  // cloudinaryPublicId, url) — nothing meaningful to seed until credentials
+  // exist, so the table is left empty after seeding.
   await prisma.documentFile.deleteMany();
-  await prisma.documentFile.createMany({
-    data: documents.map((d) => ({
-      name: d.name,
-      category: d.category,
-      type: d.type,
-      size: d.size,
-    })),
-  });
 
   await prisma.testimonial.deleteMany();
   await prisma.testimonial.createMany({ data: testimonials });

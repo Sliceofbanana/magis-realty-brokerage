@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { PropertyStatus, PropertyType } from "@prisma/client";
+import { PropertyStatus, PropertyType, CebuRegion } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
+import { uploadFile } from "@/lib/storage";
 import { commissionRecordInclude, toCommissionRecord } from "@/lib/adapters/commission";
 import type { CommissionRecord } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export async function createPropertyAction(
   const collection = String(formData.get("collection") ?? "").trim();
   const statusRaw = String(formData.get("status") ?? "");
   const typeRaw = String(formData.get("type") ?? "");
+  const regionRaw = String(formData.get("region") ?? "");
   const location = String(formData.get("location") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
   const priceRaw = String(formData.get("price") ?? "");
@@ -37,11 +39,12 @@ export async function createPropertyAction(
   const descriptionRaw = String(formData.get("description") ?? "").trim();
   const amenitiesRaw = String(formData.get("amenities") ?? "").trim();
   const agentId = String(formData.get("agentId") ?? "").trim();
-  const image = String(formData.get("image") ?? "").trim();
+  const image = formData.get("image");
 
   if (!title) return { error: "Title is required." };
   if (!(statusRaw in PropertyStatus)) return { error: "Select a status." };
   if (!(typeRaw in PropertyType)) return { error: "Select a property type." };
+  if (!(regionRaw in CebuRegion)) return { error: "Select a region." };
   if (!location) return { error: "Location is required." };
   if (!address) return { error: "Address is required." };
   const price = Number(priceRaw);
@@ -59,6 +62,17 @@ export async function createPropertyAction(
     ? amenitiesRaw.split(",").map((a) => a.trim()).filter(Boolean)
     : [];
 
+  let imageUrl: string | null = null;
+  if (image instanceof File && image.size > 0) {
+    try {
+      const uploaded = await uploadFile(image, "properties");
+      imageUrl = uploaded.url;
+    } catch (err) {
+      console.error("Cloudinary upload failed:", err);
+      return { error: "Cover photo upload failed. Please check your connection and try again." };
+    }
+  }
+
   const slug = await uniqueSlug(
     title,
     async (candidate) => (await prisma.property.count({ where: { slug: candidate } })) > 0
@@ -71,6 +85,7 @@ export async function createPropertyAction(
       collection: collection || null,
       status: statusRaw as PropertyStatus,
       type: typeRaw as PropertyType,
+      region: regionRaw as CebuRegion,
       location,
       address,
       price,
@@ -85,9 +100,9 @@ export async function createPropertyAction(
     },
   });
 
-  if (image) {
+  if (imageUrl) {
     await prisma.propertyImage.create({
-      data: { propertyId: property.id, url: image, isCover: true, sortOrder: 0 },
+      data: { propertyId: property.id, url: imageUrl, isCover: true, sortOrder: 0 },
     });
   }
 
@@ -116,6 +131,7 @@ export async function updatePropertyAction(
   const collection = String(formData.get("collection") ?? "").trim();
   const statusRaw = String(formData.get("status") ?? "");
   const typeRaw = String(formData.get("type") ?? "");
+  const regionRaw = String(formData.get("region") ?? "");
   const location = String(formData.get("location") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
   const priceRaw = String(formData.get("price") ?? "");
@@ -127,10 +143,12 @@ export async function updatePropertyAction(
   const descriptionRaw = String(formData.get("description") ?? "").trim();
   const amenitiesRaw = String(formData.get("amenities") ?? "").trim();
   const agentId = String(formData.get("agentId") ?? "").trim();
+  const image = formData.get("image");
 
   if (!title) return { error: "Title is required." };
   if (!(statusRaw in PropertyStatus)) return { error: "Select a status." };
   if (!(typeRaw in PropertyType)) return { error: "Select a property type." };
+  if (!(regionRaw in CebuRegion)) return { error: "Select a region." };
   if (!location) return { error: "Location is required." };
   if (!address) return { error: "Address is required." };
   const price = Number(priceRaw);
@@ -148,6 +166,17 @@ export async function updatePropertyAction(
     ? amenitiesRaw.split(",").map((a) => a.trim()).filter(Boolean)
     : [];
 
+  let imageUrl: string | null = null;
+  if (image instanceof File && image.size > 0) {
+    try {
+      const uploaded = await uploadFile(image, "properties");
+      imageUrl = uploaded.url;
+    } catch (err) {
+      console.error("Cloudinary upload failed:", err);
+      return { error: "Cover photo upload failed. Please check your connection and try again." };
+    }
+  }
+
   await prisma.property.update({
     where: { id },
     data: {
@@ -155,6 +184,7 @@ export async function updatePropertyAction(
       collection: collection || null,
       status: statusRaw as PropertyStatus,
       type: typeRaw as PropertyType,
+      region: regionRaw as CebuRegion,
       location,
       address,
       price,
@@ -168,6 +198,19 @@ export async function updatePropertyAction(
       agentId,
     },
   });
+
+  if (imageUrl) {
+    const existingCover = await prisma.propertyImage.findFirst({
+      where: { propertyId: id, isCover: true },
+    });
+    if (existingCover) {
+      await prisma.propertyImage.update({ where: { id: existingCover.id }, data: { url: imageUrl } });
+    } else {
+      await prisma.propertyImage.create({
+        data: { propertyId: id, url: imageUrl, isCover: true, sortOrder: 0 },
+      });
+    }
+  }
 
   revalidatePath("/portal/listings");
   revalidatePath("/properties");

@@ -57,7 +57,7 @@ export function HomeHero() {
               className="w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
             >
               <option>North Cebu</option>
-              <option>Cebu City</option>
+              <option>Central Cebu</option>
               <option>South Cebu</option>
             </select>
           </div>

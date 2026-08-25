@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Award, Users, TrendingUp, Compass, HeartHandshake, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { SimpleForm, FormField } from "@/components/public/SimpleForm";
+import { CareersApplicationForm } from "@/components/public/CareersApplicationForm";
 import { business, portraits } from "@/lib/stockPhotos";
 
 export const metadata = { title: "Careers | Magis Realty & Brokerage" };
@@ -40,6 +40,7 @@ const openings = [
     description:
       "Lead high-net-worth clients through luxury property acquisitions with expert advisory and market analysis.",
     experience: "5+ Years",
+    expertise: "Sales & Brokerage",
   },
   {
     badge: "New Opening",
@@ -49,6 +50,7 @@ const openings = [
     description:
       "Develop editorial-grade digital campaigns and oversee brand presentation for premier listings.",
     experience: "3+ Years",
+    expertise: "Marketing",
   },
   {
     badge: "Full Time",
@@ -58,26 +60,7 @@ const openings = [
     description:
       "Oversee the operational excellence and tenant relations for a portfolio of premium residential assets.",
     experience: "4+ Years",
-  },
-];
-
-const applicationFields: FormField[] = [
-  { name: "name", label: "Full Name", type: "text", placeholder: "John Doe" },
-  { name: "email", label: "Email Address", type: "email", placeholder: "john@example.com" },
-  {
-    name: "expertise",
-    label: "Area of Expertise",
-    type: "select",
-    options: ["Sales & Brokerage", "Marketing", "Property Management", "Operations"],
-    span: "full",
-  },
-  {
-    name: "portfolio",
-    label: "LinkedIn Profile / Portfolio",
-    type: "text",
-    placeholder: "https://linkedin.com/in/...",
-    span: "full",
-    required: false,
+    expertise: "Property Management",
   },
 ];
 
@@ -86,7 +69,12 @@ const badgeTone = {
   gold: "bg-gold-500 text-white",
 };
 
-export default function CareersPage() {
+export default async function CareersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string }>;
+}) {
+  const { role } = await searchParams;
   return (
     <>
       <section className="bg-navy-950 py-16 text-white">
@@ -260,7 +248,7 @@ export default function CareersPage() {
                     </p>
                     <p className="font-semibold text-navy-900">{job.experience}</p>
                   </div>
-                  <Button href="/contact" size="sm">
+                  <Button href={`/careers?role=${encodeURIComponent(job.expertise)}#apply`} size="sm">
                     Apply Now
                   </Button>
                 </div>
@@ -270,7 +258,7 @@ export default function CareersPage() {
         </div>
       </section>
 
-      <section className="bg-sky-100 py-20">
+      <section id="apply" className="bg-sky-100 py-20">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 rounded-2xl bg-white p-8 shadow-sm sm:p-10 lg:grid-cols-2">
           <div>
             <h2 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
@@ -292,11 +280,7 @@ export default function CareersPage() {
               </div>
             </div>
           </div>
-          <SimpleForm
-            fields={applicationFields}
-            submitLabel="Send Open Application →"
-            submitVariant="primary"
-          />
+          <CareersApplicationForm role={role} />
         </div>
       </section>
     </>

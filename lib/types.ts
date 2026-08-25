@@ -5,6 +5,7 @@ export type Property = {
   collection: string;
   status: "For Sale" | "Sold" | "Pending" | "Exclusive";
   type: "Residential" | "Commercial";
+  region: "North Cebu" | "Central Cebu" | "South Cebu";
   location: string;
   address: string;
   price: number;
@@ -103,9 +104,15 @@ export type DocumentFile = {
   id: string;
   name: string;
   category: string;
+  categoryKey: "PERSONAL" | "PROPERTY" | "CONTRACT_TEMPLATE" | "ARCHIVE";
   type: string;
   size: string;
   date: string;
+  url: string;
+  uploadedById: string;
+  uploadedByName: string;
+  propertyId: string | null;
+  propertyTitle: string | null;
 };
 
 export type TeamMember = {

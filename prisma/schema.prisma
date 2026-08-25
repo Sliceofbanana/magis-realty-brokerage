@@ -51,6 +51,12 @@ enum PropertyType {
   COMMERCIAL
 }
 
+enum CebuRegion {
+  NORTH
+  CENTRAL
+  SOUTH
+}
+
 enum LeadStatus {
   NEW
   QUALIFIED
@@ -90,6 +96,21 @@ enum AttendanceStatus {
 enum AttendanceCheckInMode {
   QR
   BUTTON
+}
+
+enum DocumentCategory {
+  PERSONAL
+  PROPERTY
+  CONTRACT_TEMPLATE
+  ARCHIVE
+}
+
+enum DocumentType {
+  PDF
+  DOCX
+  XLSX
+  JPG
+  PNG
 }
 
 /// Maps to the front-end's literal emoji: PARTY=🎉 CAKE=🎂 HEART=❤️ CLAP=👏
@@ -141,6 +162,7 @@ model User {
   assignedLeads             Lead[]              @relation("AssignedAgent")
   authoredBlogPosts         BlogPost[]          @relation("BlogAuthor")
   commissionRecords         CommissionRecord[]
+  documents                 DocumentFile[]
   agentQuotas               AgentQuota[]
   attendanceRecords         AttendanceRecord[]
   createdMeetings           Meeting[]           @relation("MeetingCreator")
@@ -150,6 +172,7 @@ model User {
   birthdayGreetingsSent     BirthdayGreeting[]  @relation("GreetingAuthor")
   birthdayReactions         BirthdayReaction[]
   activityLogEntries        ActivityLogEntry[]
+  notifications             Notification[]
 
   @@index([role])
   @@index([status])
@@ -233,6 +256,7 @@ model Property {
   collection   String?
   status       PropertyStatus @default(FOR_SALE)
   type         PropertyType
+  region       CebuRegion
   location     String
   address      String
   price        Decimal        @db.Decimal(14, 2)
@@ -252,6 +276,7 @@ model Property {
   images            PropertyImage[]
   leads             Lead[]
   commissionRecords CommissionRecord[]
+  documents         DocumentFile[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -348,13 +373,27 @@ model FaqItem {
 }
 
 model DocumentFile {
-  id         String   @id @default(cuid())
-  name       String
-  category   String
-  type       String
-  size       String
-  url        String?
+  id                     String           @id @default(cuid())
+  name                   String
+  category               DocumentCategory
+  type                   DocumentType
+  sizeBytes              Int
+  url                    String
+  cloudinaryPublicId     String
+  /// "image" or "raw" — the resource_type Cloudinary needs back to delete the asset.
+  cloudinaryResourceType String
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+
   uploadedAt DateTime @default(now())
+
+  @@index([uploadedById])
+  @@index([propertyId])
+  @@index([category])
 }
 
 model Testimonial {
@@ -362,6 +401,49 @@ model Testimonial {
   quote String
   name  String
   role  String
+}
+
+enum NotificationType {
+  NEW_LEAD
+  NEW_APPLICATION
+  NEW_REGISTRATION
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  title       String
+  body        String
+  link        String?
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  /// Null = broadcast to every Administrator. Set = addressed to one user.
+  recipientId String?
+  recipient   User?            @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@index([createdAt])
+}
+
+enum JobApplicationStatus {
+  APPLIED
+  REVIEWING
+  INTERVIEW
+  REJECTED
+  HIRED
+}
+
+model JobApplication {
+  id              String               @id @default(cuid())
+  name            String
+  email           String
+  positionInterest String
+  portfolioUrl    String?
+  status          JobApplicationStatus @default(APPLIED)
+  appliedAt       DateTime             @default(now())
+
+  @@index([status])
 }
 
 // ─────────────────────────────────────────────────────────────────────────

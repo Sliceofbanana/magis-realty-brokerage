@@ -24,6 +24,12 @@ const typeToEnum: Record<Property["type"], string> = {
   Commercial: "COMMERCIAL",
 };
 
+const regionToEnum: Record<Property["region"], string> = {
+  "North Cebu": "NORTH",
+  "Central Cebu": "CENTRAL",
+  "South Cebu": "SOUTH",
+};
+
 export function CreateListingForm({
   agents,
   property,
@@ -131,7 +137,7 @@ export function CreateListingForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label htmlFor="status" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Status
@@ -160,6 +166,21 @@ export function CreateListingForm({
                   >
                     <option value="RESIDENTIAL">Residential</option>
                     <option value="COMMERCIAL">Commercial</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="region" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                    Region
+                  </label>
+                  <select
+                    id="region"
+                    name="region"
+                    defaultValue={property ? regionToEnum[property.region] : "CENTRAL"}
+                    className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                  >
+                    <option value="NORTH">North Cebu</option>
+                    <option value="CENTRAL">Central Cebu</option>
+                    <option value="SOUTH">South Cebu</option>
                   </select>
                 </div>
               </div>
@@ -301,19 +322,18 @@ export function CreateListingForm({
                 />
               </div>
 
-              {!isEdit && (
-                <div>
-                  <label htmlFor="image" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
-                    Cover Image URL (optional)
-                  </label>
-                  <input
-                    id="image"
-                    name="image"
-                    placeholder="/images/..."
-                    className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
-                  />
-                </div>
-              )}
+              <div>
+                <label htmlFor="image" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                  Cover Photo {isEdit && "(optional — leave blank to keep the current photo)"}
+                </label>
+                <input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp"
+                  className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 file:mr-3 file:rounded-md file:border-0 file:bg-navy-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+                />
+              </div>
 
               {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
 
