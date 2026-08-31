@@ -78,6 +78,6 @@ export async function setUserPermissionAction(
     create: { userId, permission, granted },
   });
 
-  revalidatePath("/portal/settings");
+  revalidatePath("/portal/permissions");
   return { success: true };
 }

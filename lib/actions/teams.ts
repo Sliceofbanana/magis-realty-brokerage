@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/actions/users";
+import { uniqueSlug } from "@/lib/slug";
+import { teamToneFor } from "@/lib/teamTones";
 
-export type TeamOption = { id: string; name: string; tone: string };
+export type TeamOption = { id: string; name: string; tone: string; dot: string; border: string };
 
 export type TeamAgentRow = {
   agentProfileId: string;
@@ -34,7 +36,7 @@ export async function listTeamsWithAgents(): Promise<TeamsData> {
   ]);
 
   return {
-    teams: teams.map((t) => ({ id: t.id, name: t.name, tone: t.tone })),
+    teams: teams.map((t) => ({ id: t.id, name: t.name, tone: t.tone, dot: t.dot, border: t.border })),
     agents: profiles.map((p) => ({
       agentProfileId: p.id,
       userId: p.user.id,
@@ -44,6 +46,28 @@ export async function listTeamsWithAgents(): Promise<TeamsData> {
       teamId: p.teamId,
     })),
   };
+}
+
+export type CreateTeamResult = { error?: string; success?: boolean };
+
+/** Admin-only: creates a new leaderboard team. */
+export async function createTeamAction(name: string, tone: string): Promise<CreateTeamResult> {
+  await requireAdmin();
+
+  const trimmed = name.trim();
+  if (!trimmed) return { error: "Team name is required." };
+
+  const id = await uniqueSlug(
+    trimmed,
+    async (candidate) => (await prisma.leaderboardTeam.count({ where: { id: candidate } })) > 0
+  );
+  const { dot, border } = teamToneFor(tone);
+
+  await prisma.leaderboardTeam.create({ data: { id, name: trimmed, tone, dot, border } });
+
+  revalidatePath("/portal/teams");
+  revalidatePath("/portal/leaderboard");
+  return { success: true };
 }
 
 export type SetTeamResult = { error?: string; success?: boolean };
