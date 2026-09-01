@@ -5,6 +5,7 @@ import { JobApplicationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/actions/users";
 import { createNotification } from "@/lib/actions/notifications";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export type JobApplicationInput = {
   name: string;
@@ -17,6 +18,11 @@ export type JobApplicationResult = { error?: string };
 
 /** Public-facing: submits a careers application. Anyone may call this — no auth required. */
 export async function createJobApplicationAction(values: JobApplicationInput): Promise<JobApplicationResult> {
+  const rateLimit = await checkRateLimit("publicForm");
+  if (!rateLimit.allowed) {
+    return { error: `Too many submissions — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
   const name = values.name?.trim();
   const email = values.email?.trim();
   const expertise = values.expertise?.trim();

@@ -5,6 +5,7 @@ import { LeadPriority, LeadStatus } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/actions/notifications";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export type InquiryInput = {
   name: string;
@@ -27,6 +28,11 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Public lead-capture entry point — used by every inquiry form on the site. */
 export async function submitInquiryAction(input: InquiryInput): Promise<InquiryResult> {
+  const rateLimit = await checkRateLimit("publicForm");
+  if (!rateLimit.allowed) {
+    return { error: `Too many submissions — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
   const name = input.name?.trim();
   const email = input.email?.trim().toLowerCase();
 

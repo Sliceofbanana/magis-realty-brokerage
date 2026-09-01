@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { signIn, signOut } from "@/auth";
 import { createNotification } from "@/lib/actions/notifications";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export type ActionState = { error?: string } | null;
 
@@ -15,6 +16,11 @@ export type ActionState = { error?: string } | null;
  * second check, but this is what actually surfaces the reason to the user.
  */
 export async function loginAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const rateLimit = await checkRateLimit("login");
+  if (!rateLimit.allowed) {
+    return { error: `Too many attempts — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
@@ -67,6 +73,11 @@ export async function logoutAction() {
 
 /** Odoo-style registration gate: new agents land in PENDING, no session issued. */
 export async function registerAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const rateLimit = await checkRateLimit("register");
+  if (!rateLimit.allowed) {
+    return { error: `Too many attempts — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
@@ -99,7 +110,7 @@ export async function registerAction(_prevState: ActionState, formData: FormData
     type: "NEW_REGISTRATION",
     title: "New registration request",
     body: `${name} requested an agent account and is awaiting approval`,
-    link: "/portal/settings",
+    link: "/portal/users",
   });
 
   redirect("/register/success");
