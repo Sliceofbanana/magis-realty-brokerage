@@ -41,12 +41,21 @@ const limiters = {
         prefix: "ratelimit:register",
       })
     : null,
+  // Password reset requests: tight enough to blunt someone hammering a
+  // known email with reset emails, loose enough for a genuine retry.
+  passwordReset: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(3, "15 m"),
+        prefix: "ratelimit:password-reset",
+      })
+    : null,
 } as const;
 
 export type RateLimitBucket = keyof typeof limiters;
 
 /** Best-effort real client IP from the headers Vercel/most proxies set. Falls back to a shared bucket if none is present (e.g. local dev without a proxy in front). */
-async function getClientIp(): Promise<string> {
+export async function getClientIp(): Promise<string> {
   const h = await headers();
   const forwardedFor = h.get("x-forwarded-for");
   if (forwardedFor) return forwardedFor.split(",")[0].trim();

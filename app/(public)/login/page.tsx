@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { loginAction, demoLoginAction, type ActionState } from "@/lib/actions/auth";
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -72,14 +73,14 @@ export default function LoginPage() {
                 >
                   Security Password
                 </label>
-                <button type="button" className="text-xs font-medium text-navy-900 hover:text-gold-600">
+                <Link href="/forgot-password" className="text-xs font-medium text-navy-900 hover:text-gold-600">
                   Forgot Password?
-                </button>
+                </Link>
               </div>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
+                autoComplete="current-password"
                 placeholder="••••••••••••"
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />

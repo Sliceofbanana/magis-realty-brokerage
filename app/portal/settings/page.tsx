@@ -20,6 +20,7 @@ import {
 import { Tabs } from "@/components/ui/Tabs";
 import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { activityLog } from "@/lib/data/users";
@@ -242,8 +243,8 @@ function GeneralTab() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                 Current Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
+                autoComplete="current-password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
@@ -253,8 +254,8 @@ function GeneralTab() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                 New Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Min. 12 characters"
@@ -265,8 +266,8 @@ function GeneralTab() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                 Confirm New Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter password"

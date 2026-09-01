@@ -13,9 +13,10 @@ export default function RegisterSuccessPage() {
         Application Submitted
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-gray-500">
-        Thanks for applying to join the Magis Realty agent network. Your
-        application is now pending review — an administrator will approve
-        your account before you can sign in to the portal.
+        Thanks for applying to join the Magis Realty agent network. We&apos;ve
+        emailed you a verification link — confirm your address, then an
+        administrator will review and approve your account before you can
+        sign in to the portal.
       </p>
       <Button href="/" variant="outline" className="mt-6">
         Back to Home
