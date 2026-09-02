@@ -78,8 +78,19 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
   redirect("/portal");
 }
 
-/** Demo-only shortcut (dev builds): signs straight into the seeded "Agent Smith" account. */
+/**
+ * Demo-only shortcut (dev builds): signs straight into the seeded "Agent
+ * Smith" account. The login page only renders the button in dev, but that's
+ * a client-side check alone — this server-side guard is what actually stops
+ * the action itself (hardcoded credentials and all) from being callable in
+ * production, where anyone could otherwise invoke it directly and get a
+ * real authenticated session without ever touching the login form.
+ */
 export async function demoLoginAction(): Promise<ActionState> {
+  if (process.env.NODE_ENV === "production") {
+    return { error: "Demo login is not available." };
+  }
+
   const result = await signIn("credentials", {
     email: "agent.smith@magisrealty.com",
     password: "Password123!",

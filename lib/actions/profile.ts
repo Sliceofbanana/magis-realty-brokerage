@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { uploadFile } from "@/lib/storage";
 
 export type MyProfile = {
   name: string;
@@ -97,6 +98,55 @@ export async function updateProfileAction(values: ProfileUpdateInput): Promise<P
   }
 
   return { success: true };
+}
+
+export type PhotoUpdateResult = { error?: string; success?: boolean; photo?: string };
+
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB — plenty for a profile photo, well under the 10MB serverActions body limit
+const PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
+
+/**
+ * Uploads and sets the current session user's own profile photo. `User.photo`
+ * is the single source of truth every avatar in the app reads from (portal
+ * topbar, sidebar, the public agent profile page), so this one write shows
+ * up everywhere immediately — no per-surface wiring needed.
+ */
+export async function updateProfilePhotoAction(
+  _prevState: PhotoUpdateResult | null,
+  formData: FormData
+): Promise<PhotoUpdateResult> {
+  const session = await auth();
+  if (!session?.user) return { error: "You must be logged in." };
+
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose an image to upload." };
+  if (file.size > MAX_PHOTO_BYTES) return { error: "Image is larger than 5MB." };
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!PHOTO_EXTENSIONS.has(ext)) return { error: "Unsupported file type. Use JPG or PNG." };
+
+  let uploaded;
+  try {
+    uploaded = await uploadFile(file, "avatars");
+  } catch (err) {
+    console.error("Cloudinary upload failed:", err);
+    return { error: "Upload failed. Please check your connection and try again." };
+  }
+
+  const existing = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { photo: true, agentProfile: { select: { slug: true } } },
+  });
+
+  await prisma.user.update({ where: { id: session.user.id }, data: { photo: uploaded.url } });
+
+  revalidatePath("/portal/settings");
+  revalidatePath("/portal");
+  if (existing?.agentProfile?.slug) {
+    revalidatePath(`/agents/${existing.agentProfile.slug}`);
+  }
+
+  return { success: true, photo: uploaded.url };
 }
 
 export type PasswordUpdateResult = { error?: string; success?: boolean };
