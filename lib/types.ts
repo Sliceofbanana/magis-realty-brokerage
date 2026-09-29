@@ -185,10 +185,13 @@ export type PermissionKey =
   | "manage-own-listings"
   | "manage-blogs";
 
+export type PermissionCategory = "Access & Security" | "Configuration" | "Content & Reports";
+
 export type PermissionDef = {
   key: PermissionKey;
   label: string;
   description: string;
+  category: PermissionCategory;
   adminLocked?: boolean;
 };
 

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -20,19 +20,27 @@ export function TeamsAdminView({ teams, agents }: { teams: TeamOption[]; agents:
   const router = useRouter();
   const [rows, setRows] = useState(agents);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((a) => a.name.toLowerCase().includes(q));
+  }, [rows, search]);
 
   const grouped = useMemo(() => {
     const byTeam = new Map<string | null, TeamAgentRow[]>();
-    for (const agent of rows) {
+    for (const agent of filteredRows) {
       const key = agent.teamId;
       const list = byTeam.get(key) ?? [];
       list.push(agent);
       byTeam.set(key, list);
     }
     return byTeam;
-  }, [rows]);
+  }, [filteredRows]);
 
-  const unassignedCount = (grouped.get(null) ?? []).length;
+  // Stat strip reflects everyone, independent of the search box below.
+  const totalUnassignedCount = rows.filter((a) => a.teamId === null).length;
 
   async function reassign(agentProfileId: string, teamId: string) {
     setBusyId(agentProfileId);
@@ -93,10 +101,44 @@ export function TeamsAdminView({ teams, agents }: { teams: TeamOption[]; agents:
         </div>
         <div className="col-span-2 rounded-2xl border border-black/5 bg-white p-5 shadow-sm sm:col-span-2">
           <p className="text-[11px] uppercase tracking-wide text-gray-400">Unassigned</p>
-          <p className={`mt-1 font-serif text-2xl font-bold ${unassignedCount > 0 ? "text-gold-600" : "text-navy-900"}`}>
-            {unassignedCount}
+          <p className={`mt-1 font-serif text-2xl font-bold ${totalUnassignedCount > 0 ? "text-gold-600" : "text-navy-900"}`}>
+            {totalUnassignedCount}
           </p>
         </div>
+      </div>
+
+      <div className="relative mt-4 max-w-sm">
+        <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search agents by name…"
+          className="w-full rounded-lg border border-black/10 bg-white py-2 pl-9 pr-3 text-sm text-navy-900 placeholder:text-gray-400 focus:outline-none"
+        />
+      </div>
+
+      <div
+        className={`mt-6 overflow-hidden rounded-2xl border shadow-sm ${
+          totalUnassignedCount > 0
+            ? "border-gold-300 bg-gold-50/40"
+            : "border-dashed border-black/10 bg-white"
+        }`}
+      >
+        <div className="flex items-center gap-2.5 border-b border-black/5 px-5 py-4">
+          <Users size={16} className={totalUnassignedCount > 0 ? "text-gold-600" : "text-gray-400"} />
+          <h2 className="font-serif text-base font-bold text-navy-900">Unassigned</h2>
+          <span className="ml-auto rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-500">
+            {(grouped.get(null) ?? []).length} agent{(grouped.get(null) ?? []).length === 1 ? "" : "s"}
+          </span>
+        </div>
+        {(grouped.get(null) ?? []).length === 0 ? (
+          <p className="px-5 py-8 text-center text-sm text-gray-400">
+            {search.trim() ? "No unassigned agents match your search." : "Every active agent has a team."}
+          </p>
+        ) : (
+          (grouped.get(null) ?? []).map((agent) => <AgentRow key={agent.agentProfileId} agent={agent} />)
+        )}
       </div>
 
       {teams.length === 0 ? (
@@ -120,7 +162,9 @@ export function TeamsAdminView({ teams, agents }: { teams: TeamOption[]; agents:
                   </span>
                 </div>
                 {members.length === 0 ? (
-                  <p className="px-5 py-8 text-center text-sm text-gray-400">No agents on this team yet.</p>
+                  <p className="px-5 py-8 text-center text-sm text-gray-400">
+                    {search.trim() ? "No matching agents on this team." : "No agents on this team yet."}
+                  </p>
                 ) : (
                   members.map((agent) => <AgentRow key={agent.agentProfileId} agent={agent} />)
                 )}
@@ -129,21 +173,6 @@ export function TeamsAdminView({ teams, agents }: { teams: TeamOption[]; agents:
           })}
         </div>
       )}
-
-      <div className="mt-6 overflow-hidden rounded-2xl border border-dashed border-black/10 bg-white shadow-sm">
-        <div className="flex items-center gap-2.5 border-b border-black/5 px-5 py-4">
-          <Users size={16} className="text-gray-400" />
-          <h2 className="font-serif text-base font-bold text-navy-900">Unassigned</h2>
-          <span className="ml-auto rounded-full bg-offwhite px-2.5 py-1 text-[11px] font-semibold text-gray-500">
-            {unassignedCount} agent{unassignedCount === 1 ? "" : "s"}
-          </span>
-        </div>
-        {unassignedCount === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-gray-400">Every active agent has a team.</p>
-        ) : (
-          (grouped.get(null) ?? []).map((agent) => <AgentRow key={agent.agentProfileId} agent={agent} />)
-        )}
-      </div>
     </div>
   );
 }

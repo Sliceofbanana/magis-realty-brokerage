@@ -9,9 +9,6 @@ import {
   Wallet,
   Mail,
   Phone,
-  ShieldCheck,
-  Monitor,
-  Smartphone,
   CalendarCheck2,
   Trophy,
   Lock,
@@ -283,7 +280,7 @@ function GeneralTab() {
                   className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900"
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-400">Used for 2FA and client notifications</p>
+              <p className="mt-1 text-xs text-gray-400">Used for client notifications</p>
             </div>
           </div>
         </div>
@@ -341,41 +338,6 @@ function GeneralTab() {
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold-100 text-gold-600">
-              <ShieldCheck size={18} />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-navy-900">Two-Factor Authentication</p>
-              <p className="text-xs text-gray-500">Secure your account with SMS</p>
-            </div>
-          </div>
-          <Toggle defaultChecked label="Two-factor authentication" />
-        </div>
-
-        <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
-          <h3 className="font-semibold text-navy-900">Active Sessions</h3>
-          <div className="mt-3 space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-gray-600">
-                <Monitor size={16} /> macOS &bull; Chrome Browser
-              </span>
-              <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                CURRENT
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-gray-600">
-                <Smartphone size={16} /> iPhone 14 Pro
-              </span>
-              <button type="button" className="text-xs font-semibold text-red-500 hover:underline">
-                Revoke
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
           <h3 className="font-semibold text-red-700">Danger Zone</h3>
           <p className="mt-1 text-xs text-red-600">
@@ -463,6 +425,9 @@ function ActivityTab() {
 }
 
 function NotificationsTab() {
+  const { data: session } = useSession();
+  const registeredEmail = session?.user?.email;
+
   const adminAlerts = [
     ["New Agent Registration", "Notify when a new agent signs up for the platform", true],
     ["New Property Submission", "Alert when an agent submits a new listing for review", true],
@@ -516,7 +481,9 @@ function NotificationsTab() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold">Email Notifications</p>
-              <p className="text-xs text-white/60">Send to admin@magisrealty.com</p>
+              <p className="text-xs text-white/60">
+                Send to {registeredEmail ?? "your registered email"}
+              </p>
             </div>
             <Toggle defaultChecked label="Email notifications" />
           </div>
@@ -732,16 +699,20 @@ function AttendanceTab() {
     setSaving(true);
     setError("");
     const result = await updateAttendanceConfigAction({
+      period: config.period,
       pointsPerMeeting: config.pointsPerMeeting,
       pointsPerPks: config.pointsPerPks,
       eligibilityMinRate: config.eligibilityMinRate,
       rewardTiers: config.rewardTiers,
     });
-    setSaving(false);
     if (result.error) {
+      setSaving(false);
       setError(result.error);
       return;
     }
+    const fresh = await getAttendanceConfig();
+    setConfig(fresh);
+    setSaving(false);
     setSaved(true);
   }
 
@@ -837,13 +808,13 @@ function AttendanceTab() {
             <CalendarCheck2 size={16} className="text-gold-400" /> Attendance Period
           </h3>
           <p className="mt-1 text-xs text-white/60">
-            Points and rates reset at the start of each period. Changing the active cycle isn&rsquo;t
-            supported from this tab yet.
+            Switching cycles recalculates the period window from today&rsquo;s date and resets
+            attendance progress tracking. Save to apply.
           </p>
           <select
             value={config.period}
-            disabled
-            className="mt-4 w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none disabled:opacity-60"
+            onChange={(e) => update("period", e.target.value as AttendanceConfig["period"])}
+            className="mt-4 w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none"
           >
             <option value="monthly" className="text-navy-900">Monthly</option>
             <option value="quarterly" className="text-navy-900">Quarterly</option>

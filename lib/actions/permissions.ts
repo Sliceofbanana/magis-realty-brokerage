@@ -12,6 +12,8 @@ export type UserPermissionRow = {
   photo: string | null;
   role: string;
   permissions: Record<string, boolean>;
+  /** The user's role-default grants (before any per-user override) — lets the UI show which toggles are overrides. */
+  roleDefaults: Record<string, boolean>;
 };
 
 const ALL_PERMISSIONS = Object.values(PermissionKey);
@@ -48,10 +50,12 @@ export async function listUserPermissions(): Promise<UserPermissionRow[]> {
     const roleDefaultSet = roleDefaultMap.get(u.role) ?? new Set<PermissionKey>();
     const userOverrides = overrideMap.get(u.id);
     const permissions: Record<string, boolean> = {};
+    const roleDefaults: Record<string, boolean> = {};
     for (const key of ALL_PERMISSIONS) {
-      permissions[key] = userOverrides?.get(key) ?? roleDefaultSet.has(key);
+      roleDefaults[key] = roleDefaultSet.has(key);
+      permissions[key] = userOverrides?.get(key) ?? roleDefaults[key];
     }
-    return { id: u.id, name: u.name, email: u.email, photo: u.photo, role: u.role, permissions };
+    return { id: u.id, name: u.name, email: u.email, photo: u.photo, role: u.role, permissions, roleDefaults };
   });
 }
 

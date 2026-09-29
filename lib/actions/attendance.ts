@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { AttendanceCheckInMode, AttendanceStatus, AttendanceType } from "@prisma/client";
+import { AttendanceCheckInMode, AttendancePeriod, AttendanceStatus, AttendanceType } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/actions/users";
 import { attendanceConfigWithTiers, fallbackAttendanceConfig, toAttendanceConfig } from "@/lib/adapters/attendance";
+import { computePeriodBounds } from "@/lib/attendance";
 import type { AttendanceConfig } from "@/lib/types";
 
 /** Returns the singleton AttendanceConfig (+ reward tiers) for the Settings > Attendance Rules tab. */
@@ -18,6 +19,7 @@ export async function getAttendanceConfig(): Promise<AttendanceConfig> {
 }
 
 export type AttendanceConfigUpdateInput = {
+  period: AttendanceConfig["period"];
   pointsPerMeeting: number;
   pointsPerPks: number;
   eligibilityMinRate: number;
@@ -26,16 +28,34 @@ export type AttendanceConfigUpdateInput = {
 
 export type AttendanceConfigUpdateResult = { error?: string; success?: boolean };
 
-/** Admin-only: updates the singleton AttendanceConfig row and replaces its reward tiers. */
+/**
+ * Admin-only: updates the singleton AttendanceConfig row and replaces its
+ * reward tiers. When the cycle type (period) changes, the period window
+ * (label, start, cutoff) is recomputed from today's date rather than kept
+ * at its previous — possibly stale — values.
+ */
 export async function updateAttendanceConfigAction(
   values: AttendanceConfigUpdateInput
 ): Promise<AttendanceConfigUpdateResult> {
   await requireAdmin();
 
+  const nextPeriod = values.period.toUpperCase() as AttendancePeriod;
+  const current = await prisma.attendanceConfig.findUnique({
+    where: { id: "singleton" },
+    select: { period: true },
+  });
+  const bounds = current?.period !== nextPeriod ? computePeriodBounds(values.period) : null;
+
   await prisma.$transaction([
     prisma.attendanceConfig.update({
       where: { id: "singleton" },
       data: {
+        period: nextPeriod,
+        ...(bounds && {
+          periodLabel: bounds.periodLabel,
+          periodStart: new Date(bounds.periodStart),
+          asOf: new Date(bounds.asOf),
+        }),
         pointsPerMeeting: values.pointsPerMeeting,
         pointsPerPks: values.pointsPerPks,
         eligibilityMinRate: values.eligibilityMinRate,

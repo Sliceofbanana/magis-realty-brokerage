@@ -43,6 +43,44 @@ export function badgeFor(rate: number): AttendanceBadge {
   return rate >= 90 ? "excellent" : rate >= 75 ? "good" : "needs-improvement";
 }
 
+function pad(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function toISODate(d: Date) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/**
+ * Derives the period window (label, start, cutoff) for a given cycle type,
+ * anchored to `referenceDate` (defaults to now). Used when an admin switches
+ * the active attendance cycle so the new window reflects the current date
+ * rather than stale seed/demo values.
+ */
+export function computePeriodBounds(
+  period: AttendanceConfig["period"],
+  referenceDate: Date = new Date()
+): { periodLabel: string; periodStart: string; asOf: string } {
+  const year = referenceDate.getFullYear();
+  const month = referenceDate.getMonth();
+  const asOf = toISODate(referenceDate);
+
+  if (period === "monthly") {
+    const start = new Date(year, month, 1);
+    const label = start.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    return { periodLabel: `${label} Cycle`, periodStart: toISODate(start), asOf };
+  }
+
+  if (period === "quarterly") {
+    const quarter = Math.floor(month / 3);
+    const start = new Date(year, quarter * 3, 1);
+    return { periodLabel: `Q${quarter + 1} ${year} Cycle`, periodStart: toISODate(start), asOf };
+  }
+
+  const start = new Date(year, 0, 1);
+  return { periodLabel: `${year} Cycle`, periodStart: toISODate(start), asOf };
+}
+
 function inPeriod(session: AttendanceSession, config: AttendanceConfig) {
   return session.date >= config.periodStart && session.date <= config.asOf;
 }
