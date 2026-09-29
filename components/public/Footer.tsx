@@ -46,8 +46,8 @@ export function Footer() {
             className="h-12 w-auto object-contain"
           />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
-            Defining the future of luxury real estate with precision, integrity,
-            and an unwavering commitment to excellence.
+            Cebu&apos;s trusted brokerage for OFWs, investors &amp; families —
+            with unlimited after-sales support. Buy. Sell. Rent.
           </p>
           <div className="mt-5 flex gap-3">
             {socialPlatforms.map((platform) => (
@@ -85,7 +85,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p>&copy; {new Date().getFullYear()} Magis Realty &amp; Brokerage. All rights reserved.</p>
-          <p>DHSUD REG NO. 123456 &nbsp;&nbsp; PRC LICENSE NO. 009876</p>
+          <p>PRC LICENSE NO. 0020102 &nbsp;&nbsp; DHSUD REG NO. B-01/19-0204</p>
         </div>
       </div>
     </footer>
