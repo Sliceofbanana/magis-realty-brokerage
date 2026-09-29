@@ -68,7 +68,7 @@ export default function ContactPage() {
       </section>
 
       <div className="bg-offwhite py-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
           <Card className="bg-white p-6 sm:p-8">
             <h2 className="font-serif text-2xl font-bold text-navy-900">Inquiry Form</h2>
             <p className="mt-1 text-sm text-gray-500">

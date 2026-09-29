@@ -106,7 +106,7 @@ export default function ServicesPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-6">
+                <div className="mt-auto pt-6">
                   <Button href={service.cta.href} variant="outline" className="w-full">
                     {service.cta.label}
                   </Button>

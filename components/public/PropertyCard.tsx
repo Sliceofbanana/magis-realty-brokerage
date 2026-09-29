@@ -14,8 +14,8 @@ const statusTone: Record<Property["status"], "navy" | "green" | "gold" | "red"> 
 
 export function PropertyCard({ property }: { property: Property }) {
   return (
-    <div className="group overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg">
-      <Link href={`/properties/${property.slug}`} className="relative block h-56 w-full overflow-hidden">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg">
+      <Link href={`/properties/${property.slug}`} className="relative block h-56 w-full shrink-0 overflow-hidden">
         <Image
           src={property.image}
           alt={property.title}
@@ -30,7 +30,7 @@ export function PropertyCard({ property }: { property: Property }) {
           <Heart size={14} />
         </span>
       </Link>
-      <div className="p-5">
+      <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-3">
           <Link href={`/properties/${property.slug}`}>
             <h3 className="font-serif text-lg font-bold leading-snug text-navy-900">
@@ -59,7 +59,7 @@ export function PropertyCard({ property }: { property: Property }) {
 
         <Link
           href={`/properties/${property.slug}`}
-          className="mt-4 block w-full rounded-md border border-navy-900 py-2.5 text-center text-xs font-semibold uppercase tracking-wide text-navy-900 transition-colors hover:bg-navy-900 hover:text-white"
+          className="mt-auto block w-full rounded-md border border-navy-900 py-2.5 text-center text-xs font-semibold uppercase tracking-wide text-navy-900 transition-colors hover:bg-navy-900 hover:text-white"
         >
           View Details
         </Link>

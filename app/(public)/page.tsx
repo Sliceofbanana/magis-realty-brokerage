@@ -65,7 +65,7 @@ export default function HomePage() {
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:h-105 sm:grid-cols-2">
           <Link
-            href="/properties"
+            href="/properties?type=Residential"
             className="group relative h-64 overflow-hidden rounded-2xl sm:h-full"
           >
             <Image
@@ -83,7 +83,7 @@ export default function HomePage() {
           </Link>
           <div className="grid grid-cols-1 gap-4 sm:h-full sm:grid-rows-2">
             <Link
-              href="/properties"
+              href="/properties?type=Commercial"
               className="group relative h-32 overflow-hidden rounded-2xl sm:h-full"
             >
               <Image
@@ -100,7 +100,7 @@ export default function HomePage() {
               </div>
             </Link>
             <Link
-              href="/properties"
+              href="/portfolio"
               className="group relative h-32 overflow-hidden rounded-2xl sm:h-full"
             >
               <Image

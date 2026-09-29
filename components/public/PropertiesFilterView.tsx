@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Map, ChevronDown } from "lucide-react";
 import { Property } from "@/lib/types";
 import { PropertyCard } from "@/components/public/PropertyCard";
@@ -41,6 +41,27 @@ export function PropertiesFilterView({
   );
   const [showMap, setShowMap] = useState(false);
   const [page, setPage] = useState(1);
+
+  // Clicking a link to this same route with different query params (e.g. a
+  // footer "Commercial Listings" link while already on /properties) is a
+  // client-side transition — Next.js reuses this component instance rather
+  // than remounting it, so the useState initializers above only ever ran
+  // once on the very first load. Re-sync whenever the URL-derived props
+  // actually change so the filters reflect wherever the user just navigated
+  // from.
+  useEffect(() => {
+    setTypes(initialType ? [initialType] : []);
+    setPage(1);
+  }, [initialType]);
+
+  useEffect(() => {
+    setRegion(initialLocation ?? "Any Region");
+    setPage(1);
+  }, [initialLocation]);
+
+  useEffect(() => {
+    setSortBy(initialSort && isValidSort(initialSort) ? initialSort : "newest");
+  }, [initialSort]);
 
   function toggle(list: string[], setList: (v: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
