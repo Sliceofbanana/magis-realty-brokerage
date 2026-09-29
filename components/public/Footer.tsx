@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SocialIcon, type SocialPlatform } from "@/components/ui/SocialIcon";
 
 const socialLinks: { platform: SocialPlatform; href: string; label: string }[] = [
+  { platform: "facebook", href: "https://www.facebook.com/magisrealty", label: "Facebook" },
   { platform: "instagram", href: "https://instagram.com/magis.realty", label: "Instagram" },
 ];
 
@@ -11,10 +12,10 @@ const columns = [
     heading: "Explore",
     links: [
       { href: "/services", label: "Buy, Sell & Rent" },
-      { href: "/properties", label: "Residential Properties" },
-      { href: "/properties", label: "Commercial Listings" },
-      { href: "/properties", label: "New Developments" },
-      { href: "/properties", label: "Investment Portfolios" },
+      { href: "/properties?type=Residential", label: "Residential Properties" },
+      { href: "/properties?type=Commercial", label: "Commercial Listings" },
+      { href: "/properties?sort=newest", label: "New Developments" },
+      { href: "/portfolio", label: "Investment Portfolios" },
     ],
   },
   {

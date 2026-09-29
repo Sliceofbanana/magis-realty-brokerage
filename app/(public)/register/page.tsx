@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FocusEvent, useActionState, useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { registerAction, type ActionState } from "@/lib/actions/auth";
-import { isValidEmail, MIN_PASSWORD_LENGTH } from "@/lib/validation";
+import { isValidEmail, MIN_PASSWORD_LENGTH, fieldStateClasses, type FieldStatus } from "@/lib/validation";
 
-type FieldErrors = { name?: string; email?: string; password?: string };
+type FieldName = "name" | "email" | "password";
+type FieldErrors = Partial<Record<FieldName, string | undefined>>;
 
 function validate(field: keyof FieldErrors, value: string): string | undefined {
   const trimmed = value.trim();
@@ -26,19 +28,26 @@ function validate(field: keyof FieldErrors, value: string): string | undefined {
 export default function RegisterPage() {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(registerAction, null);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
 
-  function handleBlur(field: keyof FieldErrors) {
+  function handleBlur(field: FieldName) {
     return (e: FocusEvent<HTMLInputElement>) => {
       setErrors((prev) => ({ ...prev, [field]: validate(field, e.target.value) }));
+      setTouched((prev) => ({ ...prev, [field]: true }));
     };
   }
 
-  function handleChange(field: keyof FieldErrors) {
+  function handleChange(field: FieldName) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
       if (errors[field]) {
         setErrors((prev) => ({ ...prev, [field]: validate(field, e.target.value) }));
       }
     };
+  }
+
+  function status(field: FieldName): FieldStatus {
+    if (!touched[field]) return "neutral";
+    return errors[field] ? "error" : "success";
   }
 
   const hasErrors = Object.values(errors).some(Boolean);
@@ -93,9 +102,15 @@ export default function RegisterPage() {
                 onBlur={handleBlur("name")}
                 onChange={handleChange("name")}
                 aria-invalid={!!errors.name}
-                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                className={`w-full rounded-lg border bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:outline-none ${fieldStateClasses(status("name"))}`}
               />
-              {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+              {errors.name ? (
+                <p className="mt-1 text-xs text-red-600">{errors.name}</p>
+              ) : status("name") === "success" ? (
+                <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                  <CheckCircle2 size={12} /> Looks good
+                </p>
+              ) : null}
             </div>
             <div>
               <label
@@ -112,9 +127,15 @@ export default function RegisterPage() {
                 onBlur={handleBlur("email")}
                 onChange={handleChange("email")}
                 aria-invalid={!!errors.email}
-                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                className={`w-full rounded-lg border bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:outline-none ${fieldStateClasses(status("email"))}`}
               />
-              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+              {errors.email ? (
+                <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+              ) : status("email") === "success" ? (
+                <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                  <CheckCircle2 size={12} /> Looks good
+                </p>
+              ) : null}
             </div>
             <div>
               <label
@@ -146,9 +167,15 @@ export default function RegisterPage() {
                 onBlur={handleBlur("password")}
                 onChange={handleChange("password")}
                 aria-invalid={!!errors.password}
-                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                className={`w-full rounded-lg border bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:outline-none ${fieldStateClasses(status("password"))}`}
               />
-              {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+              {errors.password ? (
+                <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+              ) : status("password") === "success" ? (
+                <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                  <CheckCircle2 size={12} /> Looks good
+                </p>
+              ) : null}
             </div>
 
             {state?.error && <p className="text-xs text-red-600">{state.error}</p>}

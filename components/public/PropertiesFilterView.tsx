@@ -20,10 +20,12 @@ export function PropertiesFilterView({
   properties,
   initialLocation,
   initialType,
+  initialSort,
 }: {
   properties: Property[];
   initialLocation?: string;
   initialType?: string;
+  initialSort?: string;
 }) {
   const [types, setTypes] = useState<string[]>(initialType ? [initialType] : []);
   const [minPrice, setMinPrice] = useState(0);
@@ -32,7 +34,11 @@ export function PropertiesFilterView({
   const [region, setRegion] = useState(initialLocation ?? "Any Region");
   const [baths, setBaths] = useState("Any");
   const [amenities, setAmenities] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]["value"]>("newest");
+  const isValidSort = (v: string): v is (typeof sortOptions)[number]["value"] =>
+    sortOptions.some((o) => o.value === v);
+  const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]["value"]>(
+    initialSort && isValidSort(initialSort) ? initialSort : "newest"
+  );
   const [showMap, setShowMap] = useState(false);
   const [page, setPage] = useState(1);
 

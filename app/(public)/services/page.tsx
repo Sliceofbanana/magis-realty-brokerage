@@ -44,7 +44,7 @@ const services = [
       "Lease terms reviewed before you sign",
       "Residential and commercial spaces",
     ],
-    cta: { href: "/contact", label: "Talk to an Agent" },
+    cta: { href: "/agents", label: "Talk to an Agent" },
   },
 ];
 

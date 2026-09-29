@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FocusEvent, useActionState, useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { requestPasswordResetAction, type ActionState } from "@/lib/actions/auth";
-import { isValidEmail } from "@/lib/validation";
+import { isValidEmail, fieldStateClasses, type FieldStatus } from "@/lib/validation";
 
 function validateEmail(value: string): string | undefined {
   if (!value.trim()) return "Email address is required.";
@@ -19,6 +20,8 @@ export default function ForgotPasswordPage() {
     null
   );
   const [emailError, setEmailError] = useState<string | undefined>();
+  const [emailTouched, setEmailTouched] = useState(false);
+  const status: FieldStatus = !emailTouched ? "neutral" : emailError ? "error" : "success";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -70,12 +73,21 @@ export default function ForgotPasswordPage() {
                   name="email"
                   type="email"
                   placeholder="agent@magisrealty.com"
-                  onBlur={(e: FocusEvent<HTMLInputElement>) => setEmailError(validateEmail(e.target.value))}
+                  onBlur={(e: FocusEvent<HTMLInputElement>) => {
+                    setEmailError(validateEmail(e.target.value));
+                    setEmailTouched(true);
+                  }}
                   onChange={(e) => emailError && setEmailError(validateEmail(e.target.value))}
                   aria-invalid={!!emailError}
-                  className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                  className={`w-full rounded-lg border bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:outline-none ${fieldStateClasses(status)}`}
                 />
-                {emailError && <p className="mt-1 text-xs text-red-600">{emailError}</p>}
+                {emailError ? (
+                  <p className="mt-1 text-xs text-red-600">{emailError}</p>
+                ) : status === "success" ? (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                    <CheckCircle2 size={12} /> Looks good
+                  </p>
+                ) : null}
               </div>
 
               {state?.error && <p className="text-xs text-red-600">{state.error}</p>}

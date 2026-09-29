@@ -125,6 +125,24 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-gold-300 text-gold-600">
+                    <SocialIcon platform="facebook" size={16} />
+                  </span>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                      Facebook
+                    </p>
+                    <a
+                      href="https://www.facebook.com/magisrealty"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-navy-900 hover:text-gold-600"
+                    >
+                      /magisrealty
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-gold-300 text-gold-600">
                     <SocialIcon platform="instagram" size={16} />
                   </span>
                   <div>

@@ -3,7 +3,7 @@
 import { FocusEvent, FormEvent, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { isValidEmail } from "@/lib/validation";
+import { isValidEmail, fieldStateClasses, type FieldStatus } from "@/lib/validation";
 
 type SubmitVariant = "primary" | "gold" | "outline" | "outline-light" | "ghost";
 
@@ -45,6 +45,7 @@ export function SimpleForm({
 }) {
   const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
@@ -75,7 +76,14 @@ export function SimpleForm({
     return (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const error = fieldError(field, e.target.value);
       setErrors((prev) => ({ ...prev, [field.name]: error ?? "" }));
+      setTouched((prev) => ({ ...prev, [field.name]: true }));
     };
+  }
+
+  function fieldStatus(field: FormField): FieldStatus {
+    if (!touched[field.name]) return "neutral";
+    if (errors[field.name]) return "error";
+    return values[field.name]?.trim() ? "success" : "neutral";
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -121,6 +129,8 @@ export function SimpleForm({
     <form onSubmit={handleSubmit} noValidate className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${className}`}>
       {fields.map((field) => {
         const error = errors[field.name];
+        const status = fieldStatus(field);
+        const inputClass = `w-full rounded-lg border bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:outline-none ${fieldStateClasses(status)}`;
         const wrapperClass = field.span === "full" || field.type === "textarea" ? "sm:col-span-2" : "";
         return (
           <div key={field.name} className={wrapperClass}>
@@ -140,7 +150,7 @@ export function SimpleForm({
                 onBlur={handleBlur(field)}
                 aria-invalid={!!error}
                 aria-describedby={error ? `${field.name}-error` : undefined}
-                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                className={inputClass}
               />
             ) : field.type === "select" ? (
               <select
@@ -149,7 +159,7 @@ export function SimpleForm({
                 onChange={(e) => handleChange(field.name, e.target.value)}
                 onBlur={handleBlur(field)}
                 aria-invalid={!!error}
-                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                className={inputClass}
               >
                 <option value="">Select an option</option>
                 {field.options?.map((opt) => (
@@ -168,14 +178,18 @@ export function SimpleForm({
                 onBlur={handleBlur(field)}
                 aria-invalid={!!error}
                 aria-describedby={error ? `${field.name}-error` : undefined}
-                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                className={inputClass}
               />
             )}
-            {error && (
+            {error ? (
               <p id={`${field.name}-error`} className="mt-1 text-xs text-red-600">
                 {error}
               </p>
-            )}
+            ) : status === "success" ? (
+              <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                <CheckCircle2 size={12} /> Looks good
+              </p>
+            ) : null}
           </div>
         );
       })}

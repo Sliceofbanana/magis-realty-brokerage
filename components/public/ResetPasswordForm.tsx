@@ -7,9 +7,10 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { resetPasswordAction, type ResetPasswordState } from "@/lib/actions/auth";
-import { MIN_PASSWORD_LENGTH } from "@/lib/validation";
+import { MIN_PASSWORD_LENGTH, fieldStateClasses, type FieldStatus } from "@/lib/validation";
 
-type FieldErrors = { password?: string; confirmPassword?: string };
+type FieldName = "password" | "confirmPassword";
+type FieldErrors = Partial<Record<FieldName, string | undefined>>;
 
 export function ResetPasswordForm({ token }: { token: string | null }) {
   const boundAction = token
@@ -19,6 +20,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
 
   function passwordError(value: string): string | undefined {
     return value.length < MIN_PASSWORD_LENGTH
@@ -41,6 +43,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
 
   function handlePasswordBlur(e: FocusEvent<HTMLInputElement>) {
     setErrors((prev) => ({ ...prev, password: passwordError(e.target.value) }));
+    setTouched((prev) => ({ ...prev, password: true }));
   }
 
   function handleConfirmChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -53,6 +56,12 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
 
   function handleConfirmBlur(e: FocusEvent<HTMLInputElement>) {
     setErrors((prev) => ({ ...prev, confirmPassword: confirmError(e.target.value, password) }));
+    setTouched((prev) => ({ ...prev, confirmPassword: true }));
+  }
+
+  function status(field: FieldName): FieldStatus {
+    if (!touched[field]) return "neutral";
+    return errors[field] ? "error" : "success";
   }
 
   const hasErrors = Object.values(errors).some(Boolean);
@@ -124,9 +133,15 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
                     onChange={handlePasswordChange}
                     onBlur={handlePasswordBlur}
                     aria-invalid={!!errors.password}
-                    className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                    className={`w-full rounded-lg border bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:outline-none ${fieldStateClasses(status("password"))}`}
                   />
-                  {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+                  {errors.password ? (
+                    <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                  ) : status("password") === "success" ? (
+                    <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                      <CheckCircle2 size={12} /> Looks good
+                    </p>
+                  ) : null}
                 </div>
                 <div>
                   <label
@@ -143,11 +158,15 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
                     onChange={handleConfirmChange}
                     onBlur={handleConfirmBlur}
                     aria-invalid={!!errors.confirmPassword}
-                    className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                    className={`w-full rounded-lg border bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:outline-none ${fieldStateClasses(status("confirmPassword"))}`}
                   />
-                  {errors.confirmPassword && (
+                  {errors.confirmPassword ? (
                     <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>
-                  )}
+                  ) : status("confirmPassword") === "success" ? (
+                    <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                      <CheckCircle2 size={12} /> Looks good
+                    </p>
+                  ) : null}
                 </div>
 
                 {state?.error && (

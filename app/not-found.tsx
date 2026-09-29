@@ -67,12 +67,14 @@ export default function NotFound() {
               <p className="mt-1 text-xs text-gray-500">
                 Let our expert consultants guide you to the right destination.
               </p>
-              <button
-                type="button"
+              <a
+                href="https://m.me/magisrealty"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mt-2 flex items-center gap-1 text-xs font-semibold text-gold-600 hover:underline"
               >
                 <MessageCircle size={12} /> Chat With Us
-              </button>
+              </a>
             </div>
           </div>
         </div>

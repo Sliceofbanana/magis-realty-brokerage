@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function PropertiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ location?: string; type?: string }>;
+  searchParams: Promise<{ location?: string; type?: string; sort?: string }>;
 }) {
   const params = await searchParams;
   const rows = await prisma.property.findMany({
@@ -23,6 +23,7 @@ export default async function PropertiesPage({
       properties={properties}
       initialLocation={params.location}
       initialType={params.type}
+      initialSort={params.sort}
     />
   );
 }
