@@ -2,12 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { SocialIcon, type SocialPlatform } from "@/components/ui/SocialIcon";
 
-const socialPlatforms: SocialPlatform[] = ["facebook", "instagram", "linkedin"];
+const socialLinks: { platform: SocialPlatform; href: string; label: string }[] = [
+  { platform: "instagram", href: "https://instagram.com/magis.realty", label: "Instagram" },
+];
 
 const columns = [
   {
     heading: "Explore",
     links: [
+      { href: "/services", label: "Buy, Sell & Rent" },
       { href: "/properties", label: "Residential Properties" },
       { href: "/properties", label: "Commercial Listings" },
       { href: "/properties", label: "New Developments" },
@@ -50,13 +53,17 @@ export function Footer() {
             with unlimited after-sales support. Buy. Sell. Rent.
           </p>
           <div className="mt-5 flex gap-3">
-            {socialPlatforms.map((platform) => (
-              <span
+            {socialLinks.map(({ platform, href, label }) => (
+              <a
                 key={platform}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-gold-500 hover:text-navy-950"
               >
                 <SocialIcon platform={platform} size={16} />
-              </span>
+              </a>
             ))}
           </div>
         </div>

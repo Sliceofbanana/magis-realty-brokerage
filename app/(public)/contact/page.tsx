@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { MapPin, Phone, Mail } from "lucide-react";
+import { SocialIcon } from "@/components/ui/SocialIcon";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { Card } from "@/components/ui/Card";
 import { exteriors } from "@/lib/stockPhotos";
@@ -104,7 +105,9 @@ export default function ContactPage() {
                     <p className="text-[11px] uppercase tracking-wide text-gray-500">
                       Inquiry Line
                     </p>
-                    <p className="font-semibold text-navy-900">+63 (2) 8888 9999</p>
+                    <a href="tel:+63324079634" className="font-semibold text-navy-900 hover:text-gold-600">
+                      (032) 407 9634
+                    </a>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -115,7 +118,27 @@ export default function ContactPage() {
                     <p className="text-[11px] uppercase tracking-wide text-gray-500">
                       Email Concierge
                     </p>
-                    <p className="font-semibold text-navy-900">luxe@magisrealty.com</p>
+                    <a href="mailto:magisrealty@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
+                      magisrealty@gmail.com
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-gold-300 text-gold-600">
+                    <SocialIcon platform="instagram" size={16} />
+                  </span>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                      Instagram
+                    </p>
+                    <a
+                      href="https://instagram.com/magis.realty"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-navy-900 hover:text-gold-600"
+                    >
+                      @magis.realty
+                    </a>
                   </div>
                 </div>
               </div>

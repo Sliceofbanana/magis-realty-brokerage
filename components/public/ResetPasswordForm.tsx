@@ -2,17 +2,60 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState } from "react";
+import { FocusEvent, useActionState, useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { resetPasswordAction, type ResetPasswordState } from "@/lib/actions/auth";
+import { MIN_PASSWORD_LENGTH } from "@/lib/validation";
+
+type FieldErrors = { password?: string; confirmPassword?: string };
 
 export function ResetPasswordForm({ token }: { token: string | null }) {
   const boundAction = token
     ? resetPasswordAction.bind(null, token)
     : async (): Promise<ResetPasswordState> => ({ error: "Missing reset token." });
   const [state, formAction, pending] = useActionState<ResetPasswordState, FormData>(boundAction, null);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  function passwordError(value: string): string | undefined {
+    return value.length < MIN_PASSWORD_LENGTH
+      ? `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+      : undefined;
+  }
+
+  function confirmError(value: string, currentPassword: string): string | undefined {
+    return value !== currentPassword ? "Passwords don't match." : undefined;
+  }
+
+  function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setPassword(value);
+    setErrors((prev) => ({
+      password: prev.password ? passwordError(value) : prev.password,
+      confirmPassword: prev.confirmPassword ? confirmError(confirmPassword, value) : prev.confirmPassword,
+    }));
+  }
+
+  function handlePasswordBlur(e: FocusEvent<HTMLInputElement>) {
+    setErrors((prev) => ({ ...prev, password: passwordError(e.target.value) }));
+  }
+
+  function handleConfirmChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    if (errors.confirmPassword) {
+      setErrors((prev) => ({ ...prev, confirmPassword: confirmError(value, password) }));
+    }
+  }
+
+  function handleConfirmBlur(e: FocusEvent<HTMLInputElement>) {
+    setErrors((prev) => ({ ...prev, confirmPassword: confirmError(e.target.value, password) }));
+  }
+
+  const hasErrors = Object.values(errors).some(Boolean);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -78,8 +121,12 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
                     name="password"
                     autoComplete="new-password"
                     placeholder="Min. 8 characters"
+                    onChange={handlePasswordChange}
+                    onBlur={handlePasswordBlur}
+                    aria-invalid={!!errors.password}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
+                  {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
                 </div>
                 <div>
                   <label
@@ -93,8 +140,14 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
                     name="confirmPassword"
                     autoComplete="new-password"
                     placeholder="Re-enter password"
+                    onChange={handleConfirmChange}
+                    onBlur={handleConfirmBlur}
+                    aria-invalid={!!errors.confirmPassword}
                     className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                   />
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>
+                  )}
                 </div>
 
                 {state?.error && (
@@ -108,7 +161,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
                   </p>
                 )}
 
-                <Button type="submit" disabled={pending} className="w-full">
+                <Button type="submit" disabled={pending || hasErrors} className="w-full">
                   {pending ? "Updating…" : "Update Password"}
                 </Button>
               </form>

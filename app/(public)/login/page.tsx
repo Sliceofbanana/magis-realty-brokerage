@@ -2,12 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState } from "react";
+import { FocusEvent, useActionState, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { loginAction, demoLoginAction, type ActionState } from "@/lib/actions/auth";
+import { isValidEmail } from "@/lib/validation";
 
 const isDev = process.env.NODE_ENV !== "production";
+
+type FieldErrors = { email?: string; password?: string };
+
+function validate(field: keyof FieldErrors, value: string): string | undefined {
+  if (field === "email") {
+    if (!value.trim()) return "Email address is required.";
+    if (!isValidEmail(value.trim())) return "Enter a valid email address.";
+  }
+  if (field === "password" && !value) return "Password is required.";
+  return undefined;
+}
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(loginAction, null);
@@ -15,6 +27,23 @@ export default function LoginPage() {
     () => demoLoginAction(),
     null
   );
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  function handleBlur(field: keyof FieldErrors) {
+    return (e: FocusEvent<HTMLInputElement>) => {
+      setErrors((prev) => ({ ...prev, [field]: validate(field, e.target.value) }));
+    };
+  }
+
+  function handleChange(field: keyof FieldErrors) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: validate(field, e.target.value) }));
+      }
+    };
+  }
+
+  const hasErrors = Object.values(errors).some(Boolean);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -62,8 +91,12 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 placeholder="agent@magisrealty.com"
+                onBlur={handleBlur("email")}
+                onChange={handleChange("email")}
+                aria-invalid={!!errors.email}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
+              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
             </div>
             <div>
               <div className="flex items-center justify-between">
@@ -82,8 +115,12 @@ export default function LoginPage() {
                 name="password"
                 autoComplete="current-password"
                 placeholder="••••••••••••"
+                onBlur={handleBlur("password")}
+                onChange={handleChange("password")}
+                aria-invalid={!!errors.password}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
+              {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
             </div>
 
             {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
@@ -93,7 +130,7 @@ export default function LoginPage() {
               Remember this device
             </label>
 
-            <Button type="submit" disabled={pending} className="w-full">
+            <Button type="submit" disabled={pending || hasErrors} className="w-full">
               {pending ? "Signing In…" : "Enter Portal"}
             </Button>
           </form>

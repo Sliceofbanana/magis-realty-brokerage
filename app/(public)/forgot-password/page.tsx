@@ -2,15 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState } from "react";
+import { FocusEvent, useActionState, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { requestPasswordResetAction, type ActionState } from "@/lib/actions/auth";
+import { isValidEmail } from "@/lib/validation";
+
+function validateEmail(value: string): string | undefined {
+  if (!value.trim()) return "Email address is required.";
+  if (!isValidEmail(value.trim())) return "Enter a valid email address.";
+  return undefined;
+}
 
 export default function ForgotPasswordPage() {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     requestPasswordResetAction,
     null
   );
+  const [emailError, setEmailError] = useState<string | undefined>();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -62,13 +70,17 @@ export default function ForgotPasswordPage() {
                   name="email"
                   type="email"
                   placeholder="agent@magisrealty.com"
+                  onBlur={(e: FocusEvent<HTMLInputElement>) => setEmailError(validateEmail(e.target.value))}
+                  onChange={(e) => emailError && setEmailError(validateEmail(e.target.value))}
+                  aria-invalid={!!emailError}
                   className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                 />
+                {emailError && <p className="mt-1 text-xs text-red-600">{emailError}</p>}
               </div>
 
               {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
 
-              <Button type="submit" disabled={pending} className="w-full">
+              <Button type="submit" disabled={pending || !!emailError} className="w-full">
                 {pending ? "Sending…" : "Send Reset Link"}
               </Button>
             </form>

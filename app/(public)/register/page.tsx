@@ -2,13 +2,46 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState } from "react";
+import { FocusEvent, useActionState, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { registerAction, type ActionState } from "@/lib/actions/auth";
+import { isValidEmail, MIN_PASSWORD_LENGTH } from "@/lib/validation";
+
+type FieldErrors = { name?: string; email?: string; password?: string };
+
+function validate(field: keyof FieldErrors, value: string): string | undefined {
+  const trimmed = value.trim();
+  if (field === "name" && !trimmed) return "Full name is required.";
+  if (field === "email") {
+    if (!trimmed) return "Email address is required.";
+    if (!isValidEmail(trimmed)) return "Enter a valid email address.";
+  }
+  if (field === "password" && value.length < MIN_PASSWORD_LENGTH) {
+    return `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
+  }
+  return undefined;
+}
 
 export default function RegisterPage() {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(registerAction, null);
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  function handleBlur(field: keyof FieldErrors) {
+    return (e: FocusEvent<HTMLInputElement>) => {
+      setErrors((prev) => ({ ...prev, [field]: validate(field, e.target.value) }));
+    };
+  }
+
+  function handleChange(field: keyof FieldErrors) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: validate(field, e.target.value) }));
+      }
+    };
+  }
+
+  const hasErrors = Object.values(errors).some(Boolean);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -57,8 +90,12 @@ export default function RegisterPage() {
                 name="name"
                 type="text"
                 placeholder="Jane Dela Cruz"
+                onBlur={handleBlur("name")}
+                onChange={handleChange("name")}
+                aria-invalid={!!errors.name}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
+              {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
             </div>
             <div>
               <label
@@ -72,8 +109,12 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 placeholder="jane@example.com"
+                onBlur={handleBlur("email")}
+                onChange={handleChange("email")}
+                aria-invalid={!!errors.email}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
+              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
             </div>
             <div>
               <label
@@ -102,13 +143,17 @@ export default function RegisterPage() {
                 name="password"
                 autoComplete="new-password"
                 placeholder="Min. 8 characters"
+                onBlur={handleBlur("password")}
+                onChange={handleChange("password")}
+                aria-invalid={!!errors.password}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
+              {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
             </div>
 
             {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
 
-            <Button type="submit" disabled={pending} className="w-full">
+            <Button type="submit" disabled={pending || hasErrors} className="w-full">
               {pending ? "Submitting…" : "Submit Application"}
             </Button>
           </form>

@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FocusEvent, FormEvent, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { isValidEmail } from "@/lib/validation";
 
 type SubmitVariant = "primary" | "gold" | "outline" | "outline-light" | "ghost";
 
@@ -15,8 +16,6 @@ export type FormField = {
   required?: boolean;
   span?: "full" | "half";
 };
-
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SimpleForm({
   fields,
@@ -50,8 +49,33 @@ export function SimpleForm({
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
 
+  function fieldError(field: FormField, rawValue: string): string | undefined {
+    const value = rawValue.trim();
+    if (field.required !== false && !value) return "This field is required.";
+    if (field.type === "email" && value && !isValidEmail(value)) {
+      return "Enter a valid email address.";
+    }
+    return undefined;
+  }
+
   function handleChange(name: string, value: string) {
     setValues((prev) => ({ ...prev, [name]: value }));
+    // Only live-validate a field that's already showing an error — clears
+    // it the moment it's fixed, without nagging the user before they've
+    // even finished typing a field for the first time.
+    if (errors[name]) {
+      const field = fields.find((f) => f.name === name);
+      if (field) {
+        setErrors((prev) => ({ ...prev, [name]: fieldError(field, value) ?? "" }));
+      }
+    }
+  }
+
+  function handleBlur(field: FormField) {
+    return (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      const error = fieldError(field, e.target.value);
+      setErrors((prev) => ({ ...prev, [field.name]: error ?? "" }));
+    };
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -59,12 +83,8 @@ export function SimpleForm({
     const nextErrors: Record<string, string> = {};
 
     for (const field of fields) {
-      const value = values[field.name]?.trim() ?? "";
-      if (field.required !== false && !value) {
-        nextErrors[field.name] = "This field is required.";
-      } else if (field.type === "email" && value && !emailPattern.test(value)) {
-        nextErrors[field.name] = "Enter a valid email address.";
-      }
+      const error = fieldError(field, values[field.name] ?? "");
+      if (error) nextErrors[field.name] = error;
     }
 
     setErrors(nextErrors);
@@ -117,6 +137,7 @@ export function SimpleForm({
                 placeholder={field.placeholder}
                 value={values[field.name] ?? ""}
                 onChange={(e) => handleChange(field.name, e.target.value)}
+                onBlur={handleBlur(field)}
                 aria-invalid={!!error}
                 aria-describedby={error ? `${field.name}-error` : undefined}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
@@ -126,6 +147,7 @@ export function SimpleForm({
                 id={field.name}
                 value={values[field.name] ?? ""}
                 onChange={(e) => handleChange(field.name, e.target.value)}
+                onBlur={handleBlur(field)}
                 aria-invalid={!!error}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               >
@@ -143,6 +165,7 @@ export function SimpleForm({
                 placeholder={field.placeholder}
                 value={values[field.name] ?? ""}
                 onChange={(e) => handleChange(field.name, e.target.value)}
+                onBlur={handleBlur(field)}
                 aria-invalid={!!error}
                 aria-describedby={error ? `${field.name}-error` : undefined}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
