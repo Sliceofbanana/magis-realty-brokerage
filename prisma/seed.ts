@@ -329,6 +329,11 @@ async function seedUsers() {
         birthDate: person.birthDate ? new Date(person.birthDate) : undefined,
         isYou: person.isYou ?? false,
         passwordHash: demoPasswordHash,
+        // Seeded data is trusted synthetic data — there's no real inbox to
+        // send a verification link to, so these accounts are pre-verified
+        // rather than getting stuck behind the email-verification gate in
+        // lib/actions/auth.ts.
+        emailVerified: new Date(),
       },
       create: {
         email: person.email,
@@ -341,6 +346,7 @@ async function seedUsers() {
         birthDate: person.birthDate ? new Date(person.birthDate) : undefined,
         isYou: person.isYou ?? false,
         passwordHash: demoPasswordHash,
+        emailVerified: new Date(),
       },
     });
     idByEmail.set(person.email, user.id);
