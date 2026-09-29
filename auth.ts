@@ -46,12 +46,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.status = user.status;
         token.photo = user.photo;
+      }
+      // Lets the client force a token refresh (e.g. right after uploading a
+      // new profile photo) without requiring a full re-login — the JWT
+      // otherwise only ever picks up `user` on the initial sign-in.
+      if (trigger === "update" && session?.photo !== undefined) {
+        token.photo = session.photo;
       }
       return token;
     },

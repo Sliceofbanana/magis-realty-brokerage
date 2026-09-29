@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 import {
   SlidersHorizontal,
   Clock,
@@ -16,10 +17,12 @@ import {
   Lock,
   Cake,
   PartyPopper,
+  Camera,
 } from "lucide-react";
 import { Tabs } from "@/components/ui/Tabs";
 import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { activityLog } from "@/lib/data/users";
@@ -30,6 +33,7 @@ import {
   getMyProfileAction,
   updateProfileAction,
   updatePasswordAction,
+  updateProfilePhotoAction,
   type MyProfile,
 } from "@/lib/actions/profile";
 import { getAttendanceConfig, updateAttendanceConfigAction } from "@/lib/actions/attendance";
@@ -92,6 +96,7 @@ export default function SettingsPage() {
 }
 
 function GeneralTab() {
+  const { update: updateSession } = useSession();
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [loadError, setLoadError] = useState("");
 
@@ -101,6 +106,10 @@ function GeneralTab() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -135,6 +144,28 @@ function GeneralTab() {
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file) return;
+
+    setPhotoError("");
+    setPhotoUploading(true);
+    const formData = new FormData();
+    formData.set("photo", file);
+    const result = await updateProfilePhotoAction(null, formData);
+    setPhotoUploading(false);
+
+    if (result.error) {
+      setPhotoError(result.error);
+      return;
+    }
+    setProfile((p) => (p ? { ...p, photo: result.photo ?? p.photo } : p));
+    // Refreshes the JWT so the topbar/sidebar avatar (sourced from the
+    // session, not this page's local state) updates immediately too.
+    await updateSession({ photo: result.photo });
   }
 
   async function handlePasswordUpdate() {
@@ -176,7 +207,29 @@ function GeneralTab() {
             </Button>
           </div>
           <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-start">
-            <Avatar src={profile.photo ?? undefined} name={fullName} size={80} />
+            <div>
+              <div className="relative h-20 w-20">
+                <Avatar src={profile.photo ?? undefined} name={fullName} size={80} />
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={photoUploading}
+                  aria-label="Change profile photo"
+                  className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-navy-900 text-white shadow hover:bg-navy-800 disabled:opacity-50"
+                >
+                  <Camera size={13} />
+                </button>
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+              </div>
+              {photoUploading && <p className="mt-1.5 text-[11px] text-gray-400">Uploading…</p>}
+              {photoError && <p className="mt-1.5 max-w-[80px] text-[11px] text-red-600">{photoError}</p>}
+            </div>
             <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
@@ -242,8 +295,8 @@ function GeneralTab() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                 Current Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
+                autoComplete="current-password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
@@ -253,8 +306,8 @@ function GeneralTab() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                 New Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Min. 12 characters"
@@ -265,8 +318,8 @@ function GeneralTab() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                 Confirm New Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter password"

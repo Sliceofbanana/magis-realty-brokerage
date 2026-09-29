@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { registerAction, type ActionState } from "@/lib/actions/auth";
 
 export default function RegisterPage() {
@@ -96,10 +97,10 @@ export default function RegisterPage() {
               >
                 Create Password
               </label>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
+                autoComplete="new-password"
                 placeholder="Min. 8 characters"
                 className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-3 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
               />
