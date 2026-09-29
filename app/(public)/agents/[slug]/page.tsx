@@ -7,6 +7,7 @@ import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { submitInquiryAction } from "@/lib/actions/leads";
 import { prisma } from "@/lib/prisma";
 import { agentWithProfile, toAgent } from "@/lib/adapters/agent";
+import type { Testimonial } from "@prisma/client";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -166,7 +167,7 @@ export default async function AgentProfilePage({
             What Clients Say
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {testimonials.map((t) => (
+            {testimonials.map((t: Testimonial) => (
               <TestimonialCard key={t.name} testimonial={t} />
             ))}
           </div>
