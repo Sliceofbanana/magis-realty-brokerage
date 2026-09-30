@@ -41,7 +41,7 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="bg-navy-950 text-white before:block before:h-[3px] before:w-full before:bg-linear-to-r before:from-gold-400 before:via-gold-500 before:to-gold-400">
+    <footer className="bg-navy-950 text-white">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-16 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
           <Image

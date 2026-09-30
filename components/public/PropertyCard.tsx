@@ -21,9 +21,8 @@ export function PropertyCard({ property }: { property: Property }) {
           alt={property.title}
           fill
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-navy-950/50 via-transparent to-transparent" />
         <div className="absolute left-3 top-3">
           <Badge tone={statusTone[property.status]}>{property.status}</Badge>
         </div>

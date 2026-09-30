@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 
 export function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-black/5 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg">
+    <div className="flex h-full flex-col rounded-2xl bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex gap-1 text-gold-500">
           {Array.from({ length: 5 }).map((_, i) => (

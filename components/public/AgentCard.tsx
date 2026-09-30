@@ -14,9 +14,8 @@ export function AgentCard({ agent }: { agent: Agent }) {
           alt={agent.name}
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-navy-950/50 via-transparent to-transparent" />
         {agent.verified && (
           <div className="absolute left-3 top-3">
             <Badge tone="green" title="Identity and PRC license verified by Magis Realty">

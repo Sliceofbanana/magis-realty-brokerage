@@ -23,7 +23,7 @@ export function PublicHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/5 bg-white/95 backdrop-blur before:block before:h-[3px] before:w-full before:bg-linear-to-r before:from-gold-400 before:via-gold-500 before:to-gold-400">
+    <header className="sticky top-0 z-40 border-b border-black/5 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Logo />
 
