@@ -8,8 +8,10 @@ import { AgentCard } from "@/components/public/AgentCard";
 import { BlogCard } from "@/components/public/BlogCard";
 import { TestimonialCard } from "@/components/public/TestimonialCard";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
-import { properties } from "@/lib/data/properties";
-import { agents, testimonials } from "@/lib/data/agents";
+import { prisma } from "@/lib/prisma";
+import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
+import { agentWithProfile, toAgent } from "@/lib/adapters/agent";
+import { testimonials } from "@/lib/data/agents";
 import { blogPosts } from "@/lib/data/blog";
 import { business, exteriors } from "@/lib/stockPhotos";
 
@@ -34,9 +36,25 @@ const pillars = [
   },
 ];
 
-export default function HomePage() {
-  const featured = properties.slice(0, 3);
-  const elite = agents.slice(0, 4);
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const [featuredRows, eliteRows] = await Promise.all([
+    prisma.property.findMany({
+      where: { archived: false },
+      include: propertyWithRelations,
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
+    prisma.user.findMany({
+      where: { agentProfile: { bio: { isEmpty: false } } },
+      include: agentWithProfile,
+      orderBy: { name: "asc" },
+      take: 4,
+    }),
+  ]);
+  const featured = featuredRows.map(toProperty);
+  const elite = eliteRows.map(toAgent);
   const insights = blogPosts.slice(0, 2);
 
   return (
@@ -121,23 +139,25 @@ export default function HomePage() {
       </section>
 
       {/* Featured Properties */}
-      <section className="bg-offwhite py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gold-600">
-              New Listings
-            </p>
-            <h2 className="mt-2 font-serif text-3xl font-bold text-navy-900">
-              Featured Properties
-            </h2>
+      {featured.length > 0 && (
+        <section className="bg-offwhite py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gold-600">
+                New Listings
+              </p>
+              <h2 className="mt-2 font-serif text-3xl font-bold text-navy-900">
+                Featured Properties
+              </h2>
+            </div>
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
           </div>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Magis Standard */}
       <section className="bg-navy-950 py-20 text-white">
@@ -175,29 +195,31 @@ export default function HomePage() {
       <DeveloperStrip />
 
       {/* Elite Agents */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="font-serif text-3xl font-bold text-navy-900">
-              You May Contact Our Agents
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              The experts behind our most successful acquisitions.
-            </p>
+      {elite.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="font-serif text-3xl font-bold text-navy-900">
+                You May Contact Our Agents
+              </h2>
+              <p className="mt-2 text-sm text-gray-500">
+                The experts behind our most successful acquisitions.
+              </p>
+            </div>
+            <Link
+              href="/agents"
+              className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-navy-900 hover:text-gold-600 sm:flex"
+            >
+              View All Team <ArrowRight size={14} />
+            </Link>
           </div>
-          <Link
-            href="/agents"
-            className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-navy-900 hover:text-gold-600 sm:flex"
-          >
-            View All Team <ArrowRight size={14} />
-          </Link>
-        </div>
-        <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
-          {elite.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} />
-          ))}
-        </div>
-      </section>
+          <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
+            {elite.map((agent) => (
+              <AgentCard key={agent.id} agent={agent} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Insights */}
       <section className="bg-offwhite py-20">
