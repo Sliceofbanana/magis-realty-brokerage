@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { LayoutGrid, List, Archive, ArchiveRestore, History, X } from "lucide-react";
 import { Property, CommissionRecord } from "@/lib/types";
@@ -82,6 +83,9 @@ export function ListingsAdminView({
 }) {
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
   const [historyFor, setHistoryFor] = useState<Property | null>(null);
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMINISTRATOR";
+  const currentUserId = session?.user?.id;
 
   const filtered = useMemo(() => {
     if (filter === "Archived") return properties.filter((p) => p.archived);
@@ -135,6 +139,7 @@ export function ListingsAdminView({
         ) : (
           filtered.map((property) => {
             const status = displayStatus(property.status);
+            const canManage = isAdmin || agentUserIdByPropertyId[property.id] === currentUserId;
             return (
               <div
                 key={property.id}
@@ -172,7 +177,7 @@ export function ListingsAdminView({
                       </p>
                     </div>
                     <div className="flex items-center gap-2 text-gray-400">
-                      {status === "Sold" ? (
+                      {status === "Sold" && (
                         <button
                           type="button"
                           onClick={() => setHistoryFor(property)}
@@ -181,21 +186,24 @@ export function ListingsAdminView({
                         >
                           <History size={16} />
                         </button>
-                      ) : (
+                      )}
+                      {canManage && status !== "Sold" && (
                         <CreateListingForm
                           agents={agents}
                           property={{ ...property, agentUserId: agentUserIdByPropertyId[property.id] }}
                         />
                       )}
-                      <form action={archivePropertyFormAction.bind(null, property.id, !property.archived)}>
-                        <button
-                          type="submit"
-                          aria-label={property.archived ? "Unarchive listing" : "Archive listing"}
-                          className="hover:text-navy-900"
-                        >
-                          {property.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
-                        </button>
-                      </form>
+                      {canManage && (
+                        <form action={archivePropertyFormAction.bind(null, property.id, !property.archived)}>
+                          <button
+                            type="submit"
+                            aria-label={property.archived ? "Unarchive listing" : "Archive listing"}
+                            className="hover:text-navy-900"
+                          >
+                            {property.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+                          </button>
+                        </form>
+                      )}
                     </div>
                   </div>
                 </div>

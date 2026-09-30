@@ -22,6 +22,7 @@ export async function createPropertyAction(
   if (!session?.user || !ALLOWED_ROLES.includes(session.user.role)) {
     return { error: "Not authorized." };
   }
+  const isAdmin = session.user.role === "ADMINISTRATOR";
 
   const title = String(formData.get("title") ?? "").trim();
   const collection = String(formData.get("collection") ?? "").trim();
@@ -38,7 +39,9 @@ export async function createPropertyAction(
   const parking = Number(formData.get("parking") ?? 0) || 0;
   const descriptionRaw = String(formData.get("description") ?? "").trim();
   const amenitiesRaw = String(formData.get("amenities") ?? "").trim();
-  const agentId = String(formData.get("agentId") ?? "").trim();
+  // Non-admins can only ever list under their own name — "manage-own-listings"
+  // means own, not "assignable to whoever the submitter picks in the form".
+  const agentId = isAdmin ? String(formData.get("agentId") ?? "").trim() : session.user.id;
   const image = formData.get("image");
 
   if (!title) return { error: "Title is required." };
@@ -123,9 +126,13 @@ export async function updatePropertyAction(
   if (!session?.user || !ALLOWED_ROLES.includes(session.user.role)) {
     return { error: "Not authorized." };
   }
+  const isAdmin = session.user.role === "ADMINISTRATOR";
 
-  const existing = await prisma.property.findUnique({ where: { id }, select: { id: true, slug: true } });
+  const existing = await prisma.property.findUnique({ where: { id }, select: { id: true, slug: true, agentId: true } });
   if (!existing) return { error: "Listing not found." };
+  if (!isAdmin && existing.agentId !== session.user.id) {
+    return { error: "Not authorized." };
+  }
 
   const title = String(formData.get("title") ?? "").trim();
   const collection = String(formData.get("collection") ?? "").trim();
@@ -142,7 +149,8 @@ export async function updatePropertyAction(
   const parking = Number(formData.get("parking") ?? 0) || 0;
   const descriptionRaw = String(formData.get("description") ?? "").trim();
   const amenitiesRaw = String(formData.get("amenities") ?? "").trim();
-  const agentId = String(formData.get("agentId") ?? "").trim();
+  // Non-admins can't reassign a listing away from themselves either.
+  const agentId = isAdmin ? String(formData.get("agentId") ?? "").trim() : session.user.id;
   const image = formData.get("image");
 
   if (!title) return { error: "Title is required." };
@@ -236,6 +244,13 @@ export async function getPropertyCommissionHistory(propertyId: string): Promise<
 export async function archivePropertyAction(id: string, archived: boolean): Promise<CreatePropertyResult> {
   const session = await auth();
   if (!session?.user || !ALLOWED_ROLES.includes(session.user.role)) {
+    return { error: "Not authorized." };
+  }
+  const isAdmin = session.user.role === "ADMINISTRATOR";
+
+  const existing = await prisma.property.findUnique({ where: { id }, select: { agentId: true } });
+  if (!existing) return { error: "Listing not found." };
+  if (!isAdmin && existing.agentId !== session.user.id) {
     return { error: "Not authorized." };
   }
 

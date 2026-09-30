@@ -186,6 +186,11 @@ export async function resendVerificationEmailAction(email: string): Promise<Acti
 
 /** Public entry point for the /verify-email page — consumes the token and marks the account verified. */
 export async function verifyEmailAction(token: string): Promise<{ error?: string; success?: boolean }> {
+  const rateLimit = await checkRateLimit("passwordReset");
+  if (!rateLimit.allowed) {
+    return { error: `Too many attempts — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
   const result = await consumeToken("email-verify", token);
   if (!result) {
     return { error: "This verification link is invalid or has expired." };
@@ -233,6 +238,11 @@ export async function resetPasswordAction(
   _prevState: ResetPasswordState,
   formData: FormData
 ): Promise<ResetPasswordState> {
+  const rateLimit = await checkRateLimit("passwordReset");
+  if (!rateLimit.allowed) {
+    return { error: `Too many attempts — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
 

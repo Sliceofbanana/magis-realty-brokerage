@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import crypto from "crypto";
 import { AttendanceCheckInMode, AttendancePeriod, AttendanceStatus, AttendanceType } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -103,6 +104,10 @@ export async function createMeetingAction(
       type: typeRaw as AttendanceType,
       date: new Date(dateRaw),
       checkInMode: checkInModeRaw as AttendanceCheckInMode,
+      // Explicit CSPRNG token rather than the schema's cuid() fallback —
+      // this gates QR/link check-in, so it deserves the same strength as
+      // the email-verify/password-reset tokens in lib/tokens.ts.
+      checkInToken: crypto.randomBytes(32).toString("hex"),
       createdById: session.user.id,
     },
   });

@@ -75,11 +75,18 @@ export async function listMyNotifications(): Promise<NotificationRow[]> {
   }));
 }
 
-/** Marks one notification read. */
+/** Marks one notification read — scoped to the caller so no one can flip read state on a notification that isn't theirs. */
 export async function markNotificationReadAction(id: string): Promise<void> {
   const session = await auth();
   if (!session?.user) return;
-  await prisma.notification.update({ where: { id }, data: { read: true } });
+  const isAdmin = session.user.role === "ADMINISTRATOR";
+  await prisma.notification.updateMany({
+    where: {
+      id,
+      ...(isAdmin ? { OR: [{ recipientId: null }, { recipientId: session.user.id }] } : { recipientId: session.user.id }),
+    },
+    data: { read: true },
+  });
   revalidatePath("/portal");
 }
 

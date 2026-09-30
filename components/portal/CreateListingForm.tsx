@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -40,6 +41,8 @@ export function CreateListingForm({
 }) {
   const isEdit = !!property;
   const [open, setOpen] = useState(false);
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMINISTRATOR";
   const action = isEdit ? updatePropertyAction.bind(null, property.id) : createPropertyAction;
   const [state, formAction, pending] = useActionState<CreatePropertyResult, FormData>(
     action,
@@ -119,21 +122,30 @@ export function CreateListingForm({
                   <label htmlFor="agentId" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Listing Agent
                   </label>
-                  <select
-                    id="agentId"
-                    name="agentId"
-                    defaultValue={property?.agentUserId ?? ""}
-                    className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
-                  >
-                    <option value="" disabled>
-                      Select an agent
-                    </option>
-                    {agents.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name} ({a.role})
+                  {isAdmin ? (
+                    <select
+                      id="agentId"
+                      name="agentId"
+                      defaultValue={property?.agentUserId ?? ""}
+                      className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                    >
+                      <option value="" disabled>
+                        Select an agent
                       </option>
-                    ))}
-                  </select>
+                      {agents.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name} ({a.role})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    // Non-admins can only list under their own name — the server
+                    // ignores any agentId submitted by a non-admin regardless,
+                    // this just avoids presenting a dropdown that implies otherwise.
+                    <p className="rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900">
+                      {session?.user?.name ?? "You"}
+                    </p>
+                  )}
                 </div>
               </div>
 

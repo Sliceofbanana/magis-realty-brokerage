@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import QRCode from "qrcode";
+import { CalendarCheck2, CalendarClock, UserX } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getBaseUrl } from "@/lib/url";
@@ -7,6 +8,7 @@ import { PageHeader } from "@/components/portal/PageHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { StatCard } from "@/components/ui/StatCard";
 import { markAttendanceStatusAction } from "@/lib/actions/attendance";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +36,10 @@ export default async function MeetingDetailPage({
   });
   if (!meeting) notFound();
 
+  const attendedCount = meeting.attendanceRecords.filter((r) => r.status === "ATTENDED").length;
+  const missedCount = meeting.attendanceRecords.filter((r) => r.status === "MISSED").length;
+  const upcomingCount = meeting.attendanceRecords.filter((r) => r.status === "UPCOMING").length;
+
   let qr: string | null = null;
   if (meeting.checkInMode === "QR") {
     const baseUrl = await getBaseUrl();
@@ -49,7 +55,13 @@ export default async function MeetingDetailPage({
         description={`${meeting.date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · ${meeting.type === "MEETING" ? "Meeting" : "PKS Session"}`}
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard icon={<CalendarCheck2 size={18} />} label="Attended" value={attendedCount} iconBg="bg-emerald-100 text-emerald-700" />
+        <StatCard icon={<UserX size={18} />} label="Missed" value={missedCount} iconBg="bg-red-100 text-red-600" />
+        <StatCard icon={<CalendarClock size={18} />} label="Upcoming" value={upcomingCount} iconBg="bg-sky-100 text-navy-700" />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
           <div className="border-b border-black/5 px-6 py-4">
             <h2 className="font-serif text-lg font-bold text-navy-900">Roster</h2>

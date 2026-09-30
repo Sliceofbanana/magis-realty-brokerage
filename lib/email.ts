@@ -1,5 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
+import { escapeHtml } from "@/lib/htmlEscape";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -80,10 +81,15 @@ function button(href: string, label: string): string {
   return `<a href="${href}" style="display:inline-block;margin-top:20px;padding:12px 28px;background-color:#0f172a;color:#ffffff;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;border-radius:6px;">${label}</a>`;
 }
 
+// Every template below interpolates user-controlled strings (a registrant's
+// own `name`, at minimum) directly into HTML — escapeHtml() is applied
+// before interpolating so a name like `<img src=x onerror=alert(1)>` can't
+// break out of the markup in the rendered email.
+
 export function verifyEmailTemplate(name: string, link: string): string {
   return emailShell(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#0f172a;">Confirm your email</h1>
-    <p style="margin:0;">Hi ${name},</p>
+    <p style="margin:0;">Hi ${escapeHtml(name)},</p>
     <p>Thanks for requesting agent portal access. Please confirm this is your email address to continue — an administrator will still need to approve your account afterward.</p>
     ${button(link, "Verify Email Address")}
     <p style="margin-top:24px;color:#6b7280;font-size:12px;">This link expires in 24 hours. If you didn't request this, you can safely ignore this email.</p>
@@ -93,7 +99,7 @@ export function verifyEmailTemplate(name: string, link: string): string {
 export function passwordResetTemplate(name: string, link: string): string {
   return emailShell(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#0f172a;">Reset your password</h1>
-    <p style="margin:0;">Hi ${name},</p>
+    <p style="margin:0;">Hi ${escapeHtml(name)},</p>
     <p>We received a request to reset the password on your Magis Realty account. Click below to choose a new one.</p>
     ${button(link, "Reset Password")}
     <p style="margin-top:24px;color:#6b7280;font-size:12px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email — your password will not change.</p>
@@ -103,11 +109,11 @@ export function passwordResetTemplate(name: string, link: string): string {
 export function loginAlertTemplate(name: string, when: string, ip: string): string {
   return emailShell(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#0f172a;">New sign-in to your account</h1>
-    <p style="margin:0;">Hi ${name},</p>
+    <p style="margin:0;">Hi ${escapeHtml(name)},</p>
     <p>Your Magis Realty portal account was just signed into.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:16px;width:100%;font-size:13px;">
-      <tr><td style="padding:6px 0;color:#6b7280;">Time</td><td style="padding:6px 0;text-align:right;color:#0f172a;">${when}</td></tr>
-      <tr><td style="padding:6px 0;color:#6b7280;">IP Address</td><td style="padding:6px 0;text-align:right;color:#0f172a;">${ip}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b7280;">Time</td><td style="padding:6px 0;text-align:right;color:#0f172a;">${escapeHtml(when)}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b7280;">IP Address</td><td style="padding:6px 0;text-align:right;color:#0f172a;">${escapeHtml(ip)}</td></tr>
     </table>
     <p style="margin-top:20px;color:#6b7280;font-size:12px;">Wasn't you? Reset your password immediately and contact an administrator.</p>
   `);
