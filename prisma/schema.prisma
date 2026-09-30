@@ -62,6 +62,9 @@ enum LeadStatus {
   QUALIFIED
   FOLLOW_UP
   CONTACTED
+  WON
+  LOST
+  ARCHIVED
 }
 
 enum LeadPriority {

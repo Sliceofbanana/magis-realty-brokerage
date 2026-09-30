@@ -84,7 +84,7 @@ export type Lead = {
   property: string;
   price: string;
   date: string;
-  status: "New" | "Qualified" | "Follow-up" | "Contacted";
+  status: "New" | "Qualified" | "Follow-up" | "Contacted" | "Won" | "Lost" | "Archived";
   priority: "High" | "Medium" | "Low";
   agent: { id: string; name: string; photo: string | null } | null;
 };
