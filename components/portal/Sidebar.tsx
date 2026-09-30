@@ -38,21 +38,21 @@ export function Sidebar({
 
   const content = (
     <>
-      <div className="flex items-center justify-between px-6 py-6">
+      <div className="relative flex items-center justify-center px-6 py-8">
         <Link href="/portal">
           <Image
             src="/images/footer-logo.png"
             alt="Magis Realty & Brokerage"
             width={1200}
             height={542}
-            className="h-10 w-auto object-contain"
+            className="h-16 w-auto object-contain"
           />
         </Link>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close menu"
-          className="text-white/70 hover:text-white lg:hidden"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white lg:hidden"
         >
           <X size={22} />
         </button>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { Bell, Menu, Search, LogOut, Cake, UserPlus, Briefcase, UserCheck } from "lucide-react";
+import { useEffect, useState, type MouseEvent } from "react";
+import { Bell, Check, Menu, Search, LogOut, Cake, UserPlus, Briefcase, UserCheck } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { logoutAction } from "@/lib/actions/auth";
 import { useBirthdays } from "./BirthdayContext";
@@ -56,6 +56,13 @@ function NotificationsMenu() {
     setOpen(false);
   }
 
+  async function markOneRead(e: MouseEvent, id: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    setNotifications((prev) => prev.map((x) => (x.id === id ? { ...x, read: true } : x)));
+    await markNotificationReadAction(id);
+  }
+
   async function markAllRead() {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     await markAllNotificationsReadAction();
@@ -99,7 +106,7 @@ function NotificationsMenu() {
                 </button>
               )}
             </div>
-            {count === 0 ? (
+            {notifications.length === 0 && birthdayNotifications.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-gray-400">You&rsquo;re all caught up.</p>
             ) : (
               <ul className="max-h-96 overflow-y-auto">
@@ -145,16 +152,15 @@ function NotificationsMenu() {
                         <span className="mt-0.5 block truncate text-xs text-gray-500">{n.body}</span>
                         <span className="mt-0.5 block text-[11px] text-gray-400">{timeAgo(n.createdAt)}</span>
                       </span>
-                      {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-gold-500" />}
                     </>
                   );
                   return (
-                    <li key={n.id}>
+                    <li key={n.id} className="group flex items-start hover:bg-offwhite">
                       {n.link ? (
                         <a
                           href={n.link}
                           onClick={() => handleNotificationClick(n)}
-                          className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-offwhite"
+                          className="flex min-w-0 flex-1 items-start gap-3 px-4 py-3 text-left"
                         >
                           {content}
                         </a>
@@ -162,9 +168,20 @@ function NotificationsMenu() {
                         <button
                           type="button"
                           onClick={() => handleNotificationClick(n)}
-                          className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-offwhite"
+                          className="flex min-w-0 flex-1 items-start gap-3 px-4 py-3 text-left"
                         >
                           {content}
+                        </button>
+                      )}
+                      {!n.read && (
+                        <button
+                          type="button"
+                          title="Mark as read"
+                          aria-label="Mark as read"
+                          onClick={(e) => markOneRead(e, n.id)}
+                          className="mr-3 mt-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-gold-500 opacity-60 transition-opacity hover:bg-gold-100 hover:opacity-100 group-hover:opacity-100"
+                        >
+                          <Check size={12} />
                         </button>
                       )}
                     </li>

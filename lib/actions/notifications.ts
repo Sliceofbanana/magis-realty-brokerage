@@ -37,22 +37,31 @@ export type NotificationRow = {
   createdAt: string;
 };
 
+const NOTIFICATION_RETENTION_DAYS = 7;
+
 /**
  * Returns the current user's notifications: admins see the broadcast pool
  * (recipientId null) plus anything addressed to them; everyone else only
  * sees notifications addressed directly to them (e.g. an assigned lead).
+ *
+ * Filtered by age rather than a flat row count — a `take` cap alone could
+ * push a notification out of view in under a week during a busy stretch
+ * (a burst of new leads, say) even though it's still well within the
+ * retention window everyone should be able to count on.
  */
 export async function listMyNotifications(): Promise<NotificationRow[]> {
   const session = await auth();
   if (!session?.user) return [];
 
+  const since = new Date(Date.now() - NOTIFICATION_RETENTION_DAYS * 24 * 60 * 60 * 1000);
   const isAdmin = session.user.role === "ADMINISTRATOR";
   const rows = await prisma.notification.findMany({
-    where: isAdmin
-      ? { OR: [{ recipientId: null }, { recipientId: session.user.id }] }
-      : { recipientId: session.user.id },
+    where: {
+      createdAt: { gte: since },
+      ...(isAdmin ? { OR: [{ recipientId: null }, { recipientId: session.user.id }] } : { recipientId: session.user.id }),
+    },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 100,
   });
 
   return rows.map((r) => ({
