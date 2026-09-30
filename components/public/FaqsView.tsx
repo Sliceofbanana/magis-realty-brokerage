@@ -6,6 +6,7 @@ import { FaqCategory } from "@/lib/types";
 import { Accordion } from "@/components/ui/Accordion";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { Card } from "@/components/ui/Card";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 const icons = { wallet: Wallet, tag: Tag, key: KeyRound, "trending-up": TrendingUp };
 
@@ -184,7 +185,9 @@ export function FaqsView({
                 </span>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-gray-500">Call Us</p>
-                  <p className="font-semibold text-navy-900">+1 (800) MAGIS-RE</p>
+                  <a href={`tel:${COMPANY_PHONE_TEL}`} className="font-semibold text-navy-900 hover:text-gold-600">
+                    {COMPANY_PHONE_DISPLAY}
+                  </a>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -193,7 +196,9 @@ export function FaqsView({
                 </span>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-gray-500">Email Us</p>
-                  <p className="font-semibold text-navy-900">concierge@magisrealty.com</p>
+                  <a href="mailto:magisrealty@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
+                    magisrealty@gmail.com
+                  </a>
                 </div>
               </div>
             </div>

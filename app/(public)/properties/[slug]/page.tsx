@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 const inquiryFields: FormField[] = [
   { name: "name", label: "Full Name", type: "text", placeholder: "John Doe", span: "full" },
   { name: "email", label: "Email Address", type: "email", placeholder: "john@example.com", span: "full" },
-  { name: "phone", label: "Phone Number", type: "tel", placeholder: "+1 (555) 000-0000", span: "full" },
+  { name: "phone", label: "Phone Number", type: "tel", placeholder: "+63 900 000 0000", span: "full" },
   {
     name: "message",
     label: "Message",
