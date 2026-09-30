@@ -194,7 +194,7 @@ export default async function BlogDetailsPage({
 
       <section className="bg-sky-100 py-20">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-bold text-navy-900">
+          <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
             Seeking Expert Investment Counsel?
           </h2>
           <p className="mt-3 text-sm text-gray-600">

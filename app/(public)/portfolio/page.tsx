@@ -102,7 +102,7 @@ export default async function PortfolioPage() {
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h2 className="font-serif text-3xl font-bold text-navy-900">
+          <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
             Portfolio Grid
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-gray-600">
@@ -118,7 +118,7 @@ export default async function PortfolioPage() {
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/10 text-gold-400">
             <Building2 size={20} />
           </span>
-          <h2 className="mt-4 font-serif text-3xl font-bold">
+          <h2 className="mt-4 font-serif text-4xl font-bold leading-tight sm:text-5xl">
             Featured Transactions
           </h2>
           <p className="mt-2 max-w-xl text-sm text-white/70">
@@ -139,7 +139,7 @@ export default async function PortfolioPage() {
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="mb-10">
-          <h2 className="font-serif text-3xl font-bold text-navy-900">
+          <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
             How We Work
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-gray-600">

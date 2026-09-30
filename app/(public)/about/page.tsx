@@ -90,7 +90,7 @@ export default function AboutPage() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <h2 className="font-serif text-3xl font-bold text-navy-900">
+            <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
               Our Journey in Philippine Real Estate
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
@@ -149,7 +149,7 @@ export default function AboutPage() {
 
       <section className="bg-offwhite py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
+          <h2 className="text-center font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
             The Pillars of Magis
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -184,7 +184,7 @@ export default function AboutPage() {
 
       <section className="bg-navy-950 py-20 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-bold">
+          <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl">
             Expert Minds Behind the Vision
           </h2>
           <p className="mt-2 max-w-xl text-sm text-white/70">
@@ -218,7 +218,7 @@ export default function AboutPage() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <h2 className="font-serif text-3xl font-bold text-navy-900">
+            <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
               The Magis Advantage
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
@@ -274,7 +274,7 @@ export default function AboutPage() {
 
       <section className="bg-sky-100 py-20">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-bold text-navy-900">
+          <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
             Ready to find your Magis?
           </h2>
           <p className="mt-3 text-sm text-gray-600">

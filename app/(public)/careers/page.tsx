@@ -125,7 +125,7 @@ export default async function CareersPage({
             />
           </div>
           <div>
-            <h2 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
+            <h2 className="font-serif text-3xl font-bold text-navy-900 sm:text-4xl">
               Built on a Foundation of Excellence
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
@@ -204,7 +204,7 @@ export default async function CareersPage({
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
+              <h2 className="font-serif text-3xl font-bold text-navy-900 sm:text-4xl">
                 Current Openings
               </h2>
               <p className="mt-2 text-sm text-gray-500">
@@ -261,7 +261,7 @@ export default async function CareersPage({
       <section id="apply" className="bg-sky-100 py-20">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 rounded-2xl bg-white p-8 shadow-sm sm:p-10 lg:grid-cols-2">
           <div>
-            <h2 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
+            <h2 className="font-serif text-3xl font-bold text-navy-900 sm:text-4xl">
               Don&rsquo;t see the right role?
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-gray-600">

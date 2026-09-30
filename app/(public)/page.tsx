@@ -190,7 +190,7 @@ export default async function HomePage() {
       <section className="bg-navy-950 py-20 text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h2 className="font-serif text-3xl font-bold">
+            <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl">
               The Magis Standard: Excellence Without Compromise
             </h2>
             <ul className="mt-8 space-y-6">
@@ -273,7 +273,7 @@ export default async function HomePage() {
       {/* Newsletter */}
       <section className="bg-white py-20">
         <div className="mx-auto max-w-xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-bold text-navy-900">
+          <h2 className="font-serif text-4xl font-bold leading-tight text-navy-900 sm:text-5xl">
             The Magis Newsletter
           </h2>
           <p className="mt-3 text-sm text-gray-500">

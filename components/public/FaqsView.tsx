@@ -171,7 +171,7 @@ export function FaqsView({
       <section className="bg-sky-100 py-20">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h2 className="font-serif text-3xl font-bold text-navy-900">
+            <h2 className="font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
               Still have questions?
             </h2>
             <p className="mt-3 text-sm text-gray-600">

@@ -163,7 +163,7 @@ export default async function AgentProfilePage({
           <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
             Testimonials
           </p>
-          <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
+          <h2 className="mt-2 text-center font-serif text-4xl font-bold leading-tight sm:text-5xl text-navy-900">
             What Clients Say
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
