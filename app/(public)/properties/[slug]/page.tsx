@@ -95,7 +95,7 @@ export default async function PropertyDetailsPage({
         <div>
           <div className="flex items-center gap-2">
             {property.verified && (
-              <Badge tone="green">
+              <Badge tone="green" title="Listing details verified by Magis Realty">
                 <BadgeCheck size={12} /> Verified
               </Badge>
             )}

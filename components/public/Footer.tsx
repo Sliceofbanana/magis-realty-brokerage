@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Phone } from "lucide-react";
 import { SocialIcon, type SocialPlatform } from "@/components/ui/SocialIcon";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 const socialLinks: { platform: SocialPlatform; href: string; label: string }[] = [
   { platform: "facebook", href: "https://www.facebook.com/magisrealty", label: "Facebook" },
@@ -53,6 +55,12 @@ export function Footer() {
             Cebu&apos;s trusted brokerage for OFWs, investors &amp; families —
             with unlimited after-sales support. Buy. Sell. Rent.
           </p>
+          <a
+            href={`tel:${COMPANY_PHONE_TEL}`}
+            className="mt-4 flex items-center gap-1.5 text-sm font-medium text-white/80 hover:text-gold-400"
+          >
+            <Phone size={14} /> {COMPANY_PHONE_DISPLAY}
+          </a>
           <div className="mt-5 flex gap-3">
             {socialLinks.map(({ platform, href, label }) => (
               <a

@@ -5,6 +5,7 @@ import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { Card } from "@/components/ui/Card";
 import { exteriors } from "@/lib/stockPhotos";
 import { submitInquiryAction } from "@/lib/actions/leads";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 export const metadata = { title: "Contact Us | Magis Realty & Brokerage" };
 
@@ -105,8 +106,8 @@ export default function ContactPage() {
                     <p className="text-[11px] uppercase tracking-wide text-gray-500">
                       Inquiry Line
                     </p>
-                    <a href="tel:+63324079634" className="font-semibold text-navy-900 hover:text-gold-600">
-                      (032) 407 9634
+                    <a href={`tel:${COMPANY_PHONE_TEL}`} className="font-semibold text-navy-900 hover:text-gold-600">
+                      {COMPANY_PHONE_DISPLAY}
                     </a>
                   </div>
                 </div>

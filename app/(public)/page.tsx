@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ShieldCheck, Target, LineChart, ArrowRight } from "lucide-react";
+import { ShieldCheck, Target, LineChart, ArrowRight, TrendingUp, Building2, BadgeCheck, Star } from "lucide-react";
 import { HomeHero } from "@/components/public/HomeHero";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { PropertyCard } from "@/components/public/PropertyCard";
@@ -8,12 +8,14 @@ import { AgentCard } from "@/components/public/AgentCard";
 import { BlogCard } from "@/components/public/BlogCard";
 import { TestimonialCard } from "@/components/public/TestimonialCard";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
+import { StatCard } from "@/components/ui/StatCard";
 import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
 import { agentWithProfile, toAgent } from "@/lib/adapters/agent";
-import { testimonials } from "@/lib/data/agents";
+import { toTestimonial } from "@/lib/adapters/testimonial";
 import { blogPosts } from "@/lib/data/blog";
 import { business, exteriors } from "@/lib/stockPhotos";
+import { formatCurrency } from "@/lib/format";
 
 const pillars = [
   {
@@ -39,9 +41,9 @@ const pillars = [
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [featuredRows, eliteRows] = await Promise.all([
+  const [featuredRows, eliteRows, testimonialRows, soldAgg, verifiedAgentCount, ratingAgg] = await Promise.all([
     prisma.property.findMany({
-      where: { archived: false },
+      where: { archived: false, status: { not: "SOLD" } },
       include: propertyWithRelations,
       orderBy: { createdAt: "desc" },
       take: 3,
@@ -52,14 +54,60 @@ export default async function HomePage() {
       orderBy: { name: "asc" },
       take: 4,
     }),
+    prisma.testimonial.findMany(),
+    prisma.property.aggregate({
+      where: { status: "SOLD" },
+      _sum: { price: true },
+      _count: true,
+    }),
+    prisma.agentProfile.count({ where: { publicVerified: true } }),
+    prisma.agentProfile.aggregate({
+      where: { reviewCount: { gt: 0 } },
+      _avg: { rating: true },
+    }),
   ]);
   const featured = featuredRows.map(toProperty);
   const elite = eliteRows.map(toAgent);
+  const testimonials = testimonialRows.map(toTestimonial);
   const insights = blogPosts.slice(0, 2);
+  const showTrustStats = soldAgg._count > 0 || verifiedAgentCount > 0;
+  const trustStats = [
+    {
+      icon: TrendingUp,
+      label: "Total Value Closed",
+      value: formatCurrency(Number(soldAgg._sum.price ?? 0)),
+    },
+    {
+      icon: Building2,
+      label: "Properties Sold",
+      value: soldAgg._count,
+    },
+    {
+      icon: BadgeCheck,
+      label: "Verified Agents",
+      value: verifiedAgentCount,
+    },
+    {
+      icon: Star,
+      label: "Average Client Rating",
+      value: ratingAgg._avg.rating ? `${ratingAgg._avg.rating.toFixed(1)} / 5` : "—",
+    },
+  ];
 
   return (
     <>
       <HomeHero />
+
+      {/* Trust Stats */}
+      {showTrustStats && (
+        <section className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {trustStats.map((stat) => (
+              <StatCard key={stat.label} icon={<stat.icon size={20} />} label={stat.label} value={stat.value} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Curated Collections */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -236,21 +284,23 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-sky-100 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
-            Testimonials
-          </p>
-          <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
-            What Clients Say
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {testimonials.map((t) => (
-              <TestimonialCard key={t.name} testimonial={t} />
-            ))}
+      {testimonials.length > 0 && (
+        <section className="bg-sky-100 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
+              Testimonials
+            </p>
+            <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
+              What Clients Say
+            </h2>
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((t) => (
+                <TestimonialCard key={t.name} testimonial={t} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Newsletter */}
       <section className="bg-white py-20">

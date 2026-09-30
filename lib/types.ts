@@ -49,6 +49,10 @@ export type Testimonial = {
   quote: string;
   name: string;
   role: string;
+  photo?: string;
+  verified?: boolean;
+  sourceUrl?: string;
+  sourceLabel?: string;
 };
 
 export type BlogPost = {

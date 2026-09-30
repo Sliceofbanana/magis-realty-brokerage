@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Phone, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/Button";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -49,6 +50,12 @@ export function PublicHeader() {
         </nav>
 
         <div className="hidden items-center gap-6 lg:flex">
+          <a
+            href={`tel:${COMPANY_PHONE_TEL}`}
+            className="flex items-center gap-1.5 text-sm font-medium text-navy-900 hover:text-gold-600"
+          >
+            <Phone size={14} /> {COMPANY_PHONE_DISPLAY}
+          </a>
           <Link
             href="/login"
             className="text-sm font-medium text-navy-900 hover:text-gold-600"
@@ -87,6 +94,12 @@ export function PublicHeader() {
                 {link.label}
               </Link>
             ))}
+            <a
+              href={`tel:${COMPANY_PHONE_TEL}`}
+              className="flex items-center gap-1.5 rounded-md px-2 py-3 text-sm font-medium text-navy-900 hover:bg-navy-900/5"
+            >
+              <Phone size={14} /> {COMPANY_PHONE_DISPLAY}
+            </a>
             <Link
               href="/login"
               onClick={() => setOpen(false)}

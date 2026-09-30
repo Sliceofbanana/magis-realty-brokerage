@@ -400,10 +400,14 @@ model DocumentFile {
 }
 
 model Testimonial {
-  id    String @id @default(cuid())
-  quote String
-  name  String
-  role  String
+  id          String   @id @default(cuid())
+  quote       String
+  name        String
+  role        String
+  photo       String?
+  verified    Boolean  @default(false)
+  sourceUrl   String?
+  sourceLabel String?
 }
 
 enum NotificationType {

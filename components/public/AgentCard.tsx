@@ -18,7 +18,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
         />
         {agent.verified && (
           <div className="absolute left-3 top-3">
-            <Badge tone="green">
+            <Badge tone="green" title="Identity and PRC license verified by Magis Realty">
               <BadgeCheck size={12} /> Verified
             </Badge>
           </div>
