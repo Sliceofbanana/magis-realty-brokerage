@@ -86,6 +86,7 @@ export type Lead = {
   date: string;
   status: "New" | "Qualified" | "Follow-up" | "Contacted";
   priority: "High" | "Medium" | "Low";
+  agent: { id: string; name: string; photo: string | null } | null;
 };
 
 export type Transaction = {

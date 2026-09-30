@@ -72,7 +72,7 @@ export default function ContactPage() {
           <Card className="bg-white p-6 sm:p-8">
             <h2 className="font-serif text-2xl font-bold text-navy-900">Inquiry Form</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Complete the form below and one of our luxury specialists will
+              Complete the form below and one of our agents will
               contact you shortly.
             </p>
             <SimpleForm
@@ -116,7 +116,7 @@ export default function ContactPage() {
                   </span>
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-gray-500">
-                      Email Concierge
+                      Email Adress
                     </p>
                     <a href="mailto:magisrealty@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
                       magisrealty@gmail.com

@@ -1,14 +1,19 @@
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { leadWithProperty, toLead } from "@/lib/adapters/lead";
+import { listTeamsWithAgents, type TeamAgentRow } from "@/lib/actions/teams";
 import { LeadsAdminView } from "@/components/portal/LeadsAdminView";
 
 export const dynamic = "force-dynamic";
 
 export default async function LeadsAdminPage() {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMINISTRATOR";
+
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
 
-  const [rows, properties, newThisWeek, sourceGroups] = await Promise.all([
+  const [rows, properties, newThisWeek, sourceGroups, agentsData] = await Promise.all([
     prisma.lead.findMany({
       include: leadWithProperty,
       orderBy: { createdAt: "desc" },
@@ -20,6 +25,7 @@ export default async function LeadsAdminPage() {
     }),
     prisma.lead.count({ where: { createdAt: { gte: weekAgo } } }),
     prisma.lead.groupBy({ by: ["source"], _count: { _all: true } }),
+    isAdmin ? listTeamsWithAgents() : Promise.resolve<{ teams: []; agents: TeamAgentRow[] }>({ teams: [], agents: [] }),
   ]);
 
   const leads = rows.map(toLead);
@@ -33,6 +39,13 @@ export default async function LeadsAdminPage() {
     .sort((a, b) => b.value - a.value);
 
   return (
-    <LeadsAdminView leads={leads} properties={properties} newThisWeek={newThisWeek} sources={sources} />
+    <LeadsAdminView
+      leads={leads}
+      properties={properties}
+      newThisWeek={newThisWeek}
+      sources={sources}
+      agents={agentsData.agents}
+      isAdmin={!!isAdmin}
+    />
   );
 }

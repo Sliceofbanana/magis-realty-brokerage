@@ -37,13 +37,20 @@ export type NotificationRow = {
   createdAt: string;
 };
 
-/** Returns the current admin's notifications: broadcast (recipientId null) plus anything addressed to them. */
+/**
+ * Returns the current user's notifications: admins see the broadcast pool
+ * (recipientId null) plus anything addressed to them; everyone else only
+ * sees notifications addressed directly to them (e.g. an assigned lead).
+ */
 export async function listMyNotifications(): Promise<NotificationRow[]> {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMINISTRATOR") return [];
+  if (!session?.user) return [];
 
+  const isAdmin = session.user.role === "ADMINISTRATOR";
   const rows = await prisma.notification.findMany({
-    where: { OR: [{ recipientId: null }, { recipientId: session.user.id }] },
+    where: isAdmin
+      ? { OR: [{ recipientId: null }, { recipientId: session.user.id }] }
+      : { recipientId: session.user.id },
     orderBy: { createdAt: "desc" },
     take: 20,
   });
@@ -67,12 +74,15 @@ export async function markNotificationReadAction(id: string): Promise<void> {
   revalidatePath("/portal");
 }
 
-/** Marks every notification visible to the current admin as read. */
+/** Marks every notification visible to the current user as read. */
 export async function markAllNotificationsReadAction(): Promise<void> {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMINISTRATOR") return;
+  if (!session?.user) return;
+  const isAdmin = session.user.role === "ADMINISTRATOR";
   await prisma.notification.updateMany({
-    where: { OR: [{ recipientId: null }, { recipientId: session.user.id }] },
+    where: isAdmin
+      ? { OR: [{ recipientId: null }, { recipientId: session.user.id }] }
+      : { recipientId: session.user.id },
     data: { read: true },
   });
   revalidatePath("/portal");

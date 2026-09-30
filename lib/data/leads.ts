@@ -13,6 +13,7 @@ export const leads: Lead[] = [
     date: "Oct 24, 2023",
     status: "New",
     priority: "High",
+    agent: null,
   },
   {
     id: "2",
@@ -26,6 +27,7 @@ export const leads: Lead[] = [
     date: "Oct 23, 2023",
     status: "Qualified",
     priority: "Medium",
+    agent: null,
   },
   {
     id: "3",
@@ -39,6 +41,7 @@ export const leads: Lead[] = [
     date: "Oct 21, 2023",
     status: "Follow-up",
     priority: "High",
+    agent: null,
   },
   {
     id: "4",
@@ -52,5 +55,6 @@ export const leads: Lead[] = [
     date: "Oct 20, 2023",
     status: "Contacted",
     priority: "Low",
+    agent: null,
   },
 ];

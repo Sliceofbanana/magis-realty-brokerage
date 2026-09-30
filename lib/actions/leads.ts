@@ -5,6 +5,7 @@ import { LeadPriority, LeadStatus } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/actions/notifications";
+import { requireAdmin } from "@/lib/actions/users";
 import { checkRateLimit } from "@/lib/rateLimit";
 
 export type InquiryInput = {
@@ -76,6 +77,16 @@ export async function submitInquiryAction(input: InquiryInput): Promise<InquiryR
     link: "/portal/leads",
   });
 
+  if (input.agentId) {
+    await createNotification({
+      type: "NEW_LEAD",
+      title: "New lead for you",
+      body: `${name} requested a consultation with you${input.propertyLabel ? ` about ${input.propertyLabel}` : ""}.`,
+      link: "/portal/leads",
+      recipientId: input.agentId,
+    });
+  }
+
   revalidatePath("/portal");
   revalidatePath("/portal/leads");
 
@@ -132,5 +143,49 @@ export async function createLeadAction(
   revalidatePath("/portal");
   revalidatePath("/portal/leads");
 
+  return { success: true };
+}
+
+export type AssignLeadResult = { error?: string; success?: boolean };
+
+/** Admin-only: assigns (or clears, with agentId null) a lead's agent — notifies the newly assigned agent. */
+export async function assignLeadAction(leadId: string, agentId: string | null): Promise<AssignLeadResult> {
+  await requireAdmin();
+
+  const lead = await prisma.lead.update({
+    where: { id: leadId },
+    data: { agentId },
+    select: { name: true, propertyLabel: true, property: { select: { title: true } } },
+  });
+
+  if (agentId) {
+    const propertyLabel = lead.property?.title ?? lead.propertyLabel;
+    await createNotification({
+      type: "NEW_LEAD",
+      title: "Lead assigned to you",
+      body: `${lead.name} was assigned to you${propertyLabel ? ` — ${propertyLabel}` : ""}.`,
+      link: "/portal/leads",
+      recipientId: agentId,
+    });
+  }
+
+  revalidatePath("/portal/leads");
+  return { success: true };
+}
+
+export type UpdateLeadStatusResult = { error?: string; success?: boolean };
+
+/** Admin-only: moves a lead to a new status (drag-and-drop between Kanban columns). */
+export async function updateLeadStatusAction(
+  leadId: string,
+  status: LeadStatus
+): Promise<UpdateLeadStatusResult> {
+  await requireAdmin();
+
+  if (!(status in LeadStatus)) return { error: "Invalid status." };
+
+  await prisma.lead.update({ where: { id: leadId }, data: { status } });
+
+  revalidatePath("/portal/leads");
   return { success: true };
 }
