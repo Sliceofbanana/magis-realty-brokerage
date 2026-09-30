@@ -2,13 +2,30 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
-import { Search } from "lucide-react";
+import { FormEvent, useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Search, ShieldCheck } from "lucide-react";
 
-export function HomeHero() {
+const headlineVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+};
+
+export function HomeHero({ trustLine }: { trustLine?: string }) {
   const router = useRouter();
   const [location, setLocation] = useState("");
   const [propertyType, setPropertyType] = useState("Residential");
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -20,31 +37,61 @@ export function HomeHero() {
 
   return (
     <section className="relative">
-      <div className="relative h-140 w-full sm:h-150">
-        <Image
-          src="/images/hero.webp"
-          alt="Aerial view of a luxury coastal resort property at dusk"
-          fill
-          priority
-          className="object-cover"
-        />
+      <div ref={sectionRef} className="relative h-140 w-full overflow-hidden sm:h-150">
+        <motion.div style={{ y: imageY }} className="absolute inset-0 h-[120%]">
+          <Image
+            src="/images/hero.webp"
+            alt="Aerial view of a luxury coastal resort property at dusk"
+            fill
+            priority
+            className="object-cover"
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-linear-to-t from-navy-950/90 via-navy-950/30 to-navy-950/10" />
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
-          <h1 className="max-w-2xl font-serif text-4xl font-bold leading-tight text-white sm:text-5xl">
+          <motion.h1
+            initial="hidden"
+            animate="visible"
+            custom={0}
+            variants={headlineVariants}
+            className="max-w-2xl font-serif text-4xl font-bold leading-tight tracking-tight text-white sm:text-6xl"
+          >
             Discover Your Legacy Through{" "}
             <span className="text-gold-400">Premium Real Estate</span>
-          </h1>
-          <p className="mt-4 max-w-lg text-base text-white/80">
+          </motion.h1>
+          <motion.p
+            initial="hidden"
+            animate="visible"
+            custom={0.15}
+            variants={headlineVariants}
+            className="mt-5 max-w-lg text-base leading-relaxed text-white/80"
+          >
             Magis Realty connects discerning clients with exceptional properties,
             offering a curated portfolio of residences and strategic investments.
-          </p>
+          </motion.p>
+          {trustLine && (
+            <motion.p
+              initial="hidden"
+              animate="visible"
+              custom={0.3}
+              variants={headlineVariants}
+              className="mt-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gold-300"
+            >
+              <ShieldCheck size={14} /> {trustLine}
+            </motion.p>
+          )}
         </div>
       </div>
 
-      <div className="relative mx-auto -mt-10 max-w-5xl px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 32 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
+        className="relative mx-auto -mt-10 max-w-5xl px-4 sm:px-6 lg:px-8"
+      >
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 gap-3 rounded-2xl bg-white p-4 shadow-xl sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-end"
+          className="grid grid-cols-1 gap-3 rounded-2xl border-t-2 border-gold-400 bg-white p-4 shadow-2xl sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-end"
         >
           <div>
             <label htmlFor="hero-location" className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500">
@@ -88,14 +135,16 @@ export function HomeHero() {
               <option>₱5M+</option>
             </select>
           </div>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
             className="flex items-center justify-center gap-2 rounded-lg bg-navy-900 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-navy-800"
           >
             <Search size={16} /> Search
-          </button>
+          </motion.button>
         </form>
-      </div>
+      </motion.div>
     </section>
   );
 }

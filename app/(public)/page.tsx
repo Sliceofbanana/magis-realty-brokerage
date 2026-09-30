@@ -8,6 +8,8 @@ import { AgentCard } from "@/components/public/AgentCard";
 import { BlogCard } from "@/components/public/BlogCard";
 import { TestimonialCard } from "@/components/public/TestimonialCard";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
+import { SectionHeading } from "@/components/public/SectionHeading";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { StatCard } from "@/components/ui/StatCard";
 import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
@@ -93,124 +95,126 @@ export default async function HomePage() {
       value: ratingAgg._avg.rating ? `${ratingAgg._avg.rating.toFixed(1)} / 5` : "—",
     },
   ];
+  const trustLine = showTrustStats
+    ? `${verifiedAgentCount} verified agent${verifiedAgentCount === 1 ? "" : "s"} · ${soldAgg._count} closed transaction${soldAgg._count === 1 ? "" : "s"} across Cebu`
+    : undefined;
 
   return (
     <>
-      <HomeHero />
+      <HomeHero trustLine={trustLine} />
 
       {/* Trust Stats */}
       {showTrustStats && (
         <section className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {trustStats.map((stat) => (
-              <StatCard key={stat.label} icon={<stat.icon size={20} />} label={stat.label} value={stat.value} />
-            ))}
-          </div>
+          <RevealOnScroll className="relative overflow-hidden rounded-3xl border border-black/5 bg-white p-6 shadow-sm">
+            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-gold-400 via-gold-500 to-gold-400" />
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {trustStats.map((stat) => (
+                <StatCard key={stat.label} icon={<stat.icon size={20} />} label={stat.label} value={stat.value} />
+              ))}
+            </div>
+          </RevealOnScroll>
         </section>
       )}
 
       {/* Curated Collections */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="font-serif text-3xl font-bold text-navy-900">
-              Curated Collections
-            </h2>
-            <p className="mt-2 max-w-md text-sm text-gray-500">
-              Tailored property selections designed to meet specific lifestyle
-              and investment objectives.
-            </p>
-          </div>
-          <Link
-            href="/properties"
-            className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-navy-900 hover:text-gold-600 sm:flex"
-          >
-            Explore All Categories <ArrowRight size={14} />
-          </Link>
-        </div>
+      <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <SectionHeading
+          title="Curated Collections"
+          description="Tailored property selections designed to meet specific lifestyle and investment objectives."
+          action={
+            <Link
+              href="/properties"
+              className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-navy-900 hover:text-gold-600 sm:flex"
+            >
+              Explore All Categories <ArrowRight size={14} />
+            </Link>
+          }
+        />
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:h-105 sm:grid-cols-2">
-          <Link
-            href="/properties?type=Residential"
-            className="group relative h-64 overflow-hidden rounded-2xl sm:h-full"
-          >
-            <Image
-              src={exteriors.whiteVillaPoolDay}
-              alt="Luxury residential collection"
-              fill
-              sizes="(min-width: 640px) 50vw, 100vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/10 to-transparent" />
-            <div className="absolute bottom-5 left-5 text-white">
-              <p className="font-serif text-xl font-bold">Luxury Residential</p>
-              <p className="text-sm text-white/80">The pinnacle of private living</p>
-            </div>
-          </Link>
+        <RevealStagger className="mt-8 grid grid-cols-1 gap-4 sm:h-105 sm:grid-cols-2">
+          <RevealItem>
+            <Link
+              href="/properties?type=Residential"
+              className="group relative block h-64 overflow-hidden rounded-2xl sm:h-full"
+            >
+              <Image
+                src={exteriors.whiteVillaPoolDay}
+                alt="Luxury residential collection"
+                fill
+                sizes="(min-width: 640px) 50vw, 100vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/10 to-transparent" />
+              <div className="absolute bottom-5 left-5 text-white">
+                <p className="font-serif text-xl font-bold">Luxury Residential</p>
+                <p className="text-sm text-white/80">The pinnacle of private living</p>
+              </div>
+            </Link>
+          </RevealItem>
           <div className="grid grid-cols-1 gap-4 sm:h-full sm:grid-rows-2">
-            <Link
-              href="/properties?type=Commercial"
-              className="group relative h-32 overflow-hidden rounded-2xl sm:h-full"
-            >
-              <Image
-                src={exteriors.glassOfficeTowers}
-                alt="Strategic commercial collection"
-                fill
-                sizes="(min-width: 640px) 25vw, 100vw"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/10 to-transparent" />
-              <div className="absolute bottom-4 left-4 text-white">
-                <p className="font-serif text-lg font-bold">Strategic Commercial</p>
-                <p className="text-xs text-white/80">Premium business hubs</p>
-              </div>
-            </Link>
-            <Link
-              href="/portfolio"
-              className="group relative h-32 overflow-hidden rounded-2xl sm:h-full"
-            >
-              <Image
-                src={exteriors.farmlandSunset}
-                alt="Land and investment collection"
-                fill
-                sizes="(min-width: 640px) 25vw, 100vw"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/10 to-transparent" />
-              <div className="absolute bottom-4 left-4 text-white">
-                <p className="font-serif text-lg font-bold">Land &amp; Investment</p>
-                <p className="text-xs text-white/80">Securing future growth</p>
-              </div>
-            </Link>
+            <RevealItem>
+              <Link
+                href="/properties?type=Commercial"
+                className="group relative block h-32 overflow-hidden rounded-2xl sm:h-full"
+              >
+                <Image
+                  src={exteriors.glassOfficeTowers}
+                  alt="Strategic commercial collection"
+                  fill
+                  sizes="(min-width: 640px) 25vw, 100vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/10 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <p className="font-serif text-lg font-bold">Strategic Commercial</p>
+                  <p className="text-xs text-white/80">Premium business hubs</p>
+                </div>
+              </Link>
+            </RevealItem>
+            <RevealItem>
+              <Link
+                href="/portfolio"
+                className="group relative block h-32 overflow-hidden rounded-2xl sm:h-full"
+              >
+                <Image
+                  src={exteriors.farmlandSunset}
+                  alt="Land and investment collection"
+                  fill
+                  sizes="(min-width: 640px) 25vw, 100vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/10 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <p className="font-serif text-lg font-bold">Land &amp; Investment</p>
+                  <p className="text-xs text-white/80">Securing future growth</p>
+                </div>
+              </Link>
+            </RevealItem>
           </div>
-        </div>
+        </RevealStagger>
       </section>
 
       {/* Featured Properties */}
       {featured.length > 0 && (
-        <section className="bg-offwhite py-20">
+        <section className="bg-offwhite py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-gold-600">
-                New Listings
-              </p>
-              <h2 className="mt-2 font-serif text-3xl font-bold text-navy-900">
-                Featured Properties
-              </h2>
-            </div>
-            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <SectionHeading eyebrow="New Listings" title="Featured Properties" align="center" />
+            <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {featured.map((property) => (
-                <PropertyCard key={property.id} property={property} />
+                <RevealItem key={property.id}>
+                  <PropertyCard property={property} />
+                </RevealItem>
               ))}
-            </div>
+            </RevealStagger>
           </div>
         </section>
       )}
 
       {/* Magis Standard */}
-      <section className="bg-navy-950 py-20 text-white">
+      <section className="bg-navy-950 py-24 text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div>
+          <RevealOnScroll>
             <h2 className="font-serif text-3xl font-bold">
               The Magis Standard: Excellence Without Compromise
             </h2>
@@ -227,8 +231,8 @@ export default async function HomePage() {
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="relative h-80 overflow-hidden rounded-2xl lg:h-96">
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.15} className="relative h-80 overflow-hidden rounded-2xl lg:h-96">
             <Image
               src={business.handshake}
               alt="Magis Realty agents in consultation"
@@ -236,7 +240,7 @@ export default async function HomePage() {
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"
             />
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
@@ -244,67 +248,62 @@ export default async function HomePage() {
 
       {/* Elite Agents */}
       {elite.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="font-serif text-3xl font-bold text-navy-900">
-                You May Contact Our Agents
-              </h2>
-              <p className="mt-2 text-sm text-gray-500">
-                The experts behind our most successful acquisitions.
-              </p>
-            </div>
-            <Link
-              href="/agents"
-              className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-navy-900 hover:text-gold-600 sm:flex"
-            >
-              View All Team <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+          <SectionHeading
+            title="You May Contact Our Agents"
+            description="The experts behind our most successful acquisitions."
+            action={
+              <Link
+                href="/agents"
+                className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-navy-900 hover:text-gold-600 sm:flex"
+              >
+                View All Team <ArrowRight size={14} />
+              </Link>
+            }
+          />
+          <RevealStagger className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
             {elite.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} />
+              <RevealItem key={agent.id}>
+                <AgentCard agent={agent} />
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </section>
       )}
 
       {/* Insights */}
-      <section className="bg-offwhite py-20">
+      <section className="bg-offwhite py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
-            Insights &amp; Market Trends
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <SectionHeading title="Insights & Market Trends" align="center" />
+          <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {insights.map((post) => (
-              <BlogCard key={post.id} post={post} />
+              <RevealItem key={post.id}>
+                <BlogCard post={post} />
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </div>
       </section>
 
       {/* Testimonials */}
       {testimonials.length > 0 && (
-        <section className="bg-sky-100 py-20">
+        <section className="bg-sky-100 py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
-              Testimonials
-            </p>
-            <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
-              What Clients Say
-            </h2>
-            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <SectionHeading eyebrow="Testimonials" title="What Clients Say" align="center" />
+            <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((t) => (
-                <TestimonialCard key={t.name} testimonial={t} />
+                <RevealItem key={t.name}>
+                  <TestimonialCard testimonial={t} />
+                </RevealItem>
               ))}
-            </div>
+            </RevealStagger>
           </div>
         </section>
       )}
 
       {/* Newsletter */}
-      <section className="bg-white py-20">
-        <div className="mx-auto max-w-xl px-4 text-center sm:px-6 lg:px-8">
+      <section className="bg-white py-24">
+        <RevealOnScroll className="mx-auto max-w-xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             The Magis Newsletter
           </h2>
@@ -313,7 +312,7 @@ export default async function HomePage() {
             market analysis directly to your inbox.
           </p>
           <NewsletterForm variant="light" className="mt-6" />
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );
