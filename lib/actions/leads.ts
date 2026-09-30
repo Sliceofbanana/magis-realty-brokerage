@@ -27,6 +27,33 @@ export type InquiryResult = { error?: string; success?: boolean };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Inquiries about a property at/above this price are treated as higher-value (roughly the top of today's catalog). */
+const HIGH_VALUE_PROPERTY_PRICE = 5_000_000;
+
+/**
+ * Infers a starting priority for a public inquiry — admins can always
+ * override it on the Kanban board, this just gives the pipeline a sane
+ * default instead of dumping everything into Medium:
+ *  - High: tied to a specific property priced at/above the luxury threshold.
+ *  - Low: no phone number AND no message — the thinnest, least actionable submissions.
+ *  - Medium: everything else (the common case).
+ */
+async function inferPriority(input: InquiryInput): Promise<LeadPriority> {
+  if (input.propertyId) {
+    const property = await prisma.property.findUnique({
+      where: { id: input.propertyId },
+      select: { price: true },
+    });
+    if (property && Number(property.price) >= HIGH_VALUE_PROPERTY_PRICE) {
+      return LeadPriority.HIGH;
+    }
+  }
+  if (!input.phone?.trim() && !input.message?.trim()) {
+    return LeadPriority.LOW;
+  }
+  return LeadPriority.MEDIUM;
+}
+
 /** Public lead-capture entry point — used by every inquiry form on the site. */
 export async function submitInquiryAction(input: InquiryInput): Promise<InquiryResult> {
   const rateLimit = await checkRateLimit("publicForm");
@@ -44,6 +71,8 @@ export async function submitInquiryAction(input: InquiryInput): Promise<InquiryR
     return { error: "Enter a valid email address." };
   }
 
+  const priority = await inferPriority(input);
+
   await prisma.lead.create({
     data: {
       name,
@@ -55,6 +84,7 @@ export async function submitInquiryAction(input: InquiryInput): Promise<InquiryR
       propertyLabel: input.propertyLabel,
       agentId: input.agentId,
       source: input.source,
+      priority,
     },
   });
 
