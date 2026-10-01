@@ -3,7 +3,17 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { motion } from "framer-motion";
 import { Search } from "lucide-react";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+};
 
 export function HomeHero() {
   const router = useRouter();
@@ -30,18 +40,35 @@ export function HomeHero() {
         />
         <div className="absolute inset-0 bg-linear-to-t from-navy-950/90 via-navy-950/30 to-navy-950/10" />
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
-          <h1 className="max-w-2xl font-serif text-4xl font-bold leading-tight text-white sm:text-5xl">
+          <motion.h1
+            initial="hidden"
+            animate="visible"
+            custom={0}
+            variants={fadeUp}
+            className="max-w-2xl font-serif text-4xl font-bold leading-tight text-white sm:text-5xl"
+          >
             Discover Your Legacy Through{" "}
             <span className="text-gold-400">Premium Real Estate</span>
-          </h1>
-          <p className="mt-4 max-w-lg text-base text-white/80">
+          </motion.h1>
+          <motion.p
+            initial="hidden"
+            animate="visible"
+            custom={0.15}
+            variants={fadeUp}
+            className="mt-4 max-w-lg text-base text-white/80"
+          >
             Magis Realty connects discerning clients with exceptional properties,
             offering a curated portfolio of residences and strategic investments.
-          </p>
+          </motion.p>
         </div>
       </div>
 
-      <div className="relative mx-auto -mt-10 max-w-5xl px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
+        className="relative mx-auto -mt-10 max-w-5xl px-4 sm:px-6 lg:px-8"
+      >
         <form
           onSubmit={handleSubmit}
           className="grid grid-cols-1 gap-3 rounded-2xl bg-white p-4 shadow-xl sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-end"
@@ -95,7 +122,7 @@ export function HomeHero() {
             <Search size={16} /> Search
           </button>
         </form>
-      </div>
+      </motion.div>
     </section>
   );
 }

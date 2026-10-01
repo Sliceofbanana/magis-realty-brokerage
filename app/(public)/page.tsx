@@ -6,8 +6,9 @@ import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { AgentCard } from "@/components/public/AgentCard";
 import { BlogCard } from "@/components/public/BlogCard";
-import { TestimonialCard } from "@/components/public/TestimonialCard";
+import { TestimonialCarousel } from "@/components/public/TestimonialCarousel";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { StatCard } from "@/components/ui/StatCard";
 import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
@@ -100,18 +101,18 @@ export default async function HomePage() {
 
       {/* Trust Stats */}
       {showTrustStats && (
-        <section className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {trustStats.map((stat) => (
               <StatCard key={stat.label} icon={<stat.icon size={20} />} label={stat.label} value={stat.value} />
             ))}
           </div>
-        </section>
+        </RevealOnScroll>
       )}
 
       {/* Curated Collections */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between">
+        <RevealOnScroll className="flex items-end justify-between">
           <div>
             <h2 className="font-serif text-3xl font-bold text-navy-900">
               Curated Collections
@@ -127,9 +128,10 @@ export default async function HomePage() {
           >
             Explore All Categories <ArrowRight size={14} />
           </Link>
-        </div>
+        </RevealOnScroll>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:h-105 sm:grid-cols-2">
+        <RevealStagger className="mt-8 grid grid-cols-1 gap-4 sm:h-105 sm:grid-cols-2">
+          <RevealItem>
           <Link
             href="/properties?type=Residential"
             className="group relative h-64 overflow-hidden rounded-2xl sm:h-full"
@@ -147,6 +149,8 @@ export default async function HomePage() {
               <p className="text-sm text-white/80">The pinnacle of private living</p>
             </div>
           </Link>
+          </RevealItem>
+          <RevealItem>
           <div className="grid grid-cols-1 gap-4 sm:h-full sm:grid-rows-2">
             <Link
               href="/properties?type=Commercial"
@@ -183,26 +187,29 @@ export default async function HomePage() {
               </div>
             </Link>
           </div>
-        </div>
+          </RevealItem>
+        </RevealStagger>
       </section>
 
       {/* Featured Properties */}
       {featured.length > 0 && (
         <section className="bg-offwhite py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
+            <RevealOnScroll className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-gold-600">
                 New Listings
               </p>
               <h2 className="mt-2 font-serif text-3xl font-bold text-navy-900">
                 Featured Properties
               </h2>
-            </div>
-            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            </RevealOnScroll>
+            <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {featured.map((property) => (
-                <PropertyCard key={property.id} property={property} />
+                <RevealItem key={property.id}>
+                  <PropertyCard property={property} />
+                </RevealItem>
               ))}
-            </div>
+            </RevealStagger>
           </div>
         </section>
       )}
@@ -210,7 +217,7 @@ export default async function HomePage() {
       {/* Magis Standard */}
       <section className="bg-navy-950 py-20 text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div>
+          <RevealOnScroll>
             <h2 className="font-serif text-3xl font-bold">
               The Magis Standard: Excellence Without Compromise
             </h2>
@@ -227,8 +234,8 @@ export default async function HomePage() {
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="relative h-80 overflow-hidden rounded-2xl lg:h-96">
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.15} className="relative h-80 overflow-hidden rounded-2xl lg:h-96">
             <Image
               src={business.handshake}
               alt="Magis Realty agents in consultation"
@@ -236,7 +243,7 @@ export default async function HomePage() {
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"
             />
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
@@ -245,7 +252,7 @@ export default async function HomePage() {
       {/* Elite Agents */}
       {elite.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between">
+          <RevealOnScroll className="flex items-end justify-between">
             <div>
               <h2 className="font-serif text-3xl font-bold text-navy-900">
                 You May Contact Our Agents
@@ -260,26 +267,32 @@ export default async function HomePage() {
             >
               View All Team <ArrowRight size={14} />
             </Link>
-          </div>
-          <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
+          </RevealOnScroll>
+          <RevealStagger className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
             {elite.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} />
+              <RevealItem key={agent.id}>
+                <AgentCard agent={agent} />
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </section>
       )}
 
       {/* Insights */}
       <section className="bg-offwhite py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
-            Insights &amp; Market Trends
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <RevealOnScroll>
+            <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
+              Insights &amp; Market Trends
+            </h2>
+          </RevealOnScroll>
+          <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {insights.map((post) => (
-              <BlogCard key={post.id} post={post} />
+              <RevealItem key={post.id}>
+                <BlogCard post={post} />
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </div>
       </section>
 
@@ -287,16 +300,16 @@ export default async function HomePage() {
       {testimonials.length > 0 && (
         <section className="bg-sky-100 py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
-              Testimonials
-            </p>
-            <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
-              What Clients Say
-            </h2>
-            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {testimonials.map((t) => (
-                <TestimonialCard key={t.name} testimonial={t} />
-              ))}
+            <RevealOnScroll>
+              <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
+                Testimonials
+              </p>
+              <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
+                What Clients Say
+              </h2>
+            </RevealOnScroll>
+            <div className="mt-10">
+              <TestimonialCarousel testimonials={testimonials} />
             </div>
           </div>
         </section>
@@ -304,7 +317,7 @@ export default async function HomePage() {
 
       {/* Newsletter */}
       <section className="bg-white py-20">
-        <div className="mx-auto max-w-xl px-4 text-center sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto max-w-xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             The Magis Newsletter
           </h2>
@@ -313,7 +326,7 @@ export default async function HomePage() {
             market analysis directly to your inbox.
           </p>
           <NewsletterForm variant="light" className="mt-6" />
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );

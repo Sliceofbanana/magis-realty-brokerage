@@ -27,6 +27,7 @@
     "@upstash/redis": "^1.38.3",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.1",
+    "framer-motion": "^13.4.6",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.27.0",
