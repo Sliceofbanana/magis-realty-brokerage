@@ -124,7 +124,7 @@ export type TeamMember = {
   id: string;
   name: string;
   position: string;
-  photo: string;
+  photo: string | null;
   birthDate: string; // YYYY-MM-DD — year used only for optional age display
   role: PortalRole;
   isYou?: boolean;
@@ -136,7 +136,7 @@ export type BirthdayGreeting = {
   id: string;
   celebrantId: string;
   authorName: string;
-  authorPhoto: string;
+  authorPhoto: string | null;
   message: string;
   timestamp: string;
   reactions: Partial<Record<ReactionEmoji, number>>;

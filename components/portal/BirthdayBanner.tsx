@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { PartyPopper, X, MessageCircleHeart } from "lucide-react";
+import { Avatar } from "@/components/ui/Avatar";
 import { useBirthdays } from "./BirthdayContext";
 
 export function BirthdayBanner() {
@@ -57,8 +57,8 @@ export function BirthdayBanner() {
                 onClick={() => openGreetingsPanel(c)}
                 className="flex items-center gap-2 rounded-full bg-white/10 py-1.5 pl-1.5 pr-3 text-sm font-medium hover:bg-white/20"
               >
-                <span className="relative h-6 w-6 overflow-hidden rounded-full">
-                  <Image src={c.photo} alt={c.name} fill className="object-cover" />
+                <span className="overflow-hidden rounded-full">
+                  <Avatar src={c.photo ?? undefined} name={c.name} size={24} />
                 </span>
                 <MessageCircleHeart size={14} className="text-gold-400" />
                 Greet {c.name.split(" ")[0]}

@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useSession } from "next-auth/react";
 import { BirthdayConfig, BirthdayGreeting, ReactionEmoji, TeamMember } from "@/lib/types";
-import { team as defaultTeam, defaultBirthdayConfig } from "@/lib/data/team";
+import { defaultBirthdayConfig } from "@/lib/data/team";
+import { getBirthdayTeamAction } from "@/lib/actions/birthdays";
 import { celebrantsToday, todayKey } from "@/lib/birthdays";
 import { useRole } from "./RoleContext";
 
@@ -70,6 +71,7 @@ type BirthdayContextValue = {
   activePanelCelebrant: TeamMember | null;
   openGreetingsPanel: (celebrant: TeamMember) => void;
   closeGreetingsPanel: () => void;
+  refreshTeam: () => void;
 };
 
 const BirthdayContext = createContext<BirthdayContextValue | null>(null);
@@ -84,14 +86,33 @@ export function BirthdayProvider({ children }: { children: React.ReactNode }) {
   // fire a "storage" event on their own.
   const [, forceSync] = useState(0);
 
-  // Matches the real logged-in user against the mock team roster by name —
-  // the birthday system itself still runs on lib/data/team.ts, not Postgres
-  // (a separate, larger migration), but "who is currently logged in" must
-  // reflect the real session rather than a hardcoded "isYou" flag.
-  const currentUser =
-    defaultTeam.find((m) => m.name === session?.user?.name) ??
-    defaultTeam.find((m) => m.isYou) ??
-    defaultTeam[0];
+  // Real roster, loaded from Postgres (only users who've set a birthday in
+  // Settings > General show up here) rather than a hardcoded fixture.
+  const [team, setTeam] = useState<TeamMember[]>([]);
+
+  const loadTeam = useCallback(() => {
+    getBirthdayTeamAction().then(setTeam).catch(() => setTeam([]));
+  }, []);
+
+  useEffect(() => {
+    loadTeam();
+  }, [loadTeam]);
+
+  // The signed-in user, by id — not necessarily present in `team` if they
+  // haven't set a birthday yet, in which case they just can't be a celebrant.
+  const currentUser: TeamMember = useMemo(() => {
+    const match = team.find((m) => m.id === session?.user?.id);
+    if (match) return match;
+    return {
+      id: session?.user?.id ?? "unknown",
+      name: session?.user?.name ?? "You",
+      position: "",
+      photo: session?.user?.photo ?? null,
+      birthDate: "",
+      role,
+    };
+  }, [team, session, role]);
+
   const today = useMemo(() => new Date(), []);
   const key = todayKey(today);
 
@@ -99,7 +120,7 @@ export function BirthdayProvider({ children }: { children: React.ReactNode }) {
   const bannerDismissed = useStoredFlag(BANNER_KEY_PREFIX + key);
   const [greetings, persistGreetings] = useStoredGreetings();
 
-  const celebrants = config.enabled ? celebrantsToday(defaultTeam, today) : [];
+  const celebrants = config.enabled ? celebrantsToday(team, today) : [];
   const youAreCelebrant = celebrants.some((m) => m.id === currentUser.id);
   const notificationsAllowed = config.notifyRoles.includes(role);
 
@@ -141,7 +162,7 @@ export function BirthdayProvider({ children }: { children: React.ReactNode }) {
   const value: BirthdayContextValue = {
     config,
     updateConfig: (patch) => setConfig((prev) => ({ ...prev, ...patch })),
-    team: defaultTeam,
+    team,
     currentUser,
     celebrants,
     youAreCelebrant,
@@ -157,6 +178,7 @@ export function BirthdayProvider({ children }: { children: React.ReactNode }) {
     activePanelCelebrant,
     openGreetingsPanel: setActivePanelCelebrant,
     closeGreetingsPanel: () => setActivePanelCelebrant(null),
+    refreshTeam: loadTeam,
   };
 
   return <BirthdayContext.Provider value={value}>{children}</BirthdayContext.Provider>;

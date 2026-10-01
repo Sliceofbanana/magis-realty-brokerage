@@ -12,6 +12,7 @@ export type MyProfile = {
   phone: string | null;
   email: string;
   photo: string | null;
+  birthDate: string | null; // YYYY-MM-DD
 };
 
 /** Basic identity fields for the current session user — used by Settings > General. */
@@ -21,15 +22,18 @@ export async function getMyProfileAction(): Promise<MyProfile | null> {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, position: true, phone: true, email: true, photo: true },
+    select: { name: true, position: true, phone: true, email: true, photo: true, birthDate: true },
   });
-  return user;
+  if (!user) return null;
+
+  return { ...user, birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : null };
 }
 
 export type ProfileUpdateInput = {
   name: string;
   position?: string;
   phone?: string;
+  birthDate?: string | null; // YYYY-MM-DD, or null/"" to clear
   primaryOffice?: string;
   prcLicense?: string;
   dhsudRegistration?: string;
@@ -52,6 +56,19 @@ export async function updateProfileAction(values: ProfileUpdateInput): Promise<P
   const name = values.name?.trim();
   if (!name) return { error: "Full name is required." };
 
+  // undefined = leave untouched, "" / null = clear, otherwise parse as a date.
+  let birthDate: Date | null | undefined;
+  if (values.birthDate !== undefined) {
+    if (!values.birthDate) {
+      birthDate = null;
+    } else {
+      const parsed = new Date(`${values.birthDate}T00:00:00.000Z`);
+      if (Number.isNaN(parsed.getTime())) return { error: "Invalid birthday." };
+      if (parsed.getTime() > Date.now()) return { error: "Birthday can't be in the future." };
+      birthDate = parsed;
+    }
+  }
+
   const existing = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: { agentProfile: true },
@@ -65,6 +82,7 @@ export async function updateProfileAction(values: ProfileUpdateInput): Promise<P
       position: values.position?.trim() || null,
       phone: values.phone?.trim() || null,
       primaryOffice: values.primaryOffice?.trim() || null,
+      ...(birthDate !== undefined ? { birthDate } : {}),
     },
   });
 

@@ -94,12 +94,14 @@ export default function SettingsPage() {
 
 function GeneralTab() {
   const { update: updateSession } = useSession();
+  const { refreshTeam } = useBirthdays();
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [loadError, setLoadError] = useState("");
 
   const [fullName, setFullName] = useState("");
   const [title, setTitle] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -126,6 +128,7 @@ function GeneralTab() {
         setFullName(p.name);
         setTitle(p.position ?? "");
         setPhone(p.phone ?? "");
+        setBirthDate(p.birthDate ?? "");
       })
       .catch(() => setLoadError("Couldn't load your profile."));
   }, []);
@@ -133,13 +136,14 @@ function GeneralTab() {
   async function handleSave() {
     setSaving(true);
     setSaveError("");
-    const result = await updateProfileAction({ name: fullName, position: title, phone });
+    const result = await updateProfileAction({ name: fullName, position: title, phone, birthDate });
     setSaving(false);
     if (result.error) {
       setSaveError(result.error);
       return;
     }
     setSaved(true);
+    refreshTeam();
     setTimeout(() => setSaved(false), 2000);
   }
 
@@ -281,6 +285,21 @@ function GeneralTab() {
                 />
               </div>
               <p className="mt-1 text-xs text-gray-400">Used for client notifications</p>
+            </div>
+            <div>
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-navy-900">
+                <Cake size={14} /> Birthday
+              </p>
+              <div className="mt-1.5">
+                <input
+                  type="date"
+                  value={birthDate}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900"
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-400">Shown to teammates for birthday celebrations</p>
             </div>
           </div>
         </div>

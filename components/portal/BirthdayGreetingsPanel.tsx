@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { X, Send, PartyPopper } from "lucide-react";
+import { Avatar } from "@/components/ui/Avatar";
 import { useBirthdays } from "./BirthdayContext";
 import { ReactionEmoji } from "@/lib/types";
 
@@ -44,13 +44,8 @@ export function BirthdayGreetingsPanel() {
       <div className="animate-birthday-scale flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
         <div className="flex items-center justify-between border-b border-black/5 p-5">
           <div className="flex items-center gap-3">
-            <div className="relative h-11 w-11 overflow-hidden rounded-full">
-              <Image
-                src={activePanelCelebrant.photo}
-                alt={activePanelCelebrant.name}
-                fill
-                className="object-cover"
-              />
+            <div className="overflow-hidden rounded-full">
+              <Avatar src={activePanelCelebrant.photo ?? undefined} name={activePanelCelebrant.name} size={44} />
             </div>
             <div>
               <h2 id="greetings-panel-title" className="font-serif text-lg font-bold text-navy-900">
@@ -78,8 +73,8 @@ export function BirthdayGreetingsPanel() {
           {greetings.map((g) => (
             <div key={g.id} className="rounded-xl bg-offwhite p-4">
               <div className="flex items-start gap-3">
-                <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full">
-                  <Image src={g.authorPhoto} alt={g.authorName} fill className="object-cover" />
+                <div className="shrink-0 overflow-hidden rounded-full">
+                  <Avatar src={g.authorPhoto ?? undefined} name={g.authorName} size={32} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-baseline justify-between gap-2">

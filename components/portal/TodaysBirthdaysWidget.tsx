@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { Cake, MessageCircleHeart } from "lucide-react";
+import { Avatar } from "@/components/ui/Avatar";
 import { useBirthdays } from "./BirthdayContext";
 import { ageOn } from "@/lib/birthdays";
 
@@ -22,8 +22,8 @@ export function TodaysBirthdaysWidget() {
         <ul className="mt-4 space-y-3">
           {celebrants.map((c) => (
             <li key={c.id} className="flex items-center gap-3">
-              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ring-gold-400">
-                <Image src={c.photo} alt={c.name} fill className="object-cover" />
+              <div className="shrink-0 rounded-full ring-2 ring-gold-400">
+                <Avatar src={c.photo ?? undefined} name={c.name} size={44} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-navy-900">{c.name}</p>
