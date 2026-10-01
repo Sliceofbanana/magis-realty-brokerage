@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
 import { formatCurrency } from "@/lib/format";
 import { PortfolioGrid } from "@/components/public/PortfolioGrid";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { exteriors } from "@/lib/stockPhotos";
 
 export const metadata = { title: "Investment Portfolio | Magis Realty & Brokerage" };
@@ -86,9 +87,10 @@ export default async function PortfolioPage() {
       </section>
 
       <section className="border-b border-black/5 bg-offwhite py-14">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
+        <RevealStagger className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
           {stats.map((stat) => (
-            <div key={stat.label} className="text-center lg:text-left">
+            <RevealItem key={stat.label}>
+            <div className="text-center lg:text-left">
               <p className="font-serif text-3xl font-bold text-navy-900 sm:text-4xl">
                 {stat.value}
               </p>
@@ -96,12 +98,13 @@ export default async function PortfolioPage() {
                 {stat.label}
               </p>
             </div>
+            </RevealItem>
           ))}
-        </div>
+        </RevealStagger>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mb-8">
+        <RevealOnScroll className="mb-8">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             Portfolio Grid
           </h2>
@@ -109,12 +112,12 @@ export default async function PortfolioPage() {
             Every asset currently active in our portfolio, filterable by type
             and status.
           </p>
-        </div>
+        </RevealOnScroll>
         <PortfolioGrid properties={properties} />
       </section>
 
       <section className="bg-navy-950 py-20 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/10 text-gold-400">
             <Building2 size={20} />
           </span>
@@ -134,11 +137,11 @@ export default async function PortfolioPage() {
               an agent about a specific asset.
             </p>
           </Card>
-        </div>
+        </RevealOnScroll>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mb-10">
+        <RevealOnScroll className="mb-10">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             How We Work
           </h2>
@@ -146,10 +149,11 @@ export default async function PortfolioPage() {
             What partnering with Magis Realty actually looks like — no
             inflated claims, just what we deliver on every deal.
           </p>
-        </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        </RevealOnScroll>
+        <RevealStagger className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {capabilities.map((cap) => (
-            <Card key={cap.title} className="bg-white p-6">
+            <RevealItem key={cap.title}>
+            <Card className="bg-white p-6">
               <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-gold-400">
                 <cap.icon size={20} />
               </span>
@@ -160,12 +164,14 @@ export default async function PortfolioPage() {
                 {cap.description}
               </p>
             </Card>
+            </RevealItem>
           ))}
-        </div>
+        </RevealStagger>
       </section>
 
       <section className="bg-sky-100 py-20">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <RevealStagger className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <RevealItem>
           <Card className="flex flex-col items-start bg-white p-8">
             <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-gold-400">
               <Users2 size={20} />
@@ -182,6 +188,8 @@ export default async function PortfolioPage() {
               Request a Property Assessment
             </Button>
           </Card>
+          </RevealItem>
+          <RevealItem>
           <Card className="flex flex-col items-start bg-white p-8">
             <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-gold-400">
               <Building2 size={20} />
@@ -197,7 +205,8 @@ export default async function PortfolioPage() {
               Explore Career Opportunities
             </Button>
           </Card>
-        </div>
+          </RevealItem>
+        </RevealStagger>
       </section>
     </>
   );

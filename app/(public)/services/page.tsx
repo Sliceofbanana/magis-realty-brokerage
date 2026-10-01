@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Home, Key, Building2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { exteriors, interiors } from "@/lib/stockPhotos";
 
 export const metadata = { title: "Services | Magis Realty & Brokerage" };
@@ -76,10 +77,11 @@ export default function ServicesPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <RevealStagger className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {services.map((service) => (
-            <Card key={service.title} className="flex flex-col overflow-hidden bg-white p-0">
-              <div className="relative h-48">
+            <RevealItem key={service.title}>
+            <Card className="flex flex-col overflow-hidden bg-white p-0">
+              <div className="relative h-48 bg-gray-100">
                 <Image
                   src={service.image}
                   alt={`${service.title} with Magis Realty`}
@@ -113,12 +115,13 @@ export default function ServicesPage() {
                 </div>
               </div>
             </Card>
+            </RevealItem>
           ))}
-        </div>
+        </RevealStagger>
       </section>
 
       <section className="bg-navy-950 py-16 text-white">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 text-center sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 text-center sm:px-6 lg:px-8">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-gold-400">
             <ShieldCheck size={20} />
           </span>
@@ -135,7 +138,7 @@ export default function ServicesPage() {
           <Button href="/contact" className="mt-2">
             Start a Conversation
           </Button>
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );

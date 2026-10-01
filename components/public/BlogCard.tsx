@@ -10,7 +10,7 @@ export function BlogCard({ post }: { post: BlogPost }) {
       href={`/blog/${post.slug}`}
       className="group block overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg"
     >
-      <div className="relative h-48 w-full overflow-hidden">
+      <div className="relative h-48 w-full overflow-hidden bg-gray-100">
         <Image
           src={post.image}
           alt={post.title}

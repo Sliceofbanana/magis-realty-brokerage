@@ -8,6 +8,7 @@ import { submitInquiryAction } from "@/lib/actions/leads";
 import { prisma } from "@/lib/prisma";
 import { agentWithProfile, toAgent } from "@/lib/adapters/agent";
 import { toTestimonial } from "@/lib/adapters/testimonial";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -70,10 +71,10 @@ export default async function AgentProfilePage({
   return (
     <>
       <section className="grid grid-cols-1 lg:grid-cols-2">
-        <div className="relative h-80 lg:h-[480px]">
+        <div className="relative h-80 bg-gray-100 lg:h-[480px]">
           <Image src={agent.photo} alt={agent.name} fill className="object-cover" />
         </div>
-        <div className="flex flex-col justify-center px-4 py-12 sm:px-10 lg:px-16">
+        <RevealOnScroll className="flex flex-col justify-center px-4 py-12 sm:px-10 lg:px-16">
           <p className="text-xs font-semibold uppercase tracking-widest text-gold-600">
             {agent.title}
           </p>
@@ -92,27 +93,29 @@ export default async function AgentProfilePage({
               <SocialIcon platform="linkedin" size={16} /> LinkedIn
             </span>
           </div>
-        </div>
+        </RevealOnScroll>
       </section>
 
       <section className="bg-navy-950 py-10 text-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-4 px-4 text-center sm:px-6 lg:px-8">
+        <RevealStagger className="mx-auto grid max-w-7xl grid-cols-3 gap-4 px-4 text-center sm:px-6 lg:px-8">
           {[
             [`${agent.yearsExperience}+`, "Years of Experience"],
             [agent.propertiesSoldValue, "Properties Sold (PHP)"],
             [agent.clientSatisfaction, "Client Satisfaction"],
           ].map(([value, label]) => (
-            <div key={label}>
+            <RevealItem key={label}>
+            <div>
               <p className="font-serif text-3xl font-bold text-gold-400 sm:text-4xl">{value}</p>
               <p className="mt-1 text-xs uppercase tracking-wide text-white/70">{label}</p>
             </div>
+            </RevealItem>
           ))}
-        </div>
+        </RevealStagger>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
-          <div>
+          <RevealOnScroll>
             <h2 className="border-l-4 border-gold-500 pl-4 font-serif text-2xl font-bold text-navy-900">
               Curating Extraordinary Living
             </h2>
@@ -121,22 +124,25 @@ export default async function AgentProfilePage({
                 <p key={para}>{para}</p>
               ))}
             </div>
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <RevealStagger className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {agent.specialties.map((s, i) => {
                 const Icon = specialtyIcons[i % specialtyIcons.length];
                 return (
-                  <div key={s.title} className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
+                  <RevealItem key={s.title}>
+                  <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
                     <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold-100 text-gold-600">
                       <Icon size={18} />
                     </span>
                     <h3 className="mt-3 font-serif text-lg font-bold text-navy-900">{s.title}</h3>
                     <p className="mt-1 text-sm text-gray-600">{s.description}</p>
                   </div>
+                  </RevealItem>
                 );
               })}
-            </div>
-          </div>
+            </RevealStagger>
+          </RevealOnScroll>
 
+          <RevealOnScroll delay={0.15}>
           <aside className="h-fit rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
             <h3 className="font-serif text-lg font-bold text-navy-900">Schedule a Consultation</h3>
             <p className="mt-1 text-xs text-gray-500">
@@ -155,24 +161,31 @@ export default async function AgentProfilePage({
               Strictly confidential advisory.
             </p>
           </aside>
+          </RevealOnScroll>
         </div>
       </section>
 
-      <section className="bg-sky-100 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
-            Testimonials
-          </p>
-          <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
-            What Clients Say
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {testimonials.map((t) => (
-              <TestimonialCard key={t.name} testimonial={t} />
-            ))}
+      {testimonials.length > 0 && (
+        <section className="bg-sky-100 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <RevealOnScroll>
+              <p className="text-center text-xs font-semibold uppercase tracking-widest text-gold-600">
+                Testimonials
+              </p>
+              <h2 className="mt-2 text-center font-serif text-3xl font-bold text-navy-900">
+                What Clients Say
+              </h2>
+            </RevealOnScroll>
+            <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((t) => (
+                <RevealItem key={t.name}>
+                  <TestimonialCard testimonial={t} />
+                </RevealItem>
+              ))}
+            </RevealStagger>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </>
   );
 }

@@ -7,6 +7,7 @@ import { AgentCard } from "@/components/public/AgentCard";
 import { FeaturedAgentCard } from "@/components/public/FeaturedAgentCard";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 
 const PAGE_SIZE = 8;
 
@@ -45,11 +46,13 @@ export function AgentsDirectoryView({ agents }: { agents: Agent[] }) {
           precision to every transaction.
         </p>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <RevealStagger className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {featured.map((agent) => (
-            <FeaturedAgentCard key={agent.id} agent={agent} />
+            <RevealItem key={agent.id}>
+              <FeaturedAgentCard agent={agent} />
+            </RevealItem>
           ))}
-        </div>
+        </RevealStagger>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
@@ -95,11 +98,13 @@ export function AgentsDirectoryView({ agents }: { agents: Agent[] }) {
               No agents match your search.
             </div>
           ) : (
-            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <RevealStagger className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {paged.map((agent) => (
-                <AgentCard key={agent.id} agent={agent} />
+                <RevealItem key={agent.id}>
+                  <AgentCard agent={agent} />
+                </RevealItem>
               ))}
-            </div>
+            </RevealStagger>
           )}
 
           {totalPages > 1 && (
@@ -111,7 +116,7 @@ export function AgentsDirectoryView({ agents }: { agents: Agent[] }) {
       </div>
 
       <section className="bg-sky-100 py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             Join our network of elite brokers.
           </h2>
@@ -126,7 +131,7 @@ export function AgentsDirectoryView({ agents }: { agents: Agent[] }) {
               Our Culture
             </Button>
           </div>
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );

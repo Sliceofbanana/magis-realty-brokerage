@@ -6,6 +6,7 @@ import { Property } from "@/lib/types";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
+import { RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 
 const amenityOptions = ["Pool", "Security", "Gym", "Smart Home", "Garden", "Wine"];
 const regionOptions = ["Any Region", "North Cebu", "Central Cebu", "South Cebu"];
@@ -319,11 +320,13 @@ export function PropertiesFilterView({
               No properties match your filters. Try resetting them.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <RevealStagger className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {paged.map((property) => (
-                <PropertyCard key={property.id} property={property} />
+                <RevealItem key={property.id}>
+                  <PropertyCard property={property} />
+                </RevealItem>
               ))}
-            </div>
+            </RevealStagger>
           )}
 
           {!showMap && totalPages > 1 && (

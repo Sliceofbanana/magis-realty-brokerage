@@ -1,6 +1,7 @@
 import { UserRound, Mail, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 export const metadata = { title: "Privacy Policy | Magis Realty & Brokerage" };
 
@@ -146,10 +147,10 @@ export default function PrivacyPolicyPage() {
                 <Mail size={16} className="text-gold-400" /> privacy@magisrealty.com
               </a>
               <a
-                href="tel:+15551234567"
+                href={`tel:${COMPANY_PHONE_TEL}`}
                 className="flex items-center gap-2 font-semibold hover:text-gold-400"
               >
-                <Phone size={16} className="text-gold-400" /> +1 (555) 123-4567
+                <Phone size={16} className="text-gold-400" /> {COMPANY_PHONE_DISPLAY}
               </a>
             </div>
           </div>

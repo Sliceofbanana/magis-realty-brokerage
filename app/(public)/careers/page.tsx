@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Award, Users, TrendingUp, Compass, HeartHandshake, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CareersApplicationForm } from "@/components/public/CareersApplicationForm";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { business, portraits } from "@/lib/stockPhotos";
 
 export const metadata = { title: "Careers | Magis Realty & Brokerage" };
@@ -103,19 +104,21 @@ export default async function CareersPage({
       </section>
 
       <section className="border-b border-black/5 bg-offwhite py-10">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-4 text-center sm:grid-cols-4 sm:px-6 lg:px-8">
+        <RevealStagger className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-4 text-center sm:grid-cols-4 sm:px-6 lg:px-8">
           {stats.map(([value, label]) => (
-            <div key={label}>
+            <RevealItem key={label}>
+            <div>
               <p className="font-serif text-2xl font-bold text-navy-900">{value}</p>
               <p className="mt-1 text-[11px] uppercase tracking-wide text-gray-500">{label}</p>
             </div>
+            </RevealItem>
           ))}
-        </div>
+        </RevealStagger>
       </section>
 
       <section id="culture" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
-          <div className="relative h-72 overflow-hidden rounded-2xl sm:h-96">
+          <RevealOnScroll className="relative h-72 overflow-hidden rounded-2xl bg-gray-100 sm:h-96">
             <Image
               src={business.teamCollaboration}
               alt="The Magis Realty team collaborating"
@@ -123,8 +126,8 @@ export default async function CareersPage({
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"
             />
-          </div>
-          <div>
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.15}>
             <h2 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
               Built on a Foundation of Excellence
             </h2>
@@ -146,10 +149,11 @@ export default async function CareersPage({
                 </li>
               ))}
             </ul>
-          </div>
+          </RevealOnScroll>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <RevealStagger className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <RevealItem>
           <div className="relative overflow-hidden rounded-2xl bg-navy-950 p-8 text-white">
             <Compass className="absolute -right-2 -top-2 text-white/10" size={96} />
             <h3 className="relative font-serif text-xl font-bold">A Legacy of Quality</h3>
@@ -158,7 +162,9 @@ export default async function CareersPage({
               development in every transaction.
             </p>
           </div>
-          <div className="relative h-56 overflow-hidden rounded-2xl sm:h-auto">
+          </RevealItem>
+          <RevealItem>
+          <div className="relative h-56 overflow-hidden rounded-2xl bg-gray-100 sm:h-auto">
             <Image
               src={portraits.womanGrayBlazer}
               alt="A Magis Realty broker"
@@ -167,9 +173,11 @@ export default async function CareersPage({
               className="object-cover"
             />
           </div>
-        </div>
+          </RevealItem>
+        </RevealStagger>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[280px_1fr]">
+        <RevealStagger className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[280px_1fr]">
+          <RevealItem>
           <div className="rounded-2xl bg-gold-500 p-6 text-white">
             <HeartHandshake size={22} />
             <h3 className="mt-3 font-serif text-lg font-bold">Well-being First</h3>
@@ -178,6 +186,8 @@ export default async function CareersPage({
               retreats.
             </p>
           </div>
+          </RevealItem>
+          <RevealItem>
           <div className="flex items-center justify-between gap-4 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
             <div>
               <h3 className="font-serif text-lg font-bold text-navy-900">
@@ -197,12 +207,13 @@ export default async function CareersPage({
               </span>
             </div>
           </div>
-        </div>
+          </RevealItem>
+        </RevealStagger>
       </section>
 
       <section id="openings" className="bg-offwhite py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          <RevealOnScroll className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
                 Current Openings
@@ -219,12 +230,12 @@ export default async function CareersPage({
                 <option>All Departments</option>
               </select>
             </div>
-          </div>
+          </RevealOnScroll>
 
-          <div className="mt-8 space-y-4">
+          <RevealStagger className="mt-8 space-y-4">
             {openings.map((job) => (
+              <RevealItem key={job.title}>
               <div
-                key={job.title}
                 className="flex flex-col gap-4 rounded-2xl border border-black/5 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
@@ -253,13 +264,14 @@ export default async function CareersPage({
                   </Button>
                 </div>
               </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </div>
       </section>
 
       <section id="apply" className="bg-sky-100 py-20">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 rounded-2xl bg-white p-8 shadow-sm sm:p-10 lg:grid-cols-2">
+        <RevealOnScroll className="mx-auto grid max-w-6xl grid-cols-1 gap-10 rounded-2xl bg-white p-8 shadow-sm sm:p-10 lg:grid-cols-2">
           <div>
             <h2 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
               Don&rsquo;t see the right role?
@@ -281,7 +293,7 @@ export default async function CareersPage({
             </div>
           </div>
           <CareersApplicationForm role={role} />
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );

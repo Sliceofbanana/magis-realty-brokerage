@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail } from "lucide-react";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { Card } from "@/components/ui/Card";
+import { RevealOnScroll } from "@/components/public/RevealOnScroll";
 import { exteriors } from "@/lib/stockPhotos";
 import { submitInquiryAction } from "@/lib/actions/leads";
 import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
@@ -70,6 +71,7 @@ export default function ContactPage() {
 
       <div className="bg-offwhite py-16">
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
+          <RevealOnScroll>
           <Card className="bg-white p-6 sm:p-8">
             <h2 className="font-serif text-2xl font-bold text-navy-900">Inquiry Form</h2>
             <p className="mt-1 text-sm text-gray-500">
@@ -84,8 +86,9 @@ export default function ContactPage() {
               action={submitContactInquiry}
             />
           </Card>
+          </RevealOnScroll>
 
-          <div className="space-y-6">
+          <RevealOnScroll delay={0.15} className="space-y-6">
             <div className="rounded-2xl bg-navy-950 p-6 text-white">
               <MapPin className="text-gold-400" size={20} />
               <h3 className="mt-3 font-serif text-lg font-bold">Main Office</h3>
@@ -180,11 +183,11 @@ export default function ContactPage() {
                 </div>
               </div>
             </Card>
-          </div>
+          </RevealOnScroll>
         </div>
 
-        <div className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="relative h-72 overflow-hidden rounded-2xl sm:h-96">
+        <RevealOnScroll className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative h-72 overflow-hidden rounded-2xl bg-gray-100 sm:h-96">
             <iframe
               title="Map showing the Magis Realty & Brokerage office location"
               src="https://www.google.com/maps?q=Room+610,+Northwoods+Place,+H.+Abellana+St.,+Canduman,+Mandaue+City,+6014+Cebu&output=embed"
@@ -192,7 +195,7 @@ export default function ContactPage() {
               loading="lazy"
             />
           </div>
-        </div>
+        </RevealOnScroll>
       </div>
     </>
   );

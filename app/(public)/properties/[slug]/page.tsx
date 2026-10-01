@@ -19,6 +19,7 @@ import { PropertyGalleryCarousel } from "@/components/public/PropertyGalleryCaro
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { submitInquiryAction } from "@/lib/actions/leads";
 import { Badge } from "@/components/ui/Badge";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { formatCurrency } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 const inquiryFields: FormField[] = [
   { name: "name", label: "Full Name", type: "text", placeholder: "John Doe", span: "full" },
   { name: "email", label: "Email Address", type: "email", placeholder: "john@example.com", span: "full" },
-  { name: "phone", label: "Phone Number", type: "tel", placeholder: "+1 (555) 000-0000", span: "full" },
+  { name: "phone", label: "Phone Number", type: "tel", placeholder: "+63 900 000 0000", span: "full" },
   {
     name: "message",
     label: "Message",
@@ -91,7 +92,7 @@ export default async function PropertyDetailsPage({
         <span className="text-navy-900">{property.title}</span>
       </nav>
 
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+      <RevealOnScroll className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             {property.verified && (
@@ -119,12 +120,14 @@ export default async function PropertyDetailsPage({
             ₱{property.pricePerSqft.toLocaleString()} / sq. ft.
           </p>
         </div>
-      </div>
+      </RevealOnScroll>
 
-      <PropertyGalleryCarousel images={galleryImages} title={property.title} />
+      <RevealOnScroll delay={0.1}>
+        <PropertyGalleryCarousel images={galleryImages} title={property.title} />
+      </RevealOnScroll>
 
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
-        <div>
+        <RevealOnScroll>
           <div className="grid grid-cols-2 gap-4 border-b border-black/10 pb-6 sm:grid-cols-4">
             {property.beds > 0 && (
               <div>
@@ -205,12 +208,13 @@ export default async function PropertyDetailsPage({
               </div>
             </div>
           </div>
-        </div>
+        </RevealOnScroll>
 
         {agent && (
+          <RevealOnScroll delay={0.15}>
           <aside className="h-fit rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
             <Link href={`/agents/${agent.slug}`} className="flex items-center gap-3">
-              <div className="relative h-14 w-14 overflow-hidden rounded-full">
+              <div className="relative h-14 w-14 overflow-hidden rounded-full bg-gray-100">
                 <Image src={agent.photo} alt={agent.name} fill className="object-cover" />
               </div>
               <div>
@@ -247,11 +251,12 @@ export default async function PropertyDetailsPage({
               </button>
             </div>
           </aside>
+          </RevealOnScroll>
         )}
       </div>
 
       <div className="mt-16">
-        <div className="flex items-end justify-between border-b border-black/10 pb-4">
+        <RevealOnScroll className="flex items-end justify-between border-b border-black/10 pb-4">
           <h2 className="font-serif text-2xl font-bold text-navy-900">Similar Luxury Residences</h2>
           <Link
             href="/properties"
@@ -259,12 +264,14 @@ export default async function PropertyDetailsPage({
           >
             View All Listings →
           </Link>
-        </div>
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        </RevealOnScroll>
+        <RevealStagger className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {similar.map((p) => (
-            <PropertyCard key={p.id} property={p} />
+            <RevealItem key={p.id}>
+              <PropertyCard property={p} />
+            </RevealItem>
           ))}
-        </div>
+        </RevealStagger>
       </div>
     </div>
   );

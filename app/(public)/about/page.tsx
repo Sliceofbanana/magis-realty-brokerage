@@ -3,6 +3,7 @@ import { Flag, Eye, Gem, ShieldCheck, LineChart, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { leadershipTeam } from "@/lib/data/misc";
 import { business, interiors } from "@/lib/stockPhotos";
 
@@ -89,7 +90,7 @@ export default function AboutPage() {
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
+          <RevealOnScroll>
             <h2 className="font-serif text-3xl font-bold text-navy-900">
               Our Journey in Philippine Real Estate
             </h2>
@@ -122,10 +123,10 @@ export default function AboutPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </RevealOnScroll>
 
-          <div className="relative">
-            <div className="relative h-80 overflow-hidden rounded-2xl sm:h-96">
+          <RevealOnScroll delay={0.15} className="relative">
+            <div className="relative h-80 overflow-hidden rounded-2xl bg-gray-100 sm:h-96">
               <Image
                 src={business.highFiveDuo}
                 alt="Magis Realty consultants at work"
@@ -143,18 +144,21 @@ export default function AboutPage() {
                 &mdash; Founder&rsquo;s Note
               </p>
             </Card>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       <section className="bg-offwhite py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
-            The Pillars of Magis
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <RevealOnScroll>
+            <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
+              The Pillars of Magis
+            </h2>
+          </RevealOnScroll>
+          <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
             {pillars.map((pillar) => (
-              <Card key={pillar.title} className="bg-white p-6">
+              <RevealItem key={pillar.title}>
+              <Card className="bg-white p-6">
                 <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-gold-400">
                   <pillar.icon size={20} />
                 </span>
@@ -177,24 +181,28 @@ export default function AboutPage() {
                   </ul>
                 )}
               </Card>
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </div>
       </section>
 
       <section className="bg-navy-950 py-20 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-bold">
-            Expert Minds Behind the Vision
-          </h2>
-          <p className="mt-2 max-w-xl text-sm text-white/70">
-            Our leadership team brings together decades of experience across
-            real estate finance, urban development, and high-net-worth
-            portfolio management.
-          </p>
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <RevealOnScroll>
+            <h2 className="font-serif text-3xl font-bold">
+              Expert Minds Behind the Vision
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-white/70">
+              Our leadership team brings together decades of experience across
+              real estate finance, urban development, and high-net-worth
+              portfolio management.
+            </p>
+          </RevealOnScroll>
+          <RevealStagger className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
             {leadershipTeam.map((leader) => (
-              <div key={leader.name} className="relative h-56 overflow-hidden rounded-xl">
+              <RevealItem key={leader.name}>
+              <div className="relative h-56 overflow-hidden rounded-xl bg-white/10">
                 <Image
                   src={leader.photo}
                   alt={leader.name}
@@ -208,8 +216,9 @@ export default function AboutPage() {
                   <p className="text-[11px] text-gold-400">{leader.title}</p>
                 </div>
               </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </div>
       </section>
 
@@ -217,7 +226,7 @@ export default function AboutPage() {
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
+          <RevealOnScroll>
             <h2 className="font-serif text-3xl font-bold text-navy-900">
               The Magis Advantage
             </h2>
@@ -239,9 +248,9 @@ export default function AboutPage() {
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="relative grid grid-cols-2 gap-4">
-            <div className="relative h-72 overflow-hidden rounded-2xl">
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.15} className="relative grid grid-cols-2 gap-4">
+            <div className="relative h-72 overflow-hidden rounded-2xl bg-gray-100">
               <Image
                 src={interiors.brightLivingRoom}
                 alt="Curated luxury interior finish"
@@ -252,7 +261,7 @@ export default function AboutPage() {
             </div>
             <div className="flex flex-col gap-4">
               <div className="relative h-32 overflow-hidden rounded-2xl bg-gold-500" />
-              <div className="relative h-36 overflow-hidden rounded-2xl">
+              <div className="relative h-36 overflow-hidden rounded-2xl bg-gray-100">
                 <Image
                   src={interiors.whiteModernKitchen}
                   alt="Curated luxury interior detail"
@@ -268,12 +277,12 @@ export default function AboutPage() {
                 Broker Network Rank
               </p>
             </Card>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       <section className="bg-sky-100 py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             Ready to find your Magis?
           </h2>
@@ -287,7 +296,7 @@ export default function AboutPage() {
               Browse Properties
             </Button>
           </div>
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );

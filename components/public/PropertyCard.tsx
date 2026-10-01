@@ -15,7 +15,7 @@ const statusTone: Record<Property["status"], "navy" | "green" | "gold" | "red"> 
 export function PropertyCard({ property }: { property: Property }) {
   return (
     <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg">
-      <Link href={`/properties/${property.slug}`} className="relative block h-56 w-full shrink-0 overflow-hidden">
+      <Link href={`/properties/${property.slug}`} className="relative block h-56 w-full shrink-0 overflow-hidden bg-gray-100">
         <Image
           src={property.image}
           alt={property.title}

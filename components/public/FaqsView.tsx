@@ -6,6 +6,8 @@ import { FaqCategory } from "@/lib/types";
 import { Accordion } from "@/components/ui/Accordion";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { Card } from "@/components/ui/Card";
+import { RevealOnScroll } from "@/components/public/RevealOnScroll";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 const icons = { wallet: Wallet, tag: Tag, key: KeyRound, "trending-up": TrendingUp };
 
@@ -55,7 +57,7 @@ export function FaqsView({
 
   return (
     <>
-      <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
+      <RevealOnScroll className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
         <h1 className="font-serif text-3xl font-bold text-navy-900 sm:text-4xl">
           How can we assist you today?
         </h1>
@@ -72,7 +74,7 @@ export function FaqsView({
             className="w-full rounded-xl border border-black/10 bg-white py-3.5 pl-11 pr-4 text-sm text-navy-900 shadow-sm focus:border-navy-900 focus:outline-none"
           />
         </div>
-      </div>
+      </RevealOnScroll>
 
       <div className="bg-offwhite pb-16">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[220px_1fr] lg:px-8">
@@ -168,7 +170,7 @@ export function FaqsView({
       </div>
 
       <section className="bg-sky-100 py-20">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <RevealOnScroll className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <h2 className="font-serif text-3xl font-bold text-navy-900">
               Still have questions?
@@ -184,7 +186,9 @@ export function FaqsView({
                 </span>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-gray-500">Call Us</p>
-                  <p className="font-semibold text-navy-900">+1 (800) MAGIS-RE</p>
+                  <a href={`tel:${COMPANY_PHONE_TEL}`} className="font-semibold text-navy-900 hover:text-gold-600">
+                    {COMPANY_PHONE_DISPLAY}
+                  </a>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -193,7 +197,9 @@ export function FaqsView({
                 </span>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-gray-500">Email Us</p>
-                  <p className="font-semibold text-navy-900">concierge@magisrealty.com</p>
+                  <a href="mailto:magisrealty@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
+                    magisrealty@gmail.com
+                  </a>
                 </div>
               </div>
             </div>
@@ -205,7 +211,7 @@ export function FaqsView({
               action={contactAction}
             />
           </Card>
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );

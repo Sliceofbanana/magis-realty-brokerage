@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 export function AgentCard({ agent }: { agent: Agent }) {
   return (
     <div className="group overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg">
-      <Link href={`/agents/${agent.slug}`} className="relative block h-56 w-full overflow-hidden">
+      <Link href={`/agents/${agent.slug}`} className="relative block h-56 w-full overflow-hidden bg-gray-100">
         <Image
           src={agent.photo}
           alt={agent.name}

@@ -6,6 +6,7 @@ import { BlogCard } from "@/components/public/BlogCard";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { interiors, exteriors } from "@/lib/stockPhotos";
 import { prisma } from "@/lib/prisma";
 import { blogPostWithAuthor, toBlogPost } from "@/lib/adapters/blog";
@@ -67,6 +68,7 @@ export default async function BlogDetailsPage({
 
       <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_300px]">
+          <RevealOnScroll>
           <article className="min-w-0 space-y-5 text-sm leading-relaxed text-gray-600">
             <p>{firstHalf}</p>
             {midParagraph && (
@@ -97,7 +99,7 @@ export default async function BlogDetailsPage({
               ))}
             </ul>
 
-            <div className="relative h-64 overflow-hidden rounded-2xl">
+            <div className="relative h-64 overflow-hidden rounded-2xl bg-gray-100">
               <Image
                 src={interiors.penthouseLivingRoomView}
                 alt="A signature residence featuring floor-to-ceiling glazing"
@@ -121,7 +123,9 @@ export default async function BlogDetailsPage({
               ))}
             </div>
           </article>
+          </RevealOnScroll>
 
+          <RevealOnScroll delay={0.15}>
           <aside className="space-y-6">
             <div className="rounded-2xl bg-navy-950 p-6 text-white">
               <h2 className="font-serif text-lg font-bold">The Magis Letter</h2>
@@ -155,7 +159,7 @@ export default async function BlogDetailsPage({
 
             <Link
               href="/properties"
-              className="group relative block h-56 overflow-hidden rounded-2xl"
+              className="group relative block h-56 overflow-hidden rounded-2xl bg-gray-100"
             >
               <Image
                 src={exteriors.darkModernHouseDuskAlt}
@@ -173,27 +177,30 @@ export default async function BlogDetailsPage({
               </div>
             </Link>
           </aside>
+          </RevealOnScroll>
         </div>
       </div>
 
       <section className="bg-offwhite py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between border-b border-black/10 pb-4">
+          <RevealOnScroll className="flex items-end justify-between border-b border-black/10 pb-4">
             <h2 className="font-serif text-2xl font-bold text-navy-900">Related Insights</h2>
             <Link href="/blog" className="flex items-center gap-1 text-sm font-semibold text-navy-900 hover:text-gold-600">
               View All Blog <ArrowRight size={14} />
             </Link>
-          </div>
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          </RevealOnScroll>
+          <RevealStagger className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((p) => (
-              <BlogCard key={p.id} post={p} />
+              <RevealItem key={p.id}>
+                <BlogCard post={p} />
+              </RevealItem>
             ))}
-          </div>
+          </RevealStagger>
         </div>
       </section>
 
       <section className="bg-sky-100 py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             Seeking Expert Investment Counsel?
           </h2>
@@ -208,7 +215,7 @@ export default async function BlogDetailsPage({
               Download Portfolio
             </Button>
           </div>
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );

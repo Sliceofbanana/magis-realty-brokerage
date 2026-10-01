@@ -9,6 +9,7 @@ import { BlogCard } from "@/components/public/BlogCard";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
+import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 
 const PAGE_SIZE = 4;
 
@@ -110,11 +111,13 @@ export function BlogDirectoryView({ posts }: { posts: BlogPost[] }) {
                 No articles match your search.
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <RevealStagger className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {paged.map((post) => (
-                  <BlogCard key={post.id} post={post} />
+                  <RevealItem key={post.id}>
+                    <BlogCard post={post} />
+                  </RevealItem>
                 ))}
-              </div>
+              </RevealStagger>
             )}
             {totalPages > 1 && (
               <div className="mt-10">
@@ -123,6 +126,7 @@ export function BlogDirectoryView({ posts }: { posts: BlogPost[] }) {
             )}
           </div>
 
+          <RevealOnScroll delay={0.15}>
           <aside className="space-y-6">
             <div className="rounded-2xl bg-navy-950 p-6 text-white">
               <h2 className="font-serif text-xl font-bold">The Magis Letter</h2>
@@ -144,7 +148,7 @@ export function BlogDirectoryView({ posts }: { posts: BlogPost[] }) {
                     href={`/blog/${post.slug}`}
                     className="flex gap-3 group"
                   >
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
                       <Image src={post.image} alt={post.title} fill className="object-cover" />
                     </div>
                     <div>
@@ -174,11 +178,12 @@ export function BlogDirectoryView({ posts }: { posts: BlogPost[] }) {
               </div>
             </div>
           </aside>
+          </RevealOnScroll>
         </div>
       </div>
 
       <section className="bg-sky-100 py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <RevealOnScroll className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-bold text-navy-900">
             Expertise Beyond Brokerage.
           </h2>
@@ -193,7 +198,7 @@ export function BlogDirectoryView({ posts }: { posts: BlogPost[] }) {
               View Property Guide
             </Button>
           </div>
-        </div>
+        </RevealOnScroll>
       </section>
     </>
   );
