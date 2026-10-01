@@ -52,7 +52,16 @@ export function RevealStagger({
   );
 }
 
-export function RevealItem({ children, className = "" }: { children: ReactNode; className?: string }) {
+/**
+ * Wrapper for one grid/flex cell inside a RevealStagger. Defaults to
+ * `grid h-full` rather than no layout classes at all: a plain `<div>` here
+ * would stop CSS Grid/Flexbox from "blockifying" an inline child (e.g. a
+ * bare `<a>` relying on `h-full`/`w-full` that only worked because it used
+ * to be a *direct* grid/flex item) — the child would silently collapse to
+ * 0x0. Making this wrapper itself a single-cell grid restores that
+ * blockification for whatever's inside it, regardless of nesting depth.
+ */
+export function RevealItem({ children, className = "grid h-full" }: { children: ReactNode; className?: string }) {
   return (
     <motion.div
       variants={{
