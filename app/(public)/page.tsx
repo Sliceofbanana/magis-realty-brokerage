@@ -42,7 +42,11 @@ const pillars = [
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [featuredRows, eliteRows, testimonialRows, soldAgg, verifiedAgentCount, ratingAgg] = await Promise.all([
+  // $transaction (not Promise.all) so this page needs one pooled connection
+  // instead of six held open at once — Supabase's session-mode pooler has a
+  // small shared connection budget, and this page already caused one of the
+  // "database error" incidents from concurrent-connection exhaustion.
+  const [featuredRows, eliteRows, testimonialRows, soldAgg, verifiedAgentCount, ratingAgg] = await prisma.$transaction([
     prisma.property.findMany({
       where: { archived: false, status: { not: "SOLD" } },
       include: propertyWithRelations,

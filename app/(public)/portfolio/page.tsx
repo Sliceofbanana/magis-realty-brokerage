@@ -40,7 +40,9 @@ const capabilities = [
 ];
 
 export default async function PortfolioPage() {
-  const [rows, activeCount, agentCount] = await Promise.all([
+  // $transaction so this page only needs one pooled connection, not three
+  // held concurrently (see app/(public)/page.tsx for the full rationale).
+  const [rows, activeCount, agentCount] = await prisma.$transaction([
     prisma.property.findMany({
       where: { archived: false },
       include: propertyWithRelations,
