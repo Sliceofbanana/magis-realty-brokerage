@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { LayoutGrid, List, Archive, ArchiveRestore, History, X } from "lucide-react";
+import { LayoutGrid, List, Archive, ArchiveRestore, History, Search, X } from "lucide-react";
 import { Property, CommissionRecord } from "@/lib/types";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { CreateListingForm } from "@/components/portal/CreateListingForm";
@@ -76,23 +76,35 @@ export function ListingsAdminView({
   properties,
   agents,
   agentUserIdByPropertyId,
+  initialQuery,
 }: {
   properties: Property[];
   agents: AgentOption[];
   agentUserIdByPropertyId: Record<string, string>;
+  initialQuery?: string;
 }) {
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
+  const [query, setQuery] = useState(initialQuery ?? "");
   const [historyFor, setHistoryFor] = useState<Property | null>(null);
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMINISTRATOR";
   const currentUserId = session?.user?.id;
 
   const filtered = useMemo(() => {
-    if (filter === "Archived") return properties.filter((p) => p.archived);
-    const active = properties.filter((p) => !p.archived);
-    if (filter === "All") return active;
-    return active.filter((p) => displayStatus(p.status) === filter);
-  }, [properties, filter]);
+    let result = properties;
+    if (filter === "Archived") result = result.filter((p) => p.archived);
+    else {
+      result = result.filter((p) => !p.archived);
+      if (filter !== "All") result = result.filter((p) => displayStatus(p.status) === filter);
+    }
+    const q = query.trim().toLowerCase();
+    if (q) {
+      result = result.filter(
+        (p) => p.title.toLowerCase().includes(q) || p.location.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [properties, filter, query]);
 
   return (
     <div>
@@ -117,6 +129,15 @@ export function ListingsAdminView({
               {f}
             </button>
           ))}
+          <div className="relative ml-2">
+            <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search title or location…"
+              className="rounded-full border border-black/10 bg-offwhite py-1.5 pl-8 pr-3 text-xs text-navy-900 focus:border-navy-900 focus:outline-none"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-3 text-sm text-gray-500">
           Showing {filtered.length} of {properties.length} properties

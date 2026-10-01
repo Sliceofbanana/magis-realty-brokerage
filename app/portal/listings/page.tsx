@@ -4,7 +4,12 @@ import { ListingsAdminView } from "@/components/portal/ListingsAdminView";
 
 export const dynamic = "force-dynamic";
 
-export default async function ListingsAdminPage() {
+export default async function ListingsAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const [rows, agents] = await Promise.all([
     prisma.property.findMany({
       include: propertyWithRelations,
@@ -24,6 +29,7 @@ export default async function ListingsAdminPage() {
       properties={properties}
       agents={agents}
       agentUserIdByPropertyId={agentUserIdByPropertyId}
+      initialQuery={q}
     />
   );
 }

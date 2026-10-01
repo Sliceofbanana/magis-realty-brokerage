@@ -1,14 +1,16 @@
 "use client";
 
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { PortalRole as PrismaPortalRole } from "@prisma/client";
 import { PermissionKey, PortalRole } from "@/lib/types";
 import { defaultRolePermissions } from "@/lib/data/permissions";
+import { getMyPermissionsAction } from "@/lib/actions/permissions";
 
 type RoleContextValue = {
   role: PortalRole;
   hasPermission: (key: PermissionKey) => boolean;
+  refreshPermissions: () => void;
 };
 
 const RoleContext = createContext<RoleContextValue | null>(null);
@@ -29,12 +31,30 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     ? sessionRoleToPortalRole[session.user.role]
     : "Agent";
 
+  // Effective permissions (role default merged with this user's own
+  // per-user override), fetched from Postgres — not just the static role
+  // matrix, so overrides set via the Permissions admin page actually take
+  // effect. `null` while loading; `hasPermission` falls back to the static
+  // role default during that window so gating doesn't flicker shut on load.
+  const [permissions, setPermissions] = useState<Record<PermissionKey, boolean> | null>(null);
+
+  function loadPermissions() {
+    getMyPermissionsAction().then(setPermissions);
+  }
+
+  useEffect(() => {
+    if (session?.user) loadPermissions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
+
   const value = useMemo<RoleContextValue>(
     () => ({
       role,
-      hasPermission: (key) => defaultRolePermissions[role].includes(key),
+      hasPermission: (key) => permissions?.[key] ?? defaultRolePermissions[role].includes(key),
+      refreshPermissions: loadPermissions,
     }),
-    [role]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [role, permissions]
   );
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;

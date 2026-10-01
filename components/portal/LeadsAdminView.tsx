@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type DragEvent } from "react";
-import { TrendingUp, UserRound, Zap } from "lucide-react";
+import { Search, TrendingUp, UserRound, Zap } from "lucide-react";
 import { Lead } from "@/lib/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -24,6 +24,7 @@ export function LeadsAdminView({
   sources,
   agents,
   isAdmin,
+  initialQuery,
 }: {
   leads: Lead[];
   properties: PropertyOption[];
@@ -31,16 +32,28 @@ export function LeadsAdminView({
   sources: SourceBreakdown[];
   agents: TeamAgentRow[];
   isAdmin: boolean;
+  initialQuery?: string;
 }) {
   const [rows, setRows] = useState(leads);
   const [priority, setPriority] = useState("Any Priority");
+  const [query, setQuery] = useState(initialQuery ?? "");
   const [dragOverColumn, setDragOverColumn] = useState<Lead["status"] | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const filtered = useMemo(
-    () => rows.filter((l) => priority === "Any Priority" || l.priority === priority),
-    [rows, priority]
-  );
+  const filtered = useMemo(() => {
+    let result = rows;
+    if (priority !== "Any Priority") result = result.filter((l) => l.priority === priority);
+    const q = query.trim().toLowerCase();
+    if (q) {
+      result = result.filter(
+        (l) =>
+          l.name.toLowerCase().includes(q) ||
+          l.email.toLowerCase().includes(q) ||
+          l.property.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [rows, priority, query]);
 
   const grouped = useMemo(() => {
     const map = new Map<Lead["status"], Lead[]>(columns.map((s) => [s, []]));
@@ -109,6 +122,15 @@ export function LeadsAdminView({
             <option key={p}>{p}</option>
           ))}
         </select>
+        <div className="relative">
+          <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search name, email, or property…"
+            className="rounded-lg border border-black/10 bg-white py-2 pl-8 pr-3 text-xs text-navy-900 focus:border-navy-900 focus:outline-none"
+          />
+        </div>
       </div>
 
       <div className="mt-4 flex gap-4 overflow-x-auto pb-2">

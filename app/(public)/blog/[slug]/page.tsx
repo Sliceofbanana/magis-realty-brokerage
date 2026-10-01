@@ -211,8 +211,8 @@ export default async function BlogDetailsPage({
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button href="/agents">Connect With an Agent</Button>
-            <Button href="/contact" variant="outline">
-              Download Portfolio
+            <Button href="/portfolio" variant="outline">
+              View Portfolio
             </Button>
           </div>
         </RevealOnScroll>

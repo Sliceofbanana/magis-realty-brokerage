@@ -2,8 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { PermissionKey } from "@prisma/client";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/actions/users";
+import { permissionDefs } from "@/lib/data/permissions";
+import type { PermissionKey as KebabPermissionKey } from "@/lib/types";
 
 export type UserPermissionRow = {
   id: string;
@@ -84,4 +87,40 @@ export async function setUserPermissionAction(
 
   revalidatePath("/portal/permissions");
   return { success: true };
+}
+
+function toPermissionEnumKey(key: string): PermissionKey {
+  return key.replace(/-/g, "_").toUpperCase() as PermissionKey;
+}
+
+/**
+ * The signed-in user's effective permission set (their own per-user override,
+ * else their role's default) — backs RoleContext.hasPermission everywhere in
+ * the portal. Without this, UI gating only ever reflects the static role
+ * defaults in lib/data/permissions.ts, and per-user overrides set via the
+ * Permissions admin page would have no actual effect anywhere.
+ */
+export async function getMyPermissionsAction(): Promise<Record<KebabPermissionKey, boolean>> {
+  const empty = Object.fromEntries(permissionDefs.map((d) => [d.key, false])) as Record<
+    KebabPermissionKey,
+    boolean
+  >;
+
+  const session = await auth();
+  if (!session?.user) return empty;
+
+  const [roleDefaults, overrides] = await Promise.all([
+    prisma.rolePermission.findMany({ where: { role: session.user.role, granted: true } }),
+    prisma.userPermission.findMany({ where: { userId: session.user.id } }),
+  ]);
+
+  const roleDefaultSet = new Set(roleDefaults.map((r) => r.permission));
+  const overrideMap = new Map(overrides.map((o) => [o.permission, o.granted]));
+
+  const result = { ...empty };
+  for (const def of permissionDefs) {
+    const enumKey = toPermissionEnumKey(def.key);
+    result[def.key] = overrideMap.get(enumKey) ?? roleDefaultSet.has(enumKey);
+  }
+  return result;
 }

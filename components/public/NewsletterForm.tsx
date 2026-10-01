@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { subscribeToNewsletterAction } from "@/lib/actions/newsletter";
 
 export function NewsletterForm({
   className = "",
@@ -14,15 +15,23 @@ export function NewsletterForm({
 }) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Enter a valid email address.");
       return;
     }
     setError("");
+    setSubmitting(true);
+    const result = await subscribeToNewsletterAction(email);
+    setSubmitting(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -55,8 +64,8 @@ export function NewsletterForm({
             aria-invalid={!!error}
             className="w-full flex-1 rounded-md border border-black/15 bg-white px-4 py-3 text-sm text-navy-900 placeholder:text-gray-400 focus:border-navy-900 focus:outline-none"
           />
-          <Button type="submit" size="md" className="shrink-0">
-            Subscribe Now
+          <Button type="submit" size="md" className="shrink-0" disabled={submitting}>
+            {submitting ? "Subscribing…" : "Subscribe Now"}
           </Button>
         </div>
         {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
@@ -90,8 +99,8 @@ export function NewsletterForm({
         className="w-full rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/50 focus:border-gold-400 focus:outline-none"
       />
       {error && <p className="mt-1 text-xs text-red-300">{error}</p>}
-      <Button type="submit" variant="gold" size="sm" className="mt-3 w-full">
-        Subscribe Now
+      <Button type="submit" variant="gold" size="sm" className="mt-3 w-full" disabled={submitting}>
+        {submitting ? "Subscribing…" : "Subscribe Now"}
       </Button>
     </form>
   );

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { CreateCommissionForm } from "@/components/portal/CreateCommissionForm";
+import { useRole } from "@/components/portal/RoleContext";
 import { formatCurrency } from "@/lib/format";
 import type { Transaction } from "@/lib/types";
 
@@ -54,6 +55,7 @@ export function CommissionsAdminView({
   properties: PropertyOption[];
 }) {
   const [quarter, setQuarter] = useState("All Quarters");
+  const { hasPermission } = useRole();
 
   const filtered = useMemo(() => {
     if (quarter === "All Quarters") return transactions;
@@ -67,9 +69,11 @@ export function CommissionsAdminView({
         description="Track your earnings and pending payouts for the current fiscal period."
         action={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => exportTransactionsPdf(filtered)}>
-              <Download size={14} /> Export PDF
-            </Button>
+            {hasPermission("export-reports") && (
+              <Button variant="outline" size="sm" onClick={() => exportTransactionsPdf(filtered)}>
+                <Download size={14} /> Export PDF
+              </Button>
+            )}
             <CreateCommissionForm agents={agents} properties={properties} />
           </div>
         }

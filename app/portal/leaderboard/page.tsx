@@ -23,6 +23,7 @@ import {
 } from "@/lib/quota";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { useRole } from "@/components/portal/RoleContext";
 import { LeaderboardAgent } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 
@@ -220,6 +221,7 @@ function MyPerformanceCard({ row, period }: { row: Row; period: QuotaPeriod }) {
 }
 
 export default function LeaderboardPage() {
+  const { hasPermission } = useRole();
   const [periodId, setPeriodId] = useState(quotaPeriods[2].id);
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -371,9 +373,11 @@ export default function LeaderboardPage() {
               {period.cycleLabel} &bull; grouped by team, ranked by team quota progress
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download size={14} /> Export
-          </Button>
+          {hasPermission("export-reports") && (
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download size={14} /> Export
+            </Button>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-225 text-left text-sm">

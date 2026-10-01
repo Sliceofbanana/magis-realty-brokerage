@@ -6,7 +6,12 @@ import { LeadsAdminView } from "@/components/portal/LeadsAdminView";
 
 export const dynamic = "force-dynamic";
 
-export default async function LeadsAdminPage() {
+export default async function LeadsAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMINISTRATOR";
 
@@ -46,6 +51,7 @@ export default async function LeadsAdminPage() {
       sources={sources}
       agents={agentsData.agents}
       isAdmin={!!isAdmin}
+      initialQuery={q}
     />
   );
 }

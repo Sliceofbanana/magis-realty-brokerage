@@ -1,11 +1,13 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState, type MouseEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, type FormEvent, type MouseEvent } from "react";
 import { Bell, Check, Menu, Search, LogOut, Cake, UserPlus, Briefcase, UserCheck } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { logoutAction } from "@/lib/actions/auth";
 import { useBirthdays } from "./BirthdayContext";
+import { searchPortalAction, type PortalSearchResult } from "@/lib/actions/search";
 import {
   listMyNotifications,
   markNotificationReadAction,
@@ -196,6 +198,122 @@ function NotificationsMenu() {
   );
 }
 
+const EMPTY_RESULTS: PortalSearchResult = { properties: [], leads: [] };
+
+function GlobalSearch() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<PortalSearchResult>(EMPTY_RESULTS);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults(EMPTY_RESULTS);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const timer = setTimeout(() => {
+      searchPortalAction(q).then((r) => {
+        setResults(r);
+        setLoading(false);
+      });
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  function goTo(path: string, value: string) {
+    setOpen(false);
+    setQuery("");
+    router.push(`${path}?q=${encodeURIComponent(value)}`);
+  }
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (query.trim()) goTo("/portal/listings", query.trim());
+  }
+
+  const hasResults = results.properties.length > 0 || results.leads.length > 0;
+  const showDropdown = open && query.trim().length >= 2;
+
+  return (
+    <div className="relative hidden max-w-md flex-1 sm:block">
+      <form onSubmit={handleSubmit}>
+        <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder="Search listings, leads..."
+          className="w-full rounded-lg bg-offwhite py-2.5 pl-11 pr-4 text-sm text-navy-900 focus:outline-none"
+        />
+      </form>
+
+      {showDropdown && (
+        <>
+          <button
+            type="button"
+            aria-label="Close search results"
+            className="fixed inset-0 z-30 cursor-default"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute left-0 right-0 z-40 mt-2 overflow-hidden rounded-xl border border-black/5 bg-white shadow-lg">
+            {loading ? (
+              <p className="px-4 py-3 text-sm text-gray-400">Searching…</p>
+            ) : !hasResults ? (
+              <p className="px-4 py-3 text-sm text-gray-400">No matches for &ldquo;{query.trim()}&rdquo;</p>
+            ) : (
+              <div className="max-h-96 overflow-y-auto py-2">
+                {results.properties.length > 0 && (
+                  <div>
+                    <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                      Listings
+                    </p>
+                    {results.properties.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => goTo("/portal/listings", p.title)}
+                        className="flex w-full flex-col items-start px-4 py-2 text-left hover:bg-offwhite"
+                      >
+                        <span className="text-sm font-medium text-navy-900">{p.title}</span>
+                        <span className="text-xs text-gray-400">{p.location}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {results.leads.length > 0 && (
+                  <div>
+                    <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                      Leads
+                    </p>
+                    {results.leads.map((l) => (
+                      <button
+                        key={l.id}
+                        type="button"
+                        onClick={() => goTo("/portal/leads", l.name)}
+                        className="flex w-full flex-col items-start px-4 py-2 text-left hover:bg-offwhite"
+                      >
+                        <span className="text-sm font-medium text-navy-900">{l.name}</span>
+                        <span className="text-xs text-gray-400">{l.email}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { data: session } = useSession();
   return (
@@ -209,13 +327,7 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
         <Menu size={22} />
       </button>
 
-      <div className="relative hidden max-w-md flex-1 sm:block">
-        <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          placeholder="Search listings, leads..."
-          className="w-full rounded-lg bg-offwhite py-2.5 pl-11 pr-4 text-sm text-navy-900 focus:outline-none"
-        />
-      </div>
+      <GlobalSearch />
 
       <div className="flex flex-1 items-center justify-end gap-4">
         <NotificationsMenu />

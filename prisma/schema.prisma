@@ -162,17 +162,17 @@ model User {
   agentProfile AgentProfile?
 
   listedProperties          Property[]         @relation("ListingAgent")
-  assignedLeads             Lead[]              @relation("AssignedAgent")
-  authoredBlogPosts         BlogPost[]          @relation("BlogAuthor")
+  assignedLeads             Lead[]             @relation("AssignedAgent")
+  authoredBlogPosts         BlogPost[]         @relation("BlogAuthor")
   commissionRecords         CommissionRecord[]
   documents                 DocumentFile[]
   agentQuotas               AgentQuota[]
   attendanceRecords         AttendanceRecord[]
-  createdMeetings           Meeting[]           @relation("MeetingCreator")
+  createdMeetings           Meeting[]          @relation("MeetingCreator")
   permissionOverrides       UserPermission[]
   badges                    AgentBadge[]
-  birthdayGreetingsReceived BirthdayGreeting[]  @relation("Celebrant")
-  birthdayGreetingsSent     BirthdayGreeting[]  @relation("GreetingAuthor")
+  birthdayGreetingsReceived BirthdayGreeting[] @relation("Celebrant")
+  birthdayGreetingsSent     BirthdayGreeting[] @relation("GreetingAuthor")
   birthdayReactions         BirthdayReaction[]
   activityLogEntries        ActivityLogEntry[]
   notifications             Notification[]
@@ -318,8 +318,8 @@ model Lead {
   /// Free-text inquiry body submitted with the lead-capture form.
   message  String?
 
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
+  propertyId    String?
+  property      Property? @relation(fields: [propertyId], references: [id])
   /// Denormalized display name for inquiries about a property that isn't
   /// (or isn't yet) a row in Property — mirrors CommissionRecord.propertyLabel.
   propertyLabel String?
@@ -400,14 +400,20 @@ model DocumentFile {
 }
 
 model Testimonial {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   quote       String
   name        String
   role        String
   photo       String?
-  verified    Boolean  @default(false)
+  verified    Boolean @default(false)
   sourceUrl   String?
   sourceLabel String?
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  subscribedAt DateTime @default(now())
 }
 
 enum NotificationType {
@@ -417,17 +423,17 @@ enum NotificationType {
 }
 
 model Notification {
-  id          String           @id @default(cuid())
-  type        NotificationType
-  title       String
-  body        String
-  link        String?
-  read        Boolean          @default(false)
-  createdAt   DateTime         @default(now())
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
 
   /// Null = broadcast to every Administrator. Set = addressed to one user.
   recipientId String?
-  recipient   User?            @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  recipient   User?   @relation(fields: [recipientId], references: [id], onDelete: Cascade)
 
   @@index([recipientId])
   @@index([createdAt])
@@ -442,13 +448,13 @@ enum JobApplicationStatus {
 }
 
 model JobApplication {
-  id              String               @id @default(cuid())
-  name            String
-  email           String
+  id               String               @id @default(cuid())
+  name             String
+  email            String
   positionInterest String
-  portfolioUrl    String?
-  status          JobApplicationStatus @default(APPLIED)
-  appliedAt       DateTime             @default(now())
+  portfolioUrl     String?
+  status           JobApplicationStatus @default(APPLIED)
+  appliedAt        DateTime             @default(now())
 
   @@index([status])
 }
@@ -470,33 +476,33 @@ model LeaderboardTeam {
 /// Public-directory-only fields, split off User so Admin/Marketing accounts
 /// (which never get a public agent page) don't carry these as null columns.
 model AgentProfile {
-  id             String           @id @default(cuid())
-  userId         String           @unique
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slug           String           @unique
-  quote          String?
-  bio            String[]
-  specialties    Json?
-  rating         Float            @default(0)
-  reviewCount    Int              @default(0)
-  specialization String?
-  topPerformer   Boolean          @default(false)
-  publicVerified Boolean          @default(false)
-  region         String?
-  activeListings Int              @default(0)
+  id                  String           @id @default(cuid())
+  userId              String           @unique
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug                String           @unique
+  quote               String?
+  bio                 String[]
+  specialties         Json?
+  rating              Float            @default(0)
+  reviewCount         Int              @default(0)
+  specialization      String?
+  topPerformer        Boolean          @default(false)
+  publicVerified      Boolean          @default(false)
+  region              String?
+  activeListings      Int              @default(0)
   /// Public bio-page stats — free-text so they can read "450M+" / "99.8%".
   yearsExperience     Int?
   propertiesSoldValue String?
   clientSatisfaction  String?
   /// Private "My Profile" fields — licensing + social, not shown publicly.
-  prcLicense        String?
-  dhsudRegistration String?
-  languages         String[] @default([])
-  linkedinUrl       String?
-  facebookUrl       String?
-  instagramUrl      String?
-  teamId         String?
-  team           LeaderboardTeam? @relation(fields: [teamId], references: [id])
+  prcLicense          String?
+  dhsudRegistration   String?
+  languages           String[]         @default([])
+  linkedinUrl         String?
+  facebookUrl         String?
+  instagramUrl        String?
+  teamId              String?
+  team                LeaderboardTeam? @relation(fields: [teamId], references: [id])
 
   @@index([teamId])
 }

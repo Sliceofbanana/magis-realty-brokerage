@@ -13,6 +13,7 @@ import {
   setUserPermissionAction,
   type UserPermissionRow,
 } from "@/lib/actions/permissions";
+import { useRole } from "@/components/portal/RoleContext";
 
 const roleTone: Record<string, "gold" | "blue" | "gray" | "navy"> = {
   ADMINISTRATOR: "gold",
@@ -48,6 +49,7 @@ const categoryGroups = permissionDefs.reduce<{ category: string; defs: typeof pe
 );
 
 export default function PermissionsAdminPage() {
+  const { refreshPermissions } = useRole();
   const [users, setUsers] = useState<UserPermissionRow[] | null>(null);
   const [loadError, setLoadError] = useState("");
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -84,6 +86,7 @@ export default function PermissionsAdminPage() {
       return;
     }
     load();
+    refreshPermissions();
   }
 
   return (
