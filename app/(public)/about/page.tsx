@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
-import { SocialIcon } from "@/components/ui/SocialIcon";
 import { business, interiors } from "@/lib/stockPhotos";
 
 export const metadata = { title: "About Us | Magis Realty & Brokerage" };
@@ -12,7 +11,6 @@ export const metadata = { title: "About Us | Magis Realty & Brokerage" };
 const founder = {
   name: "Mary Angelly M. Ruiz",
   photo: "/images/founder.webp",
-  facebook: "https://www.facebook.com/propertyincebu",
 };
 
 const pillars = [
@@ -216,14 +214,6 @@ export default function AboutPage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href="/contact" variant="gold">Talk to Our Team</Button>
-              <a
-                href={founder.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-white/10"
-              >
-                <SocialIcon platform="facebook" size={16} /> Follow on Facebook
-              </a>
             </div>
           </RevealOnScroll>
 
@@ -243,19 +233,19 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="absolute -left-2 top-8 rounded-2xl border border-white/10 bg-navy-950/85 px-4 py-3 shadow-lg backdrop-blur sm:-left-6">
-              <p className="font-serif text-xl font-bold text-gold-400">Magis</p>
+              <p className="font-serif text-xl font-bold text-gold-400">Our Promise</p>
               <p className="text-[11px] leading-tight text-white/70">
-                to serve you more.
+                Doing more, being better
                 <br />
-                Buy. Sell. Rent.
+                in every transaction.
               </p>
             </div>
             <div className="absolute -right-2 bottom-24 rounded-2xl border border-white/10 bg-navy-950/85 px-4 py-3 shadow-lg backdrop-blur sm:-right-6">
-              <p className="font-serif text-xl font-bold text-gold-400">Cebu</p>
+              <p className="font-serif text-xl font-bold text-gold-400">Licensed</p>
               <p className="text-[11px] leading-tight text-white/70">
-                North, Central
+                PRC-licensed brokers,
                 <br />
-                &amp; South
+                DHSUD-registered.
               </p>
             </div>
           </RevealOnScroll>
