@@ -5,6 +5,17 @@ export const agentWithProfile = {
   agentProfile: true,
 } satisfies Prisma.UserInclude;
 
+/**
+ * The one rule for who may appear on the public site: an administrator has
+ * listed them, they're still an active account, and the card has the content
+ * it needs to render (a photo and a bio). Every public agent query uses this.
+ */
+export const publicAgentWhere = {
+  status: "ACTIVE",
+  photo: { not: null },
+  agentProfile: { publicListed: true, bio: { isEmpty: false } },
+} satisfies Prisma.UserWhereInput;
+
 type UserWithAgentProfile = Prisma.UserGetPayload<{ include: typeof agentWithProfile }>;
 
 /** Maps a Prisma User+AgentProfile row to the shared front-end `Agent` shape. */

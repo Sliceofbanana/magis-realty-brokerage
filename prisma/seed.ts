@@ -382,6 +382,8 @@ async function seedUsers() {
           specialization: person.agentProfile.specialization,
           topPerformer: person.agentProfile.topPerformer ?? false,
           publicVerified: person.agentProfile.publicVerified ?? false,
+          // Seeded demo agents with a bio are shown publicly, like production's backfill.
+          publicListed: (person.agentProfile.bio?.length ?? 0) > 0,
           activeListings: person.agentProfile.activeListings ?? 0,
           yearsExperience: person.agentProfile.yearsExperience,
           propertiesSoldValue: person.agentProfile.propertiesSoldValue,

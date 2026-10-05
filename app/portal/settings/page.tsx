@@ -102,6 +102,9 @@ function GeneralTab() {
   const [title, setTitle] = useState("");
   const [phone, setPhone] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [bio, setBio] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [yearsExperience, setYearsExperience] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -129,6 +132,9 @@ function GeneralTab() {
         setTitle(p.position ?? "");
         setPhone(p.phone ?? "");
         setBirthDate(p.birthDate ?? "");
+        setBio(p.bio);
+        setSpecialization(p.specialization ?? "");
+        setYearsExperience(p.yearsExperience === null ? "" : String(p.yearsExperience));
       })
       .catch(() => setLoadError("Couldn't load your profile."));
   }, []);
@@ -136,7 +142,16 @@ function GeneralTab() {
   async function handleSave() {
     setSaving(true);
     setSaveError("");
-    const result = await updateProfileAction({ name: fullName, position: title, phone, birthDate });
+    const years = yearsExperience.trim();
+    const result = await updateProfileAction({
+      name: fullName,
+      position: title,
+      phone,
+      birthDate,
+      bio,
+      specialization,
+      yearsExperience: years === "" ? null : Math.max(0, Math.floor(Number(years)) || 0),
+    });
     setSaving(false);
     if (result.error) {
       setSaveError(result.error);
@@ -300,6 +315,59 @@ function GeneralTab() {
                 />
               </div>
               <p className="mt-1 text-xs text-gray-400">Shown to teammates for birthday celebrations</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-serif text-lg font-bold text-navy-900">Public Profile</h2>
+            <span
+              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                profile.publicListed ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {profile.publicListed ? "Listed on website" : "Not listed on website"}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-gray-400">
+            Shown on your page of the public website once an administrator lists you. A profile photo and a bio are
+            required.
+          </p>
+          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                Specialization
+              </label>
+              <input
+                value={specialization}
+                onChange={(e) => setSpecialization(e.target.value)}
+                placeholder="e.g. Residential, Commercial"
+                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
+                Years of Experience
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={80}
+                value={yearsExperience}
+                onChange={(e) => setYearsExperience(e.target.value)}
+                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">Bio</label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={6}
+                placeholder="Tell clients about your background and approach. Leave a blank line between paragraphs."
+                className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+              />
             </div>
           </div>
         </div>

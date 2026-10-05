@@ -5,12 +5,14 @@ import { Check, X as XIcon, UserX, UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
+import { Toggle } from "@/components/ui/Toggle";
 import {
   listPortalUsers,
   approveUserAction,
   rejectUserAction,
   deactivateUserAction,
   reactivateUserAction,
+  setPublicListingAction,
   type AdminUserRow,
 } from "@/lib/actions/users";
 
@@ -42,6 +44,8 @@ export default function UsersAdminPage() {
   const [loadError, setLoadError] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [listingBusyId, setListingBusyId] = useState<string | null>(null);
+  const [listingError, setListingError] = useState<{ id: string; message: string } | null>(null);
 
   function load() {
     listPortalUsers()
@@ -60,11 +64,23 @@ export default function UsersAdminPage() {
     });
   }
 
+  async function toggleListing(userId: string, listed: boolean) {
+    setListingBusyId(userId);
+    setListingError(null);
+    const result = await setPublicListingAction(userId, listed);
+    setListingBusyId(null);
+    if (result.error) {
+      setListingError({ id: userId, message: result.error });
+      return;
+    }
+    load();
+  }
+
   const pendingCount = users?.filter((u) => u.status === "PENDING").length ?? 0;
 
   return (
     <div>
-      <PageHeader title="Users" description="Approve new agent applications and manage platform accounts." />
+      <PageHeader title="Users" description="Approve new agent applications, manage platform accounts, and choose who appears on the public website." />
 
       <div className="rounded-2xl border border-black/5 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 p-6">
@@ -94,6 +110,7 @@ export default function UsersAdminPage() {
                   <th className="px-6 py-3 font-medium">User Profile</th>
                   <th className="px-6 py-3 font-medium">Role</th>
                   <th className="px-6 py-3 font-medium">Status</th>
+                  <th className="px-6 py-3 font-medium">Public Website</th>
                   <th className="px-6 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
@@ -120,6 +137,28 @@ export default function UsersAdminPage() {
                           <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                           {status.label}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {user.status === "ACTIVE" ? (
+                          <div className="flex flex-col items-start gap-1">
+                            <Toggle
+                              checked={user.publicListed}
+                              disabled={listingBusyId === user.id}
+                              onChange={(next) => toggleListing(user.id, next)}
+                              label={`Show ${user.name} on the public website`}
+                            />
+                            {!user.publicListed && user.listingMissing.length > 0 && (
+                              <p className="max-w-40 text-[11px] leading-tight text-gray-400">
+                                Needs {user.listingMissing.join(" & ")}
+                              </p>
+                            )}
+                            {listingError?.id === user.id && (
+                              <p className="max-w-48 text-[11px] leading-tight text-red-600">{listingError.message}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-300">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-3 text-gray-400">

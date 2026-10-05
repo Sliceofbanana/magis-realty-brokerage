@@ -23,9 +23,6 @@ export function FeaturedAgentCard({ agent }: { agent: Agent }) {
         </span>
         <h3 className="mt-3 font-serif text-xl font-bold">{agent.name}</h3>
         <p className="text-sm text-white/80">{agent.title}</p>
-        <p className="mt-1 text-xs text-white/60">
-          {agent.yearsExperience} Years Experience &bull; {agent.activeListings} Active Listings
-        </p>
       </div>
     </Link>
   );

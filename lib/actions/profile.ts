@@ -13,20 +13,42 @@ export type MyProfile = {
   email: string;
   photo: string | null;
   birthDate: string | null; // YYYY-MM-DD
+  /** Public-profile fields (shown on the agent's page if an administrator lists them). */
+  bio: string; // paragraphs separated by a blank line
+  specialization: string | null;
+  yearsExperience: number | null;
+  /** Read-only here — only administrators can list an agent on the public site. */
+  publicListed: boolean;
 };
 
-/** Basic identity fields for the current session user — used by Settings > General. */
+/** Identity + public-profile fields for the current session user — used by Settings > General. */
 export async function getMyProfileAction(): Promise<MyProfile | null> {
   const session = await auth();
   if (!session?.user) return null;
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, position: true, phone: true, email: true, photo: true, birthDate: true },
+    select: {
+      name: true,
+      position: true,
+      phone: true,
+      email: true,
+      photo: true,
+      birthDate: true,
+      agentProfile: { select: { bio: true, specialization: true, yearsExperience: true, publicListed: true } },
+    },
   });
   if (!user) return null;
 
-  return { ...user, birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : null };
+  const { agentProfile, ...rest } = user;
+  return {
+    ...rest,
+    birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : null,
+    bio: agentProfile?.bio.join("\n\n") ?? "",
+    specialization: agentProfile?.specialization ?? null,
+    yearsExperience: agentProfile?.yearsExperience ?? null,
+    publicListed: agentProfile?.publicListed ?? false,
+  };
 }
 
 export type ProfileUpdateInput = {
@@ -39,7 +61,7 @@ export type ProfileUpdateInput = {
   dhsudRegistration?: string;
   languages?: string[];
   bio?: string;
-  yearsExperience?: number;
+  yearsExperience?: number | null;
   specialization?: string;
   linkedinUrl?: string;
   facebookUrl?: string;
@@ -47,6 +69,21 @@ export type ProfileUpdateInput = {
 };
 
 export type ProfileUpdateResult = { error?: string; success?: boolean };
+
+async function uniqueAgentSlug(name: string) {
+  const base =
+    name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "agent";
+  let slug = base;
+  for (let n = 2; await prisma.agentProfile.findUnique({ where: { slug }, select: { id: true } }); n++) {
+    slug = `${base}-${n}`;
+  }
+  return slug;
+}
 
 /** Updates the current session user's own profile — no admin check, everyone edits their own. */
 export async function updateProfileAction(values: ProfileUpdateInput): Promise<ProfileUpdateResult> {
@@ -86,27 +123,44 @@ export async function updateProfileAction(values: ProfileUpdateInput): Promise<P
     },
   });
 
-  if (existing.agentProfile) {
-    const bioParagraphs = values.bio
-      ? values.bio
-          .split(/\n{2,}/)
-          .map((p) => p.trim())
-          .filter(Boolean)
-      : [];
+  // Same rule as birthDate: a field left undefined is untouched, so a save
+  // that only sends name/phone (e.g. Settings > Profile Information) can't
+  // wipe the agent's public bio or experience.
+  const trimmedOrNull = (v: string | undefined) => (v === undefined ? undefined : v.trim() || null);
+  const agentData = {
+    prcLicense: trimmedOrNull(values.prcLicense),
+    dhsudRegistration: trimmedOrNull(values.dhsudRegistration),
+    languages: values.languages,
+    bio:
+      values.bio === undefined
+        ? undefined
+        : values.bio
+            .split(/\n{2,}/)
+            .map((p) => p.trim())
+            .filter(Boolean),
+    yearsExperience: values.yearsExperience,
+    specialization: trimmedOrNull(values.specialization),
+    linkedinUrl: trimmedOrNull(values.linkedinUrl),
+    facebookUrl: trimmedOrNull(values.facebookUrl),
+    instagramUrl: trimmedOrNull(values.instagramUrl),
+  };
+  const hasAgentChanges = Object.values(agentData).some((v) => v !== undefined);
 
-    await prisma.agentProfile.update({
-      where: { id: existing.agentProfile.id },
-      data: {
-        prcLicense: values.prcLicense?.trim() || null,
-        dhsudRegistration: values.dhsudRegistration?.trim() || null,
-        languages: values.languages ?? [],
-        bio: bioParagraphs,
-        yearsExperience: values.yearsExperience ?? null,
-        specialization: values.specialization?.trim() || null,
-        linkedinUrl: values.linkedinUrl?.trim() || null,
-        facebookUrl: values.facebookUrl?.trim() || null,
-        instagramUrl: values.instagramUrl?.trim() || null,
-      },
+  if (existing.agentProfile) {
+    if (hasAgentChanges) {
+      await prisma.agentProfile.update({ where: { id: existing.agentProfile.id }, data: agentData });
+    }
+  } else if (
+    // Don't create an empty record just because someone saved Settings.
+    (agentData.bio?.length ?? 0) > 0 ||
+    agentData.specialization ||
+    (agentData.yearsExperience ?? null) !== null
+  ) {
+    // Self-registered accounts start with no public profile record; create
+    // it the first time they fill one in. It stays hidden (publicListed
+    // defaults to false) until an administrator lists it.
+    await prisma.agentProfile.create({
+      data: { ...agentData, userId: existing.id, slug: await uniqueAgentSlug(name) },
     });
   }
 

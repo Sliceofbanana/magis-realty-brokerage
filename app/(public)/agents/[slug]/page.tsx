@@ -6,14 +6,14 @@ import { SocialIcon } from "@/components/ui/SocialIcon";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { submitInquiryAction } from "@/lib/actions/leads";
 import { prisma } from "@/lib/prisma";
-import { agentWithProfile, toAgent } from "@/lib/adapters/agent";
+import { agentWithProfile, publicAgentWhere, toAgent } from "@/lib/adapters/agent";
 import { toTestimonial } from "@/lib/adapters/testimonial";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const row = await prisma.user.findFirst({
-    where: { agentProfile: { slug } },
+    where: { ...publicAgentWhere, agentProfile: { ...publicAgentWhere.agentProfile, slug } },
     select: { name: true },
   });
   return { title: row ? `${row.name} | Magis Realty & Brokerage` : "Agent Not Found" };
@@ -48,7 +48,7 @@ export default async function AgentProfilePage({
 }) {
   const { slug } = await params;
   const row = await prisma.user.findFirst({
-    where: { agentProfile: { slug, bio: { isEmpty: false } } },
+    where: { ...publicAgentWhere, agentProfile: { ...publicAgentWhere.agentProfile, slug } },
     include: agentWithProfile,
   });
   if (!row) notFound();

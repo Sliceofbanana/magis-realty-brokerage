@@ -32,18 +32,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
           {agent.title}
         </p>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 border-t border-black/5 pt-4 text-xs">
-          <div>
-            <p className="text-gray-500">Experience</p>
-            <p className="font-semibold text-navy-900">{agent.yearsExperience} Years</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Active Listings</p>
-            <p className="font-semibold text-navy-900">{agent.activeListings} Properties</p>
-          </div>
-        </div>
-
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex gap-2 border-t border-black/5 pt-4">
           <Button href={`/agents/${agent.slug}`} size="sm" className="flex-1">
             Contact Agent
           </Button>

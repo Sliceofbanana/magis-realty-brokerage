@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { publicAgentWhere } from "@/lib/adapters/agent";
 
 // Same rationale as robots.ts — no incoming request to read a Host header
 // from here, so this reuses the same required production origin.
@@ -26,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, updatedAt: true },
     }),
     prisma.user.findMany({
-      where: { agentProfile: { bio: { isEmpty: false } } },
+      where: publicAgentWhere,
       select: { agentProfile: { select: { slug: true } }, updatedAt: true },
     }),
     prisma.blogPost.findMany({

@@ -488,6 +488,8 @@ model AgentProfile {
   specialization      String?
   topPerformer        Boolean          @default(false)
   publicVerified      Boolean          @default(false)
+  /// Admin-controlled opt-in: only listed agents appear on the public site.
+  publicListed        Boolean          @default(false)
   region              String?
   activeListings      Int              @default(0)
   /// Public bio-page stats — free-text so they can read "450M+" / "99.8%".

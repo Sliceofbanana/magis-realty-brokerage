@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
+import { publicAgentWhere } from "@/lib/adapters/agent";
 import { formatCurrency } from "@/lib/format";
 import { PortfolioGrid } from "@/components/public/PortfolioGrid";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
@@ -49,7 +50,7 @@ export default async function PortfolioPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.property.count({ where: { archived: false } }),
-    prisma.user.count({ where: { agentProfile: { bio: { isEmpty: false } } } }),
+    prisma.user.count({ where: publicAgentWhere }),
   ]);
 
   const properties = rows.map(toProperty);

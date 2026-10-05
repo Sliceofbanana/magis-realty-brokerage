@@ -13,7 +13,7 @@ import {
   Share2,
   ExternalLink,
 } from "lucide-react";
-import { getAgentBySlug } from "@/lib/data/agents";
+import { agentWithProfile, publicAgentWhere, toAgent } from "@/lib/adapters/agent";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyGalleryCarousel } from "@/components/public/PropertyGalleryCarousel";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
@@ -57,7 +57,13 @@ export default async function PropertyDetailsPage({
   if (!row || row.archived) notFound();
   const property = toProperty(row);
 
-  const agent = getAgentBySlug(property.agentId);
+  // Only link to the listing agent if they're publicly listed — otherwise the
+  // inquiry form still shows, just without a link to a profile that 404s.
+  const agentRow = await prisma.user.findFirst({
+    where: { ...publicAgentWhere, agentProfile: { ...publicAgentWhere.agentProfile, slug: property.agentId } },
+    include: agentWithProfile,
+  });
+  const agent = agentRow ? toAgent(agentRow) : null;
   const similarRows = await prisma.property.findMany({
     where: { id: { not: property.id }, archived: false },
     include: propertyWithRelations,
@@ -210,23 +216,24 @@ export default async function PropertyDetailsPage({
           </div>
         </RevealOnScroll>
 
-        {agent && (
           <RevealOnScroll delay={0.15}>
           <aside className="h-fit rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-            <Link href={`/agents/${agent.slug}`} className="flex items-center gap-3">
-              <div className="relative h-14 w-14 overflow-hidden rounded-full bg-gray-100">
-                <Image src={agent.photo} alt={agent.name} fill className="object-cover" />
-              </div>
-              <div>
-                <p className="font-semibold text-navy-900">{agent.name}</p>
-                <p className="text-xs text-gray-500">{agent.title}</p>
-                <p className="flex items-center gap-1 text-xs text-gold-600">
-                  <Star size={12} className="fill-gold-500" /> {agent.rating.toFixed(1)} ({agent.reviews} Reviews)
-                </p>
-              </div>
-            </Link>
+            {agent && (
+              <Link href={`/agents/${agent.slug}`} className="flex items-center gap-3">
+                <div className="relative h-14 w-14 overflow-hidden rounded-full bg-gray-100">
+                  <Image src={agent.photo} alt={agent.name} fill className="object-cover" />
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">{agent.name}</p>
+                  <p className="text-xs text-gray-500">{agent.title}</p>
+                  <p className="flex items-center gap-1 text-xs text-gold-600">
+                    <Star size={12} className="fill-gold-500" /> {agent.rating.toFixed(1)} ({agent.reviews} Reviews)
+                  </p>
+                </div>
+              </Link>
+            )}
 
-            <h3 className="mt-6 font-serif text-lg font-bold text-navy-900">
+            <h3 className={`${agent ? "mt-6 " : ""}font-serif text-lg font-bold text-navy-900`}>
               Inquire About This Property
             </h3>
             <SimpleForm
@@ -252,7 +259,6 @@ export default async function PropertyDetailsPage({
             </div>
           </aside>
           </RevealOnScroll>
-        )}
       </div>
 
       <div className="mt-16">
