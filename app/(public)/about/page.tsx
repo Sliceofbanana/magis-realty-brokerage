@@ -4,15 +4,14 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
+import { SocialIcon } from "@/components/ui/SocialIcon";
 import { business, interiors } from "@/lib/stockPhotos";
 
 export const metadata = { title: "About Us | Magis Realty & Brokerage" };
 
 const founder = {
   name: "Mary Angelly M. Ruiz",
-  initials: "MR",
-  title: "Founder",
-  photo: "/images/founder.webp" as string | undefined,
+  photo: "/images/founder.webp",
   facebook: "https://www.facebook.com/propertyincebu",
 };
 
@@ -195,50 +194,71 @@ export default function AboutPage() {
       </section>
 
       <section className="bg-navy-950 py-20 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <RevealOnScroll>
-            <h2 className="font-serif text-3xl font-bold">
-              The Expert Behind the Vision
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
+              <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />
+              Our Founder &middot; Cebu, PH
+            </span>
+            <h2 className="mt-6 font-serif text-4xl font-bold leading-tight sm:text-5xl">
+              The Expert Behind <span className="text-gold-400">the Vision.</span>
             </h2>
-            <p className="mt-2 max-w-xl text-sm text-white/70">
-              Our founder brings decades of experience across real estate
-              finance, urban development, and high-net-worth portfolio
-              management.
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-white/70">
+              <strong className="font-semibold text-white">{founder.name}</strong> founded
+              Magis Realty &amp; Brokerage on a simple belief&mdash;&ldquo;Magis&rdquo;:
+              doing more, being better, and striving for excellence in every
+              transaction.
             </p>
-          </RevealOnScroll>
-          <RevealStagger className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <RevealItem>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/70">
+              Every client, every listing, and every closing carries that same
+              commitment to transparency, technical expertise, and long-term
+              prosperity for the families and investors we serve.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button href="/contact" variant="gold">Talk to Our Team</Button>
               <a
                 href={founder.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`${founder.name} on Facebook`}
-                className="relative block h-56 overflow-hidden rounded-xl bg-white/10"
+                className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-white/10"
               >
-                {founder.photo ? (
-                  <Image
-                    src={founder.photo}
-                    alt={founder.name}
-                    fill
-                    sizes="(min-width: 640px) 25vw, 50vw"
-                    className="origin-[65%_20%] scale-[1.9] object-cover object-[65%_20%]"
-                  />
-                ) : (
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 flex items-center justify-center font-serif text-5xl font-bold text-gold-400/60"
-                  >
-                    {founder.initials}
-                  </span>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3">
-                  <p className="text-sm font-semibold">{founder.name}</p>
-                  <p className="text-[11px] text-gold-400">{founder.title}</p>
-                </div>
+                <SocialIcon platform="facebook" size={16} /> Follow on Facebook
               </a>
-            </RevealItem>
-          </RevealStagger>
+            </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll delay={0.15} className="relative mx-auto w-full max-w-md lg:mr-0">
+            <div className="relative aspect-4/5 overflow-hidden rounded-3xl border border-white/10 bg-linear-to-b from-gold-500/30 via-navy-900 to-navy-950 shadow-2xl shadow-black/40">
+              <Image
+                src={founder.photo}
+                alt={`Portrait of ${founder.name}, founder of Magis Realty & Brokerage`}
+                fill
+                sizes="(min-width: 1024px) 28rem, 90vw"
+                className="object-cover object-top"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-navy-950/90 via-navy-950/0 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-6">
+                <p className="font-serif text-2xl font-bold">{founder.name}</p>
+                <p className="mt-1 text-sm text-gold-400">Founder, Magis Realty &amp; Brokerage</p>
+              </div>
+            </div>
+            <div className="absolute -left-2 top-8 rounded-2xl border border-white/10 bg-navy-950/85 px-4 py-3 shadow-lg backdrop-blur sm:-left-6">
+              <p className="font-serif text-xl font-bold text-gold-400">Magis</p>
+              <p className="text-[11px] leading-tight text-white/70">
+                to serve you more.
+                <br />
+                Buy. Sell. Rent.
+              </p>
+            </div>
+            <div className="absolute -right-2 bottom-24 rounded-2xl border border-white/10 bg-navy-950/85 px-4 py-3 shadow-lg backdrop-blur sm:-right-6">
+              <p className="font-serif text-xl font-bold text-gold-400">Cebu</p>
+              <p className="text-[11px] leading-tight text-white/70">
+                North, Central
+                <br />
+                &amp; South
+              </p>
+            </div>
+          </RevealOnScroll>
         </div>
       </section>
 
