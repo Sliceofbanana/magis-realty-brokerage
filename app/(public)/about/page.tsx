@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
-import { SocialIcon } from "@/components/ui/SocialIcon";
 import { business, interiors } from "@/lib/stockPhotos";
 
 export const metadata = { title: "About Us | Magis Realty & Brokerage" };
@@ -13,6 +12,7 @@ const founder = {
   name: "Mary Angelly M. Ruiz",
   initials: "MR",
   title: "Founder",
+  photo: "/images/founder.webp" as string | undefined,
   facebook: "https://www.facebook.com/propertyincebu",
 };
 
@@ -201,31 +201,44 @@ export default function AboutPage() {
               The Expert Behind the Vision
             </h2>
             <p className="mt-2 max-w-xl text-sm text-white/70">
-              Magis Realty &amp; Brokerage is led by its founder, who sets the
-              standard of integrity and personal attention behind every
-              transaction.
+              Our founder brings decades of experience across real estate
+              finance, urban development, and high-net-worth portfolio
+              management.
             </p>
           </RevealOnScroll>
-          <RevealOnScroll delay={0.1} className="mt-10 flex items-center gap-5">
-            <span
-              aria-hidden
-              className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gold-500 font-serif text-2xl font-bold text-navy-950"
-            >
-              {founder.initials}
-            </span>
-            <div>
-              <p className="font-serif text-xl font-bold">{founder.name}</p>
-              <p className="text-sm text-gold-400">{founder.title}</p>
+          <RevealStagger className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <RevealItem>
               <a
                 href={founder.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-2 text-sm text-white/70 hover:text-gold-400"
+                aria-label={`${founder.name} on Facebook`}
+                className="relative block h-56 overflow-hidden rounded-xl bg-white/10"
               >
-                <SocialIcon platform="facebook" size={16} /> Property in Cebu on Facebook
+                {founder.photo ? (
+                  <Image
+                    src={founder.photo}
+                    alt={founder.name}
+                    fill
+                    sizes="(min-width: 640px) 25vw, 50vw"
+                    className="origin-[65%_20%] scale-[1.9] object-cover object-[65%_20%]"
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 flex items-center justify-center font-serif text-5xl font-bold text-gold-400/60"
+                  >
+                    {founder.initials}
+                  </span>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3">
+                  <p className="text-sm font-semibold">{founder.name}</p>
+                  <p className="text-[11px] text-gold-400">{founder.title}</p>
+                </div>
               </a>
-            </div>
-          </RevealOnScroll>
+            </RevealItem>
+          </RevealStagger>
         </div>
       </section>
 

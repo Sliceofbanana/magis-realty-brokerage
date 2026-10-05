@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ShieldCheck, Target, LineChart, ArrowRight, TrendingUp, Star } from "lucide-react";
+import { ShieldCheck, Target, LineChart, ArrowRight } from "lucide-react";
 import { HomeHero } from "@/components/public/HomeHero";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { PropertyCard } from "@/components/public/PropertyCard";
@@ -9,14 +9,12 @@ import { BlogCard } from "@/components/public/BlogCard";
 import { TestimonialCarousel } from "@/components/public/TestimonialCarousel";
 import { NewsletterForm } from "@/components/public/NewsletterForm";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
-import { StatCard } from "@/components/ui/StatCard";
 import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
 import { agentWithProfile, publicAgentWhere, toAgent } from "@/lib/adapters/agent";
 import { toTestimonial } from "@/lib/adapters/testimonial";
 import { blogPosts } from "@/lib/data/blog";
 import { business, exteriors } from "@/lib/stockPhotos";
-import { formatCurrency } from "@/lib/format";
 
 const pillars = [
   {
@@ -43,10 +41,10 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   // $transaction (not Promise.all) so this page needs one pooled connection
-  // instead of six held open at once — Supabase's session-mode pooler has a
+  // instead of several held open at once — Supabase's session-mode pooler has a
   // small shared connection budget, and this page already caused one of the
   // "database error" incidents from concurrent-connection exhaustion.
-  const [featuredRows, eliteRows, testimonialRows, soldAgg, ratingAgg] = await prisma.$transaction([
+  const [featuredRows, eliteRows, testimonialRows] = await prisma.$transaction([
     prisma.property.findMany({
       where: { archived: false, status: { not: "SOLD" } },
       include: propertyWithRelations,
@@ -60,48 +58,15 @@ export default async function HomePage() {
       take: 4,
     }),
     prisma.testimonial.findMany(),
-    prisma.property.aggregate({
-      where: { status: "SOLD" },
-      _sum: { price: true },
-      _count: true,
-    }),
-    prisma.agentProfile.aggregate({
-      where: { reviewCount: { gt: 0 } },
-      _avg: { rating: true },
-    }),
   ]);
   const featured = featuredRows.map(toProperty);
   const elite = eliteRows.map(toAgent);
   const testimonials = testimonialRows.map(toTestimonial);
   const insights = blogPosts.slice(0, 2);
-  const showTrustStats = soldAgg._count > 0 || ratingAgg._avg.rating !== null;
-  const trustStats = [
-    {
-      icon: TrendingUp,
-      label: "Total Value Closed",
-      value: formatCurrency(Number(soldAgg._sum.price ?? 0)),
-    },
-    {
-      icon: Star,
-      label: "Average Client Rating",
-      value: ratingAgg._avg.rating ? `${ratingAgg._avg.rating.toFixed(1)} / 5` : "—",
-    },
-  ];
 
   return (
     <>
       <HomeHero />
-
-      {/* Trust Stats */}
-      {showTrustStats && (
-        <RevealOnScroll className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-2xl grid-cols-2 gap-4">
-            {trustStats.map((stat) => (
-              <StatCard key={stat.label} icon={<stat.icon size={20} />} label={stat.label} value={stat.value} />
-            ))}
-          </div>
-        </RevealOnScroll>
-      )}
 
       {/* Curated Collections */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
