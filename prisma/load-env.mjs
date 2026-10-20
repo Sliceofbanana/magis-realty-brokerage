@@ -1,15 +1,19 @@
 /**
- * Loads environment files for the admin scripts, in the same order Next.js
- * does: real environment variables win, then .env.production.local, then
- * .env.local (where `vercel env pull` writes), then .env.
+ * Loads environment files for the admin scripts. Precedence: variables already
+ * set in the shell, then .env.production.local, .env.local, .env — and
+ * `--env=<file>` first of all.
  *
- * Plain `import "dotenv/config"` only reads .env — so a database address pulled
- * into .env.local was silently ignored and the script hit whatever .env pointed
- * at (usually the local dev database).
+ * Blank values are ignored. Vercel never returns "sensitive" variables such as
+ * DATABASE_URL on `vercel env pull` — they come back as `KEY=""` — and a blank
+ * must not shadow a real value from a lower-priority file or the shell.
  */
+import fs from "node:fs";
 import dotenv from "dotenv";
 
 const explicit = process.argv.find((a) => a.startsWith("--env="))?.slice("--env=".length);
 for (const file of [explicit, ".env.production.local", ".env.local", ".env"].filter(Boolean)) {
-  dotenv.config({ path: file, quiet: true });
+  if (!fs.existsSync(file)) continue;
+  for (const [key, value] of Object.entries(dotenv.parse(fs.readFileSync(file)))) {
+    if (value !== "" && !process.env[key]) process.env[key] = value;
+  }
 }
