@@ -6,6 +6,7 @@ import Image from "next/image";
 import { LayoutGrid, List, Archive, ArchiveRestore, History, Search, X } from "lucide-react";
 import { Property, CommissionRecord } from "@/lib/types";
 import { PageHeader } from "@/components/portal/PageHeader";
+import { useRole } from "@/components/portal/RoleContext";
 import { CreateListingForm } from "@/components/portal/CreateListingForm";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/format";
@@ -76,11 +77,13 @@ export function ListingsAdminView({
   properties,
   agents,
   agentUserIdByPropertyId,
+  contactByPropertyId,
   initialQuery,
 }: {
   properties: Property[];
   agents: AgentOption[];
   agentUserIdByPropertyId: Record<string, string>;
+  contactByPropertyId: Record<string, { name: string; code: string }>;
   initialQuery?: string;
 }) {
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
@@ -89,6 +92,9 @@ export function ListingsAdminView({
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMINISTRATOR";
   const currentUserId = session?.user?.id;
+  const { hasPermission } = useRole();
+  // Adding listings is management-only: Administrators, or whoever was granted "Add Listings".
+  const canAddListings = isAdmin || hasPermission("manage-own-listings");
 
   const filtered = useMemo(() => {
     let result = properties;
@@ -99,19 +105,29 @@ export function ListingsAdminView({
     }
     const q = query.trim().toLowerCase();
     if (q) {
-      result = result.filter(
-        (p) => p.title.toLowerCase().includes(q) || p.location.toLowerCase().includes(q)
-      );
+      result = result.filter((p) => {
+        const contact = contactByPropertyId[p.id];
+        return (
+          p.title.toLowerCase().includes(q) ||
+          p.location.toLowerCase().includes(q) ||
+          contact?.code.toLowerCase().includes(q) ||
+          contact?.name.toLowerCase().includes(q)
+        );
+      });
     }
     return result;
-  }, [properties, filter, query]);
+  }, [properties, filter, query, contactByPropertyId]);
 
   return (
     <div>
       <PageHeader
         title="Property Listings"
-        description="Manage your properties across the portfolio."
-        action={<CreateListingForm agents={agents} />}
+        description={
+          canAddListings
+            ? "Manage your properties across the portfolio."
+            : "Browse every listing across the portfolio. New listings are added by management."
+        }
+        action={canAddListings ? <CreateListingForm agents={agents} /> : undefined}
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
@@ -134,7 +150,7 @@ export function ListingsAdminView({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search title or location…"
+              placeholder="Search title, location or agent code…"
               className="rounded-full border border-black/10 bg-offwhite py-1.5 pl-8 pr-3 text-xs text-navy-900 focus:border-navy-900 focus:outline-none"
             />
           </div>
@@ -188,6 +204,15 @@ export function ListingsAdminView({
                     <span>{property.baths} ba</span>
                     <span>{property.area.toLocaleString()} sqm</span>
                   </div>
+                  {contactByPropertyId[property.id] && (
+                    <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
+                      <span className="font-semibold uppercase tracking-wide text-gray-400">Contact</span>
+                      <span className="rounded bg-navy-900/5 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-navy-900">
+                        {contactByPropertyId[property.id].code}
+                      </span>
+                      <span className="truncate">{contactByPropertyId[property.id].name}</span>
+                    </p>
+                  )}
                   <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-3">
                     <div>
                       <p className="text-[10px] uppercase text-gray-400">

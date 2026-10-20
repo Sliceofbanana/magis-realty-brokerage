@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
 import { ListingsAdminView } from "@/components/portal/ListingsAdminView";
+import { formatAgentCode } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +24,17 @@ export default async function ListingsAdminPage({
   ]);
   const properties = rows.map(toProperty);
   const agentUserIdByPropertyId = Object.fromEntries(rows.map((r) => [r.id, r.agentId]));
+  // Who to contact about each listing: the assigned person's name + permanent code.
+  const contactByPropertyId = Object.fromEntries(
+    rows.map((r) => [r.id, { name: r.agent.name, code: formatAgentCode(r.agent.agentNo) }])
+  );
 
   return (
     <ListingsAdminView
       properties={properties}
       agents={agents}
       agentUserIdByPropertyId={agentUserIdByPropertyId}
+      contactByPropertyId={contactByPropertyId}
       initialQuery={q}
     />
   );

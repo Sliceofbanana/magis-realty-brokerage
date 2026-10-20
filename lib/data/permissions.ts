@@ -52,8 +52,9 @@ export const permissionDefs: PermissionDef[] = [
   },
   {
     key: "manage-own-listings",
-    label: "Manage Own Listings",
-    description: "Create and edit property listings in the agent's own portfolio.",
+    label: "Add Listings",
+    description:
+      "Create new property listings. Reserved for management — grant it to a specific person to let them add listings.",
     category: "Content & Reports",
   },
   {
@@ -77,12 +78,7 @@ export const defaultRolePermissions: RolePermissionMatrix = {
     "manage-own-listings",
     "manage-blogs",
   ],
-  Broker: [
-    "view-activity-log",
-    "set-agent-quotas",
-    "export-reports",
-    "manage-own-listings",
-  ],
-  Agent: ["export-reports", "manage-own-listings"],
+  Broker: ["view-activity-log", "set-agent-quotas", "export-reports"],
+  Agent: ["export-reports"],
   Marketing: ["manage-blogs", "export-reports"],
 };

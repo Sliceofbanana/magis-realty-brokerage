@@ -288,7 +288,7 @@ export default async function CareersPage({
               </div>
               <div>
                 <p className="font-semibold text-navy-900">Office Hours</p>
-                <p className="mt-1 text-gray-500">Mon &ndash; Fri, 9am &ndash; 6pm</p>
+                <p className="mt-1 text-gray-500">Mon &ndash; Sat, 9am &ndash; 6pm</p>
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { formatAgentCode } from "@/lib/format";
 
 export type AdminUserRow = {
   id: string;
@@ -12,6 +13,8 @@ export type AdminUserRow = {
   role: "ADMINISTRATOR" | "BROKER" | "AGENT" | "MARKETING";
   status: "PENDING" | "ACTIVE" | "DEACTIVATED" | "REJECTED";
   createdAt: string;
+  /** Permanent contact code shown next to listings, e.g. "AG-014". */
+  agentCode: string;
   /** Whether an administrator has listed this person on the public website. */
   publicListed: boolean;
   /** What's still missing before they can be listed (empty = ready). */
@@ -47,13 +50,15 @@ export async function listPortalUsers(): Promise<AdminUserRow[]> {
       role: true,
       status: true,
       createdAt: true,
+      agentNo: true,
       agentProfile: { select: { bio: true, publicListed: true } },
     },
   });
 
-  return users.map(({ agentProfile, ...u }) => ({
+  return users.map(({ agentProfile, agentNo, ...u }) => ({
     ...u,
     createdAt: u.createdAt.toISOString(),
+    agentCode: formatAgentCode(agentNo),
     publicListed: agentProfile?.publicListed ?? false,
     listingMissing: missingForListing({ photo: u.photo, agentProfile }),
   }));

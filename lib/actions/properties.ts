@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
 import { uploadFile } from "@/lib/storage";
+import { userHasPermission } from "@/lib/permissions-server";
 import { commissionRecordInclude, toCommissionRecord } from "@/lib/adapters/commission";
 import type { CommissionRecord } from "@/lib/types";
 
@@ -13,7 +14,10 @@ export type CreatePropertyResult = { error?: string; success?: boolean };
 
 const ALLOWED_ROLES = ["ADMINISTRATOR", "BROKER", "AGENT"];
 
-/** Creates a new property listing — Administrators, Brokers, and Agents only (matches manage-own-listings). */
+/**
+ * Creates a new property listing. Reserved for management: Administrators, plus
+ * anyone an Administrator has granted "Add Listings" to (manage-own-listings).
+ */
 export async function createPropertyAction(
   _prevState: CreatePropertyResult,
   formData: FormData
@@ -23,6 +27,9 @@ export async function createPropertyAction(
     return { error: "Not authorized." };
   }
   const isAdmin = session.user.role === "ADMINISTRATOR";
+  if (!isAdmin && !(await userHasPermission(session.user.id, session.user.role, "MANAGE_OWN_LISTINGS"))) {
+    return { error: "Only management can add listings." };
+  }
 
   const title = String(formData.get("title") ?? "").trim();
   const collection = String(formData.get("collection") ?? "").trim();

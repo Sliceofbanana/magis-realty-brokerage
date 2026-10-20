@@ -125,7 +125,10 @@ export default function UsersAdminPage() {
                           <Avatar src={user.photo ?? undefined} initials={getInitials(user.name)} size={36} />
                           <div>
                             <p className="font-semibold text-navy-900">{user.name}</p>
-                            <p className="text-xs text-gray-400">{user.email}</p>
+                            <p className="text-xs text-gray-400">
+                              {user.email} &middot;{" "}
+                              <span className="font-mono font-semibold text-navy-900">{user.agentCode}</span>
+                            </p>
                           </div>
                         </div>
                       </td>

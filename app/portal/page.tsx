@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/Button";
 import { exteriors } from "@/lib/stockPhotos";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { userHasPermission } from "@/lib/permissions-server";
 import { timeAgo } from "@/lib/format";
 import {
   attendanceConfigWithTiers,
@@ -46,6 +47,10 @@ export default async function PortalDashboardPage() {
   const session = await auth();
   const firstName = session?.user?.name?.split(" ")[0] ?? "Agent";
   const isAdmin = session?.user?.role === "ADMINISTRATOR";
+  // Adding listings is management-only (Administrators, or anyone granted "Add Listings").
+  const canAddListings =
+    isAdmin ||
+    (session?.user ? await userHasPermission(session.user.id, session.user.role, "MANAGE_OWN_LISTINGS") : false);
 
   const [
     activeListings,
@@ -245,15 +250,17 @@ export default async function PortalDashboardPage() {
           <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
             <h2 className="font-serif text-lg font-bold text-navy-900">Quick Actions</h2>
             <div className="mt-4 space-y-3">
-              <Link
-                href="/portal/listings"
-                className="flex items-center justify-between rounded-lg bg-navy-900 px-4 py-3 text-sm font-semibold text-white hover:bg-navy-800"
-              >
-                <span className="flex items-center gap-2">
-                  <PlusCircle size={16} /> Add Property
-                </span>
-                <ChevronRight size={16} />
-              </Link>
+              {canAddListings && (
+                <Link
+                  href="/portal/listings"
+                  className="flex items-center justify-between rounded-lg bg-navy-900 px-4 py-3 text-sm font-semibold text-white hover:bg-navy-800"
+                >
+                  <span className="flex items-center gap-2">
+                    <PlusCircle size={16} /> Add Property
+                  </span>
+                  <ChevronRight size={16} />
+                </Link>
+              )}
               <Link
                 href="/portal/settings"
                 className="flex items-center justify-between rounded-lg bg-gold-500 px-4 py-3 text-sm font-semibold text-white hover:bg-gold-600"

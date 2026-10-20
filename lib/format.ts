@@ -6,6 +6,11 @@ export function formatCurrency(value: number) {
   }).format(value);
 }
 
+/** The contact code shown next to a listing, e.g. 14 → "AG-014". */
+export function formatAgentCode(agentNo: number) {
+  return `AG-${String(agentNo).padStart(3, "0")}`;
+}
+
 export function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   if (seconds < 60) return "Just now";
