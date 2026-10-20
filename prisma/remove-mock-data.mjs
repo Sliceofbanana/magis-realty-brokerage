@@ -21,8 +21,9 @@
  *  - Everything it deletes is saved to mock-data-backup-<timestamp>.json
  *    before the transaction commits.
  *
- * Uses DATABASE_URL from the environment / .env — point it at the database you
- * mean to clean.
+ * Uses DATABASE_URL from the environment, .env.production.local, .env.local or
+ * .env (in that order); the target host is printed before anything runs. Use
+ * --env=<file> to point at a specific env file.
  */
 import fs from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -180,7 +181,7 @@ export async function removeMockData(db, { apply = false, includeTestLeads = fal
 // ── CLI ─────────────────────────────────────────────────────────────────
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { default: pg } = await import("pg");
-  await import("dotenv/config");
+  await import("./load-env.mjs");
   const apply = process.argv.includes("--apply");
   const includeTestLeads = process.argv.includes("--include-test-leads");
 
