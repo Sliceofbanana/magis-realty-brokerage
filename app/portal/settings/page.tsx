@@ -213,7 +213,7 @@ function GeneralTab() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-6">
         <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
@@ -563,7 +563,7 @@ function NotificationsTab() {
   ] as const;
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
         <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-navy-900">
           <Bell size={18} className="text-gold-500" /> Notification Preferences
@@ -656,7 +656,7 @@ function CommissionTab() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-lg font-bold text-navy-900">Commission Structure</h2>
@@ -844,7 +844,7 @@ function AttendanceTab() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-lg font-bold text-navy-900">Attendance &amp; Reward Rules</h2>
@@ -983,7 +983,7 @@ function BirthdayTab() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-navy-900">

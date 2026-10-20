@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { RevealOnScroll } from "@/components/public/RevealOnScroll";
 import { exteriors } from "@/lib/stockPhotos";
 import { submitInquiryAction } from "@/lib/actions/leads";
+import { botFromValues } from "@/lib/botSignals";
 import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 export const metadata = { title: "Contact Us | Magis Realty & Brokerage" };
@@ -45,6 +46,7 @@ export default function ContactPage() {
       message: values.message,
       interest: values.interest,
       source: "Contact Page",
+      bot: botFromValues(values),
     });
   }
 
@@ -70,7 +72,7 @@ export default function ContactPage() {
       </section>
 
       <div className="bg-offwhite py-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
           <RevealOnScroll>
           <Card className="bg-white p-6 sm:p-8">
             <h2 className="font-serif text-2xl font-bold text-navy-900">Inquiry Form</h2>

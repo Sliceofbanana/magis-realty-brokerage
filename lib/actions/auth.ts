@@ -7,6 +7,9 @@ import { hashPassword } from "@/lib/password";
 import { signIn, signOut } from "@/auth";
 import { createNotification } from "@/lib/actions/notifications";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { checkBot } from "@/lib/botGuard";
+import { botFromFormData, tooLong } from "@/lib/botSignals";
+import { getSystemSettings } from "@/lib/system-settings";
 import { createToken, consumeToken } from "@/lib/tokens";
 import { sendEmail, verifyEmailTemplate, passwordResetTemplate, loginAlertTemplate } from "@/lib/email";
 import { getBaseUrl } from "@/lib/url";
@@ -111,9 +114,19 @@ export async function logoutAction() {
 
 /** Odoo-style registration gate: new agents land in PENDING, no session issued. */
 export async function registerAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await getSystemSettings()).registrationOpen) {
+    return { error: "New registrations are temporarily closed. Please contact an administrator." };
+  }
+
   const rateLimit = await checkRateLimit("register");
   if (!rateLimit.allowed) {
     return { error: `Too many attempts — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
+  const bot = await checkBot(botFromFormData(formData));
+  if (!bot.ok) {
+    if (bot.silent) redirect("/register/success");
+    return { error: bot.error };
   }
 
   const name = String(formData.get("name") ?? "").trim();
@@ -121,6 +134,9 @@ export async function registerAction(_prevState: ActionState, formData: FormData
   const phone = String(formData.get("phone") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
+  if (tooLong({ name, email, phone }) || password.length > 200) {
+    return { error: "One of the fields is too long." };
+  }
   if (!name || !email || !password) {
     return { error: "Fill in your name, email, and password." };
   }
@@ -210,6 +226,9 @@ export async function requestPasswordResetAction(_prevState: ActionState, formDa
   if (!rateLimit.allowed) {
     return { error: `Too many attempts — please try again in ${rateLimit.retryAfterSeconds}s.` };
   }
+
+  const bot = await checkBot(botFromFormData(formData));
+  if (!bot.ok) return bot.silent ? { success: true } : { error: bot.error };
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!email) {

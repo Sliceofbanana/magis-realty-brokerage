@@ -3,6 +3,7 @@
 import { FocusEvent, FormEvent, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { BotShield } from "@/components/ui/BotShield";
 import { isValidEmail, fieldStateClasses, type FieldStatus } from "@/lib/validation";
 
 type SubmitVariant = "primary" | "gold" | "outline" | "outline-light" | "ghost";
@@ -100,8 +101,13 @@ export function SimpleForm({
     if (Object.keys(nextErrors).length > 0) return;
 
     if (action) {
+      // Bot signals (honeypot, time on form, CAPTCHA token) ride along with the values.
+      const form = new FormData(e.currentTarget as HTMLFormElement);
+      const bot = Object.fromEntries(
+        ["company_website", "_t", "_cf"].map((k) => [k, String(form.get(k) ?? "")])
+      );
       setPending(true);
-      const result = await action(values).catch(() => ({ error: "Something went wrong. Please try again." }));
+      const result = await action({ ...values, ...bot }).catch(() => ({ error: "Something went wrong. Please try again." }));
       setPending(false);
       if (result?.error) {
         setFormError(result.error);
@@ -126,7 +132,8 @@ export function SimpleForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${className}`}>
+    <form onSubmit={handleSubmit} noValidate className={`relative grid grid-cols-1 gap-4 sm:grid-cols-2 ${className}`}>
+      <BotShield />
       {fields.map((field) => {
         const error = errors[field.name];
         const status = fieldStatus(field);

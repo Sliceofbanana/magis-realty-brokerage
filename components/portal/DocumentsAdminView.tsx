@@ -73,7 +73,7 @@ export function DocumentsAdminView({
         action={<UploadDocumentForm properties={properties} />}
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <div className="h-fit rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Folders</p>
           <div className="mt-3 space-y-1">

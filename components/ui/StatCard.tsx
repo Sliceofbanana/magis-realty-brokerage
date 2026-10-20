@@ -12,15 +12,15 @@ export function StatCard({
   iconBg?: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
+    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm sm:gap-4 sm:p-5">
       <span
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconBg}`}
+        className={`hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl min-[340px]:flex ${iconBg}`}
       >
         {icon}
       </span>
-      <div>
+      <div className="min-w-0">
         <p className="text-xs font-medium text-gray-500">{label}</p>
-        <p className="text-2xl font-bold text-navy-900">{value}</p>
+        <p className="break-words text-xl font-bold text-navy-900 sm:text-2xl">{value}</p>
       </div>
     </div>
   );

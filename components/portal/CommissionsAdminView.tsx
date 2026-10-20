@@ -68,7 +68,7 @@ export function CommissionsAdminView({
         title="Commissions Overview"
         description="Track your earnings and pending payouts for the current fiscal period."
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {hasPermission("export-reports") && (
               <Button variant="outline" size="sm" onClick={() => exportTransactionsPdf(filtered)}>
                 <Download size={14} /> Export PDF

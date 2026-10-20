@@ -20,7 +20,7 @@ export function PageHeader({
         </h1>
         {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="max-w-full sm:shrink-0">{action}</div>}
     </div>
   );
 }

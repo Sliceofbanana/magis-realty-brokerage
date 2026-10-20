@@ -6,21 +6,35 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/actions/users";
 import { createNotification } from "@/lib/actions/notifications";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { checkBot } from "@/lib/botGuard";
+import { tooLong, type BotSignals } from "@/lib/botSignals";
+import { inquiriesClosedMessage } from "@/lib/system-settings";
 
 export type JobApplicationInput = {
   name: string;
   email: string;
   expertise: string;
   portfolio?: string;
+  bot?: BotSignals;
 };
 
 export type JobApplicationResult = { error?: string };
 
 /** Public-facing: submits a careers application. Anyone may call this — no auth required. */
 export async function createJobApplicationAction(values: JobApplicationInput): Promise<JobApplicationResult> {
+  const closed = await inquiriesClosedMessage();
+  if (closed) return { error: closed };
+
   const rateLimit = await checkRateLimit("publicForm");
   if (!rateLimit.allowed) {
     return { error: `Too many submissions — please try again in ${rateLimit.retryAfterSeconds}s.` };
+  }
+
+  const bot = await checkBot(values.bot);
+  if (!bot.ok) return bot.silent ? {} : { error: bot.error };
+
+  if (tooLong({ name: values.name, email: values.email, expertise: values.expertise, portfolio: values.portfolio })) {
+    return { error: "One of the fields is too long." };
   }
 
   const name = values.name?.trim();

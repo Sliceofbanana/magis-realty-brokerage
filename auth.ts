@@ -41,6 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           status: user.status,
           photo: user.photo,
+          isSystemAdmin: user.isSystemAdmin,
         };
       },
     }),
@@ -52,6 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
         token.status = user.status;
         token.photo = user.photo;
+        token.isSystemAdmin = user.isSystemAdmin;
       }
       // Lets the client force a token refresh (e.g. right after uploading a
       // new profile photo) without requiring a full re-login — the JWT
@@ -66,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.role = token.role as PortalRole;
       session.user.status = token.status as UserStatus;
       session.user.photo = token.photo as string | null;
+      session.user.isSystemAdmin = token.isSystemAdmin === true;
       return session;
     },
   },

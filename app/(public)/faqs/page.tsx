@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { faqCategoryWithItems, toFaqCategory } from "@/lib/adapters/faq";
 import { submitInquiryAction } from "@/lib/actions/leads";
+import { botFromValues } from "@/lib/botSignals";
 import { FaqsView } from "@/components/public/FaqsView";
 
 export const metadata = { title: "FAQs | Magis Realty & Brokerage" };
@@ -17,6 +18,7 @@ export default async function FaqsPage() {
       email: values.email,
       message: values.message,
       source: "FAQs Page",
+      bot: botFromValues(values),
     });
   }
 

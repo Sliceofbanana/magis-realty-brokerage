@@ -36,7 +36,7 @@ function TypeCard({
   const badge = badgeConfig[stats.badge];
   return (
     <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="flex items-center gap-2 font-serif text-lg font-bold text-navy-900">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-100 text-navy-700">
             {icon}
@@ -111,7 +111,7 @@ export function AttendanceOverview({
         <TypeCard title="PKS Sessions" icon={<GraduationCap size={18} />} stats={pks} />
 
         <div className="rounded-2xl bg-navy-950 p-6 text-white shadow-sm">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="flex items-center gap-2 font-serif text-lg font-bold">
               <Trophy size={18} className="text-gold-400" /> Attendance Rewards
             </h3>
@@ -186,7 +186,7 @@ export function AttendanceOverview({
       </div>
 
       <div className="mt-4 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_200px_260px]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_200px_260px]">
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-offwhite p-4">
               <p className="text-[11px] uppercase tracking-wide text-gray-400">

@@ -71,7 +71,7 @@ export function HomeHero() {
       >
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 gap-3 rounded-2xl bg-white p-4 shadow-xl sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-end"
+          className="grid grid-cols-1 gap-3 rounded-2xl bg-white p-4 shadow-xl sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
         >
           <div>
             <label htmlFor="hero-location" className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500">

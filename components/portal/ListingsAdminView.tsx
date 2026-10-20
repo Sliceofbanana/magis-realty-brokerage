@@ -37,7 +37,7 @@ function HistoryPanel({ property, onClose }: { property: Property; onClose: () =
       aria-modal="true"
       className="fixed inset-0 z-100 flex items-center justify-center bg-navy-950/70 p-4"
     >
-      <div className="relative max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-2xl">
+      <div className="relative max-h-[85dvh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
           <h2 className="font-serif text-lg font-bold text-navy-900">{property.title} — History</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="text-gray-400 hover:text-navy-900">

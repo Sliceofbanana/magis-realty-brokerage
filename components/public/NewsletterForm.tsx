@@ -5,6 +5,8 @@ import { FormEvent, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { subscribeToNewsletterAction } from "@/lib/actions/newsletter";
+import { BotShield } from "@/components/ui/BotShield";
+import { botFromFormData } from "@/lib/botSignals";
 
 export function NewsletterForm({
   className = "",
@@ -26,7 +28,8 @@ export function NewsletterForm({
     }
     setError("");
     setSubmitting(true);
-    const result = await subscribeToNewsletterAction(email);
+    const bot = botFromFormData(new FormData(e.currentTarget as HTMLFormElement));
+    const result = await subscribeToNewsletterAction(email, bot);
     setSubmitting(false);
     if (result.error) {
       setError(result.error);
@@ -51,6 +54,7 @@ export function NewsletterForm({
   if (variant === "light") {
     return (
       <form onSubmit={handleSubmit} noValidate className={className}>
+      <BotShield />
         <div className="flex flex-col gap-3 sm:flex-row">
           <label htmlFor="newsletter-email" className="sr-only">
             Email address
@@ -86,6 +90,7 @@ export function NewsletterForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className={className}>
+      <BotShield />
       <label htmlFor="newsletter-email" className="sr-only">
         Email address
       </label>

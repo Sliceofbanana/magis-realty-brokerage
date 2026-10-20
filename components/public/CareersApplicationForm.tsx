@@ -2,6 +2,7 @@
 
 import { SimpleForm, type FormField } from "@/components/public/SimpleForm";
 import { createJobApplicationAction } from "@/lib/actions/careers";
+import { botFromValues } from "@/lib/botSignals";
 
 const applicationFields: FormField[] = [
   { name: "name", label: "Full Name", type: "text", placeholder: "John Doe" },
@@ -36,6 +37,7 @@ export function CareersApplicationForm({ role }: { role?: string }) {
           email: values.email,
           expertise: values.expertise,
           portfolio: values.portfolio,
+          bot: botFromValues(values),
         })
       }
     />

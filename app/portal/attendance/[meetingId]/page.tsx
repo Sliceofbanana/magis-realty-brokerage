@@ -61,7 +61,7 @@ export default async function MeetingDetailPage({
         <StatCard icon={<CalendarClock size={18} />} label="Upcoming" value={upcomingCount} iconBg="bg-sky-100 text-navy-700" />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
           <div className="border-b border-black/5 px-6 py-4">
             <h2 className="font-serif text-lg font-bold text-navy-900">Roster</h2>

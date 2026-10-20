@@ -245,7 +245,7 @@ export default async function PortalDashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <div className="space-y-6">
           <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
             <h2 className="font-serif text-lg font-bold text-navy-900">Quick Actions</h2>
@@ -376,7 +376,7 @@ export default async function PortalDashboardPage() {
           ) : (
             <div className="mt-8 border-t border-black/5 pt-6">
               <h3 className="font-serif text-lg font-bold text-navy-900">Top Performing Listing</h3>
-              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[200px_1fr]">
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[200px_minmax(0,1fr)]">
                 <div className="relative h-40 overflow-hidden rounded-xl">
                   <Image
                     src={exteriors.whiteVillaPoolDayAlt}

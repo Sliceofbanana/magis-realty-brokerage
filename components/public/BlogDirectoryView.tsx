@@ -104,7 +104,7 @@ export function BlogDirectoryView({ posts }: { posts: BlogPost[] }) {
       </div>
 
       <div className="bg-offwhite py-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
           <div>
             {paged.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-black/10 bg-white p-12 text-center text-sm text-gray-500">

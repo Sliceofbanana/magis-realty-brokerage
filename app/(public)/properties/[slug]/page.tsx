@@ -18,6 +18,7 @@ import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyGalleryCarousel } from "@/components/public/PropertyGalleryCarousel";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { submitInquiryAction } from "@/lib/actions/leads";
+import { botFromValues } from "@/lib/botSignals";
 import { Badge } from "@/components/ui/Badge";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
 import { formatCurrency } from "@/lib/format";
@@ -85,6 +86,7 @@ export default async function PropertyDetailsPage({
       propertyLabel: propertyTitle,
       propertyId,
       source: "Property Details",
+      bot: botFromValues(values),
     });
   }
 
@@ -132,7 +134,7 @@ export default async function PropertyDetailsPage({
         <PropertyGalleryCarousel images={galleryImages} title={property.title} />
       </RevealOnScroll>
 
-      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
+      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
         <RevealOnScroll>
           <div className="grid grid-cols-2 gap-4 border-b border-black/10 pb-6 sm:grid-cols-4">
             {property.beds > 0 && (

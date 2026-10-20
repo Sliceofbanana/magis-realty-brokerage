@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
-import { portalNavItems, portalAdminNavItems, portalFooterNavItems } from "./navItems";
+import { useSession } from "next-auth/react";
+import { portalNavItems, portalAdminNavItems, portalFooterNavItems, portalSystemNavItems } from "./navItems";
 import { useRole } from "./RoleContext";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ size?: number }> };
@@ -18,6 +19,8 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const { role } = useRole();
+  const { data: session } = useSession();
+  const isSystemAdmin = session?.user?.isSystemAdmin === true;
 
   function NavLink({ item }: { item: NavItem }) {
     const active =
@@ -68,6 +71,17 @@ export function Sidebar({
               Administration
             </p>
             {portalAdminNavItems.map((item) => (
+              <NavLink key={item.href} item={item} />
+            ))}
+          </>
+        )}
+
+        {isSystemAdmin && (
+          <>
+            <p className="mb-1 mt-5 px-3 text-[11px] font-semibold uppercase tracking-wide text-white/40">
+              System
+            </p>
+            {portalSystemNavItems.map((item) => (
               <NavLink key={item.href} item={item} />
             ))}
           </>

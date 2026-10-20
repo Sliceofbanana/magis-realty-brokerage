@@ -120,7 +120,7 @@ export function PropertiesFilterView({
             estates across the region&rsquo;s most prestigious locations.
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 sm:shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -129,12 +129,12 @@ export function PropertiesFilterView({
           >
             <Map size={14} /> {showMap ? "Show List" : "Show Map"}
           </Button>
-          <div className="relative">
+          <div className="relative max-w-full">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as (typeof sortOptions)[number]["value"])}
               aria-label="Sort properties"
-              className="appearance-none rounded-lg border border-black/10 bg-white py-2 pl-4 pr-9 text-sm font-semibold text-navy-900 hover:border-black/20 focus:outline-none"
+              className="max-w-full appearance-none rounded-lg border border-black/10 bg-white py-2 pl-4 pr-9 text-sm font-semibold text-navy-900 hover:border-black/20 focus:outline-none"
             >
               {sortOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -147,7 +147,7 @@ export function PropertiesFilterView({
         </div>
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
+      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="h-fit rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="font-serif text-lg font-bold text-navy-900">Filters</h2>

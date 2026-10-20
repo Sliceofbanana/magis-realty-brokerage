@@ -77,7 +77,7 @@ export function CreateListingForm({
           aria-labelledby="create-listing-title"
           className="fixed inset-0 z-100 flex items-center justify-center bg-navy-950/70 p-4"
         >
-          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+          <div className="relative max-h-[90dvh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
               <h2 id="create-listing-title" className="font-serif text-lg font-bold text-navy-900">
                 {isEdit ? "Edit Listing" : "Add New Listing"}

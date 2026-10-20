@@ -2,7 +2,10 @@
  * Creates (or promotes) an Administrator account, then proves it works by
  * reading it back and checking the password against the stored hash.
  *
- *   npm run db:create-admin -- --email you@example.com --password 'your-password'
+ *   npm run db:create-admin -- --email you@example.com --password 'your-password' [--system-admin]
+ *
+ * --system-admin also tags the account as a System Admin (the System page:
+ * maintenance mode, sign-up / form switches). Needs the 20261022 migration.
  *
  * (or set ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME in the environment).
  * Passing arguments works the same in PowerShell, cmd and bash — inline
@@ -27,6 +30,7 @@ async function main() {
   const email = (arg("email") ?? process.env.ADMIN_EMAIL)?.trim().toLowerCase();
   const password = arg("password") ?? process.env.ADMIN_PASSWORD;
   const name = (arg("name") ?? process.env.ADMIN_NAME)?.trim() || "Administrator";
+  const systemAdmin = process.argv.includes("--system-admin");
 
   if (!email || !password) {
     throw new Error("Provide --email and --password (or ADMIN_EMAIL and ADMIN_PASSWORD).");
@@ -51,20 +55,20 @@ async function main() {
   const passwordHash = await hashPassword(password);
   await prisma.user.upsert({
     where: { email },
-    update: { role: "ADMINISTRATOR", status: "ACTIVE", emailVerified: new Date(), passwordHash },
-    create: { email, name, role: "ADMINISTRATOR", status: "ACTIVE", emailVerified: new Date(), passwordHash },
+    update: { role: "ADMINISTRATOR", status: "ACTIVE", emailVerified: new Date(), passwordHash, ...(systemAdmin ? { isSystemAdmin: true } : {}) },
+    create: { email, name, role: "ADMINISTRATOR", status: "ACTIVE", emailVerified: new Date(), passwordHash, isSystemAdmin: systemAdmin },
   });
 
   // Read it back from the database and test the password the way the login does.
   const saved = await prisma.user.findUnique({
     where: { email },
-    select: { email: true, role: true, status: true, emailVerified: true, passwordHash: true },
+    select: { email: true, role: true, status: true, emailVerified: true, passwordHash: true, isSystemAdmin: true },
   });
   const passwordWorks = !!saved?.passwordHash && (await verifyPassword(password, saved.passwordHash));
   const ok = !!saved && saved.role === "ADMINISTRATOR" && saved.status === "ACTIVE" && !!saved.emailVerified && passwordWorks;
 
   console.log(
-    `Account: ${saved?.email} | role ${saved?.role} | status ${saved?.status} | email verified ${!!saved?.emailVerified} | password check ${passwordWorks ? "OK" : "FAILED"}`
+    `Account: ${saved?.email} | role ${saved?.role} | status ${saved?.status} | email verified ${!!saved?.emailVerified} | password check ${passwordWorks ? "OK" : "FAILED"} | system admin ${saved?.isSystemAdmin}`
   );
   if (!ok) throw new Error("The account was written but did not pass verification.");
   console.log(`Done. Log in at the live site's /login with ${email}.`);

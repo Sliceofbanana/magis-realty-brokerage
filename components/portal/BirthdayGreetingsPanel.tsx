@@ -41,7 +41,7 @@ export function BirthdayGreetingsPanel() {
       aria-labelledby="greetings-panel-title"
       className="animate-birthday-fade fixed inset-0 z-100 flex items-end justify-center bg-navy-950/60 sm:items-center sm:p-4"
     >
-      <div className="animate-birthday-scale flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+      <div className="animate-birthday-scale flex max-h-[85dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
         <div className="flex items-center justify-between border-b border-black/5 p-5">
           <div className="flex items-center gap-3">
             <div className="overflow-hidden rounded-full">

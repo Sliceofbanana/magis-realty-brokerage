@@ -31,6 +31,10 @@ import { pathToFileURL } from "node:url";
 export const MOCK = {
   userEmails: [
     "agent.smith@magisrealty.com",
+    "clara.beaumont@magisrealty.com",
+    "alexander.sterling@magisrealty.com",
+    "marcus.thorne@magisrealty.com",
+    "elena.rodriguez@magisrealty.com",
     "david.chen@magisrealty.com",
     "isabella.ross@magisrealty.com",
     "julian.vancore@magisrealty.com",

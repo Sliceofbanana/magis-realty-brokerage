@@ -76,7 +76,7 @@ export function BirthdayModal() {
       aria-labelledby="birthday-modal-title"
       className="animate-birthday-fade fixed inset-0 z-100 flex items-center justify-center bg-navy-950/70 p-4"
     >
-      <div className="animate-birthday-scale relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="animate-birthday-scale relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-2xl">
         <div className="relative overflow-hidden bg-navy-950 px-6 pb-10 pt-8 text-center text-white">
           {config.confettiEnabled && <Confetti />}
           <button

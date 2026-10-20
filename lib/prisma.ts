@@ -14,7 +14,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 // invocation from monopolizing that shared budget.
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
-  max: 3,
+  max: Number(process.env.DB_POOL_MAX) || 3,
   idleTimeoutMillis: 10_000,
   connectionTimeoutMillis: 10_000,
 });

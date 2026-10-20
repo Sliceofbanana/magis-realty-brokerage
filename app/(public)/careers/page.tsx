@@ -176,7 +176,7 @@ export default async function CareersPage({
           </RevealItem>
         </RevealStagger>
 
-        <RevealStagger className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[280px_1fr]">
+        <RevealStagger className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[280px_minmax(0,1fr)]">
           <RevealItem>
           <div className="rounded-2xl bg-gold-500 p-6 text-white">
             <HeartHandshake size={22} />
@@ -222,11 +222,11 @@ export default async function CareersPage({
                 Find your next challenge in our curated list of opportunities.
               </p>
             </div>
-            <div className="flex gap-3">
-              <select className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-navy-900">
+            <div className="flex flex-wrap gap-3">
+              <select className="max-w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-navy-900">
                 <option>All Locations</option>
               </select>
-              <select className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-navy-900">
+              <select className="max-w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-navy-900">
                 <option>All Departments</option>
               </select>
             </div>

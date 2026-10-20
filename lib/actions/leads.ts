@@ -7,6 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/actions/notifications";
 import { requireAdmin } from "@/lib/actions/users";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { checkBot } from "@/lib/botGuard";
+import { looksLikeSpam, tooLong, type BotSignals } from "@/lib/botSignals";
+import { inquiriesClosedMessage } from "@/lib/system-settings";
 
 export type InquiryInput = {
   name: string;
@@ -21,6 +24,8 @@ export type InquiryInput = {
   propertyLabel?: string;
   agentId?: string;
   source: string;
+  /** Honeypot / timing / CAPTCHA signals from <BotShield />. */
+  bot?: BotSignals;
 };
 
 export type InquiryResult = { error?: string; success?: boolean };
@@ -56,13 +61,24 @@ async function inferPriority(input: InquiryInput): Promise<LeadPriority> {
 
 /** Public lead-capture entry point — used by every inquiry form on the site. */
 export async function submitInquiryAction(input: InquiryInput): Promise<InquiryResult> {
+  const closed = await inquiriesClosedMessage();
+  if (closed) return { error: closed };
+
   const rateLimit = await checkRateLimit("publicForm");
   if (!rateLimit.allowed) {
     return { error: `Too many submissions — please try again in ${rateLimit.retryAfterSeconds}s.` };
   }
 
+  const bot = await checkBot(input.bot);
+  if (!bot.ok) return bot.silent ? { success: true } : { error: bot.error };
+
   const name = input.name?.trim();
   const email = input.email?.trim().toLowerCase();
+
+  if (tooLong({ name, email, phone: input.phone, interest: input.interest, message: input.message })) {
+    return { error: "One of the fields is too long." };
+  }
+  if (looksLikeSpam(name, input.message)) return { success: true };
 
   if (!name || !email) {
     return { error: "Name and email are required." };

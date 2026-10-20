@@ -5,6 +5,7 @@ import { TestimonialCard } from "@/components/public/TestimonialCard";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { SimpleForm, FormField } from "@/components/public/SimpleForm";
 import { submitInquiryAction } from "@/lib/actions/leads";
+import { botFromValues } from "@/lib/botSignals";
 import { prisma } from "@/lib/prisma";
 import { agentWithProfile, publicAgentWhere, toAgent } from "@/lib/adapters/agent";
 import { toTestimonial } from "@/lib/adapters/testimonial";
@@ -65,6 +66,7 @@ export default async function AgentProfilePage({
       interest: values.interest,
       agentId,
       source: "Agent Profile",
+      bot: botFromValues(values),
     });
   }
 
@@ -97,7 +99,7 @@ export default async function AgentProfilePage({
       </section>
 
       <section className="bg-navy-950 py-10 text-white">
-        <RevealStagger className="mx-auto grid max-w-7xl grid-cols-3 gap-4 px-4 text-center sm:px-6 lg:px-8">
+        <RevealStagger className="mx-auto grid max-w-7xl grid-cols-[repeat(3,minmax(0,1fr))] gap-2 px-4 text-center sm:gap-4 sm:px-6 lg:px-8">
           {[
             [`${agent.yearsExperience}+`, "Years of Experience"],
             [agent.propertiesSoldValue, "Properties Sold (PHP)"],
@@ -105,8 +107,8 @@ export default async function AgentProfilePage({
           ].map(([value, label]) => (
             <RevealItem key={label}>
             <div>
-              <p className="font-serif text-3xl font-bold text-gold-400 sm:text-4xl">{value}</p>
-              <p className="mt-1 text-xs uppercase tracking-wide text-white/70">{label}</p>
+              <p className="break-words font-serif text-xl font-bold text-gold-400 min-[400px]:text-3xl sm:text-4xl">{value}</p>
+              <p className="mt-1 break-words text-[10px] uppercase tracking-wide text-white/70 sm:text-xs">{label}</p>
             </div>
             </RevealItem>
           ))}
@@ -114,7 +116,7 @@ export default async function AgentProfilePage({
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
           <RevealOnScroll>
             <h2 className="border-l-4 border-gold-500 pl-4 font-serif text-2xl font-bold text-navy-900">
               Curating Extraordinary Living

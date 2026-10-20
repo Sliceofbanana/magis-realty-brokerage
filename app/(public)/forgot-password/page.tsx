@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { BotShield } from "@/components/ui/BotShield";
 import { FocusEvent, useActionState, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -61,6 +62,7 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <form action={formAction} className="mt-8 space-y-5">
+              <BotShield />
               <div>
                 <label
                   htmlFor="email"

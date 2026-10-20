@@ -44,3 +44,4 @@ next-env.d.ts
 
 # personal-data backups written by prisma/remove-mock-data.mjs
 mock-data-backup-*.json
+reset-content-backup-*.json

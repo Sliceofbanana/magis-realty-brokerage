@@ -11,6 +11,7 @@ import {
   Briefcase,
   KeyRound,
   Settings,
+  ServerCog,
 } from "lucide-react";
 
 export const portalNavItems = [
@@ -32,6 +33,9 @@ export const portalAdminNavItems = [
   { href: "/portal/users", label: "Users", icon: User },
   { href: "/portal/permissions", label: "Permissions", icon: KeyRound },
 ];
+
+/** System Admin only — see app/portal/system. */
+export const portalSystemNavItems = [{ href: "/portal/system", label: "System", icon: ServerCog }];
 
 export const portalFooterNavItems = [
   { href: "/portal/settings", label: "Settings", icon: Settings },

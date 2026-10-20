@@ -99,7 +99,7 @@ export function TestimonialCarousel({ testimonials }: { testimonials: Testimonia
             type="button"
             aria-label="Previous testimonials"
             onClick={() => go(index - 1, -1)}
-            className="absolute left-0 top-1/2 flex h-9 w-9 -translate-x-4 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-navy-900 shadow-sm hover:bg-navy-900 hover:text-white sm:-translate-x-12"
+            className="absolute left-0 top-1/2 flex h-9 w-9 -translate-x-4 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-navy-900 shadow-sm hover:bg-navy-900 hover:text-white sm:-translate-x-5 xl:-translate-x-12"
           >
             <ChevronLeft size={18} />
           </button>
@@ -107,7 +107,7 @@ export function TestimonialCarousel({ testimonials }: { testimonials: Testimonia
             type="button"
             aria-label="Next testimonials"
             onClick={() => go(index + 1, 1)}
-            className="absolute right-0 top-1/2 flex h-9 w-9 -translate-y-1/2 translate-x-4 items-center justify-center rounded-full border border-black/10 bg-white text-navy-900 shadow-sm hover:bg-navy-900 hover:text-white sm:translate-x-12"
+            className="absolute right-0 top-1/2 flex h-9 w-9 -translate-y-1/2 translate-x-4 items-center justify-center rounded-full border border-black/10 bg-white text-navy-900 shadow-sm hover:bg-navy-900 hover:text-white sm:translate-x-5 xl:translate-x-12"
           >
             <ChevronRight size={18} />
           </button>

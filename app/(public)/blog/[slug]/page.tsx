@@ -67,7 +67,7 @@ export default async function BlogDetailsPage({
       </section>
 
       <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_300px]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
           <RevealOnScroll>
           <article className="min-w-0 space-y-5 text-sm leading-relaxed text-gray-600">
             <p>{firstHalf}</p>

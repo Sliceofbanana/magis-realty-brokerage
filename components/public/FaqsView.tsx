@@ -77,7 +77,7 @@ export function FaqsView({
       </RevealOnScroll>
 
       <div className="bg-offwhite pb-16">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[220px_1fr] lg:px-8">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:px-8">
           <nav className="flex gap-2 overflow-x-auto lg:block lg:space-y-1 lg:overflow-visible">
             {categories.map((cat) => {
               const Icon = icons[cat.icon as keyof typeof icons];
@@ -124,7 +124,7 @@ export function FaqsView({
                 </h2>
 
                 {active.id === "leasing" && (
-                  <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-[240px_1fr]">
+                  <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-[240px_minmax(0,1fr)]">
                     <div className="rounded-2xl bg-gold-500 p-5 text-white">
                       <ShieldCheck size={22} />
                       <h3 className="mt-3 font-serif text-lg font-bold">Tenant Screening</h3>

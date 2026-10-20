@@ -6,6 +6,7 @@ declare module "next-auth" {
     role: PortalRole;
     status: UserStatus;
     photo?: string | null;
+    isSystemAdmin?: boolean;
   }
 
   interface Session {
@@ -14,6 +15,7 @@ declare module "next-auth" {
       role: PortalRole;
       status: UserStatus;
       photo?: string | null;
+      isSystemAdmin?: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -24,5 +26,6 @@ declare module "next-auth/jwt" {
     role: PortalRole;
     status: UserStatus;
     photo?: string | null;
+    isSystemAdmin?: boolean;
   }
 }
