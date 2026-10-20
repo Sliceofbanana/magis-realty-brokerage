@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { periodMath, quotaStats, formatCompactUsd } from "@/lib/quota";
-import type { QuotaPeriod } from "@/lib/data/leaderboard";
+import { periodMath, quotaStats, formatCompactPeso } from "@/lib/quota";
+import type { QuotaPeriod } from "@/lib/types";
 
 const period: QuotaPeriod = {
   id: "quarterly",
@@ -68,20 +68,20 @@ describe("quotaStats", () => {
   });
 });
 
-describe("formatCompactUsd", () => {
+describe("formatCompactPeso", () => {
   it("formats millions with one decimal at 10M+", () => {
-    expect(formatCompactUsd(14_200_000)).toBe("$14.2M");
+    expect(formatCompactPeso(14_200_000)).toBe("₱14.2M");
   });
 
   it("formats sub-10M millions with a trimmed trailing zero", () => {
-    expect(formatCompactUsd(2_500_000)).toBe("$2.5M");
+    expect(formatCompactPeso(2_500_000)).toBe("₱2.5M");
   });
 
   it("formats thousands rounded, no decimals", () => {
-    expect(formatCompactUsd(277_000)).toBe("$277K");
+    expect(formatCompactPeso(277_000)).toBe("₱277K");
   });
 
   it("formats small values as a plain rounded dollar amount", () => {
-    expect(formatCompactUsd(842)).toBe("$842");
+    expect(formatCompactPeso(842)).toBe("₱842");
   });
 });

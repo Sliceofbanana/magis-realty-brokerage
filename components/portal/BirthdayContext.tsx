@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useSession } from "next-auth/react";
 import { BirthdayConfig, BirthdayGreeting, ReactionEmoji, TeamMember } from "@/lib/types";
-import { defaultBirthdayConfig } from "@/lib/data/team";
+import { defaultBirthdayConfig } from "@/lib/data/birthday";
 import { getBirthdayTeamAction } from "@/lib/actions/birthdays";
 import { celebrantsToday, todayKey } from "@/lib/birthdays";
 import { useRole } from "./RoleContext";

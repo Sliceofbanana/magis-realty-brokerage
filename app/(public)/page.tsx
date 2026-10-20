@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
 import { agentWithProfile, publicAgentWhere, toAgent } from "@/lib/adapters/agent";
 import { toTestimonial } from "@/lib/adapters/testimonial";
-import { blogPosts } from "@/lib/data/blog";
+import { blogPostWithAuthor, toBlogPost } from "@/lib/adapters/blog";
 import { business, exteriors } from "@/lib/stockPhotos";
 
 const pillars = [
@@ -44,7 +44,7 @@ export default async function HomePage() {
   // instead of several held open at once — Supabase's session-mode pooler has a
   // small shared connection budget, and this page already caused one of the
   // "database error" incidents from concurrent-connection exhaustion.
-  const [featuredRows, eliteRows, testimonialRows] = await prisma.$transaction([
+  const [featuredRows, eliteRows, testimonialRows, blogRows] = await prisma.$transaction([
     prisma.property.findMany({
       where: { archived: false, status: { not: "SOLD" } },
       include: propertyWithRelations,
@@ -58,11 +58,16 @@ export default async function HomePage() {
       take: 4,
     }),
     prisma.testimonial.findMany(),
+    prisma.blogPost.findMany({
+      include: blogPostWithAuthor,
+      orderBy: { publishedAt: "desc" },
+      take: 2,
+    }),
   ]);
   const featured = featuredRows.map(toProperty);
   const elite = eliteRows.map(toAgent);
   const testimonials = testimonialRows.map(toTestimonial);
-  const insights = blogPosts.slice(0, 2);
+  const insights = blogRows.map(toBlogPost);
 
   return (
     <>
@@ -237,22 +242,24 @@ export default async function HomePage() {
       )}
 
       {/* Insights */}
-      <section className="bg-offwhite py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealOnScroll>
-            <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
-              Insights &amp; Market Trends
-            </h2>
-          </RevealOnScroll>
-          <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {insights.map((post) => (
-              <RevealItem key={post.id}>
-                <BlogCard post={post} />
-              </RevealItem>
-            ))}
-          </RevealStagger>
-        </div>
-      </section>
+      {insights.length > 0 && (
+        <section className="bg-offwhite py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <RevealOnScroll>
+              <h2 className="text-center font-serif text-3xl font-bold text-navy-900">
+                Insights &amp; Market Trends
+              </h2>
+            </RevealOnScroll>
+            <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {insights.map((post) => (
+                <RevealItem key={post.id}>
+                  <BlogCard post={post} />
+                </RevealItem>
+              ))}
+            </RevealStagger>
+          </div>
+        </section>
+      )}
 
       {/* Testimonials */}
       {testimonials.length > 0 && (

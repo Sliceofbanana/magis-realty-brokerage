@@ -1,4 +1,4 @@
-import { QuotaPeriod } from "@/lib/data/leaderboard";
+import type { QuotaPeriod } from "@/lib/types";
 
 const DAY = 86_400_000;
 
@@ -62,13 +62,13 @@ export function quotaStats(quota: number, achieved: number, period: QuotaPeriod)
   };
 }
 
-export function formatCompactUsd(value: number) {
+export function formatCompactPeso(value: number) {
   if (value >= 1_000_000) {
     const m = value / 1_000_000;
-    return `$${m >= 10 ? m.toFixed(1) : m.toFixed(2).replace(/0$/, "")}M`;
+    return `₱${m >= 10 ? m.toFixed(1) : m.toFixed(2).replace(/0$/, "")}M`;
   }
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`;
-  return `$${Math.round(value)}`;
+  if (value >= 1_000) return `₱${Math.round(value / 1_000)}K`;
+  return `₱${Math.round(value)}`;
 }
 
 export function motivationalMessage(stats: QuotaStats) {
@@ -82,5 +82,5 @@ export function motivationalMessage(stats: QuotaStats) {
   if (stats.onPace) {
     return "Keep this pace — you're projected to hit your quota before the period ends.";
   }
-  return `Close ${formatCompactUsd(stats.requiredPerDay)} per day to finish the period strong.`;
+  return `Close ${formatCompactPeso(stats.requiredPerDay)} per day to finish the period strong.`;
 }

@@ -239,12 +239,19 @@ export type AttendanceConfig = {
   rewardTiers: RewardTier[];
 };
 
-export type LeaderboardTeamId = "vanguard" | "skyline" | "horizon";
+export type QuotaPeriod = {
+  id: QuotaPeriodId;
+  label: string;
+  cycleLabel: string;
+  start: string; // YYYY-MM-DD
+  end: string;
+  asOf: string;
+};
 
 export type LeaderboardTeam = {
-  id: LeaderboardTeamId;
+  id: string;
   name: string;
-  tone: "navy" | "gold" | "blue";
+  tone: "navy" | "gold" | "blue" | "gray";
   dot: string;
   border: string;
 };
@@ -252,11 +259,9 @@ export type LeaderboardTeam = {
 export type LeaderboardAgent = {
   id: string;
   name: string;
-  photo: string;
+  photo: string | null;
   region: string;
-  teamId: LeaderboardTeamId;
-  units: number;
-  leads: number;
+  teamId: string;
   isYou?: boolean;
   quota: Record<QuotaPeriodId, number>;
   achieved: Record<QuotaPeriodId, number>;

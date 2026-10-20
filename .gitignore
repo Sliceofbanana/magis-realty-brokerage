@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# personal-data backups written by prisma/remove-mock-data.mjs
+mock-data-backup-*.json

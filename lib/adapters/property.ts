@@ -52,9 +52,8 @@ export function toProperty(p: PropertyWithRelations): Property {
     gallery: sortedImages.slice(1).map((img) => img.url),
     description: p.description,
     amenities: p.amenities,
-    // Falls back to the real user id if the agent has no public profile yet
-    // (e.g. Administrator/Marketing accounts) — matches the mock data's use
-    // of the agent-directory slug in lib/data/agents.ts.
+    // The agent's public-profile slug, or their user id if they have no
+    // profile yet (e.g. Administrator/Marketing accounts).
     agentId: p.agent.agentProfile?.slug ?? p.agent.id,
   };
 }

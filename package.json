@@ -16,6 +16,8 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:create-admin": "tsx prisma/create-admin.ts",
+    "db:remove-mock-data": "node prisma/remove-mock-data.mjs",
     "db:studio": "prisma studio"
   },
   "dependencies": {

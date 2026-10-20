@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
-import { activityLog } from "@/lib/data/users";
+import { listActivityLogAction, type ActivityLogResult } from "@/lib/actions/activity";
 import { useRole } from "@/components/portal/RoleContext";
 import { useBirthdays } from "@/components/portal/BirthdayContext";
 import { PortalRole, AttendanceConfig } from "@/lib/types";
@@ -440,6 +440,24 @@ function GeneralTab() {
 }
 
 function ActivityTab() {
+  const [data, setData] = useState<ActivityLogResult | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [moduleFilter, setModuleFilter] = useState("");
+  const [actionFilter, setActionFilter] = useState("");
+
+  function load(filters: { module?: string; action?: string }) {
+    setLoadError("");
+    listActivityLogAction(filters)
+      .then(setData)
+      .catch(() => setLoadError("Couldn't load the activity log."));
+  }
+
+  useEffect(() => {
+    listActivityLogAction({})
+      .then(setData)
+      .catch(() => setLoadError("Couldn't load the activity log."));
+  }, []);
+
   return (
     <div>
       <div className="mb-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
@@ -448,18 +466,30 @@ function ActivityTab() {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">Module</label>
-            <select className="w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm text-navy-900">
-              <option>All Modules</option>
+            <select
+              value={moduleFilter}
+              onChange={(e) => setModuleFilter(e.target.value)}
+              className="w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm text-navy-900"
+            >
+              <option value="">All Modules</option>
+              {data?.modules.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">Action Type</label>
-            <select className="w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm text-navy-900">
-              <option>Any Action</option>
-            </select>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">Action</label>
+            <input
+              value={actionFilter}
+              onChange={(e) => setActionFilter(e.target.value)}
+              placeholder="e.g. Approved, Failed Login"
+              className="w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm text-navy-900"
+            />
           </div>
           <div className="flex items-end">
-            <Button className="w-full">
+            <Button className="w-full" onClick={() => load({ module: moduleFilter, action: actionFilter.trim() })}>
               <SlidersHorizontal size={14} /> Apply Filters
             </Button>
           </div>
@@ -467,45 +497,51 @@ function ActivityTab() {
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-162.5 text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-wide text-gray-400">
-                <th className="px-6 py-3 font-medium">User</th>
-                <th className="px-6 py-3 font-medium">Action</th>
-                <th className="px-6 py-3 font-medium">Module</th>
-                <th className="px-6 py-3 font-medium">Timestamp</th>
-                <th className="px-6 py-3 font-medium">IP Address</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activityLog.map((entry) => (
-                <tr key={entry.id} className="border-t border-black/5">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar initials={entry.initials} size={32} />
-                      <div>
-                        <p className="font-semibold text-navy-900">{entry.user}</p>
-                        <p className="text-xs text-gray-400">{entry.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge tone={entry.action.includes("Failed") ? "red" : "blue"}>
-                      {entry.action.toUpperCase()}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">{entry.module}</td>
-                  <td className="px-6 py-4 text-gray-500">{entry.timestamp}</td>
-                  <td className="px-6 py-4 font-mono text-xs text-gray-400">{entry.ip}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="border-t border-black/5 p-4 text-xs text-gray-400">
-          Showing 1-{activityLog.length} of 1,284 entries
-        </div>
+        {loadError && <p className="px-6 py-6 text-sm text-red-600">{loadError}</p>}
+        {!loadError && !data && <p className="px-6 py-10 text-center text-sm text-gray-400">Loading…</p>}
+        {data && data.entries.length === 0 && (
+          <p className="px-6 py-10 text-center text-sm text-gray-400">No activity recorded yet.</p>
+        )}
+        {data && data.entries.length > 0 && (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-162.5 text-left text-sm">
+                <thead>
+                  <tr className="text-xs uppercase tracking-wide text-gray-400">
+                    <th className="px-6 py-3 font-medium">User</th>
+                    <th className="px-6 py-3 font-medium">Action</th>
+                    <th className="px-6 py-3 font-medium">Module</th>
+                    <th className="px-6 py-3 font-medium">Timestamp</th>
+                    <th className="px-6 py-3 font-medium">IP Address</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.entries.map((entry) => (
+                    <tr key={entry.id} className="border-t border-black/5">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={entry.user} size={32} />
+                          <p className="font-semibold text-navy-900">{entry.user}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge tone={entry.action.includes("Failed") ? "red" : "blue"}>
+                          {entry.action.toUpperCase()}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-gray-500">{entry.module}</td>
+                      <td className="px-6 py-4 text-gray-500">{entry.timestamp}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-gray-400">{entry.ip}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-black/5 p-4 text-xs text-gray-400">
+              Showing 1-{data.entries.length} of {data.total.toLocaleString()} entries
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
