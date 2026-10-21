@@ -99,6 +99,36 @@ export async function deleteDocumentAction(id: string): Promise<DocumentActionRe
   return { success: true };
 }
 
+export type BulkDeleteResult = { error?: string; deleted?: number; skipped?: number };
+
+const MAX_BULK_DELETE = 100;
+
+/** Deletes many documents at once. Each one follows the single-delete rule: the uploader or an Administrator. */
+export async function deleteDocumentsAction(ids: string[]): Promise<BulkDeleteResult> {
+  const session = await auth();
+  if (!session?.user) return { error: "Not authorized." };
+
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return { error: "Select at least one document." };
+  if (unique.length > MAX_BULK_DELETE) return { error: `Select at most ${MAX_BULK_DELETE} documents at a time.` };
+
+  const isAdmin = session.user.role === "ADMINISTRATOR";
+  const docs = await prisma.documentFile.findMany({ where: { id: { in: unique } } });
+  const allowed = docs.filter((d) => isAdmin || d.uploadedById === session.user.id);
+
+  // Same policy as the single delete: a Cloudinary failure must not strand the row.
+  const results = await Promise.allSettled(
+    allowed.map((d) => deleteFile(d.cloudinaryPublicId, d.cloudinaryResourceType as "image" | "raw"))
+  );
+  results.forEach((r) => {
+    if (r.status === "rejected") console.error("Cloudinary delete failed:", r.reason);
+  });
+
+  const { count } = await prisma.documentFile.deleteMany({ where: { id: { in: allowed.map((d) => d.id) } } });
+  revalidatePath("/portal/documents");
+  return { deleted: count, skipped: unique.length - count };
+}
+
 /** Form-action wrapper for deleteDocumentAction, for use with `.bind(null, id)` on a `<form action>`. */
 export async function deleteDocumentFormAction(id: string, _formData: FormData): Promise<void> {
   await deleteDocumentAction(id);
