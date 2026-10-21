@@ -53,8 +53,12 @@ export const defaultMaintenanceMessages = {
   feature: "This section is temporarily unavailable while we carry out maintenance.",
 };
 
-/** Pages that must keep working during public maintenance so a System Admin can still sign in. */
-const PUBLIC_EXEMPT = ["/login", "/forgot-password", "/reset-password", "/verify-email", "/maintenance"];
+/**
+ * Pages that keep working during public maintenance: the sign-in pages (so a System
+ * Admin can still get in) and Request Access. Closing sign-ups is a separate switch
+ * (registrationOpen), so applications can keep coming in while the website is down.
+ */
+const PUBLIC_EXEMPT = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/maintenance"];
 
 const underPath = (pathname: string, base: string) => pathname === base || pathname.startsWith(`${base}/`);
 

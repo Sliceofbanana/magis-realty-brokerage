@@ -165,7 +165,7 @@ export function SystemSettingsView({ overview }: { overview: SystemOverview }) {
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <Card icon={<Globe size={18} />} title="Public website" description="The marketing site visitors see: home, properties, agents, blog, contact. Sign-in pages stay reachable so you can get back in.">
+        <Card icon={<Globe size={18} />} title="Public website" description="The marketing site visitors see: home, properties, agents, blog, contact. Sign-in and Request Access pages stay reachable.">
           <SwitchRow title="Put the whole public website under maintenance" hint="Visitors see the maintenance screen." checked={s.publicMaintenance} onChange={(v) => set("publicMaintenance", v)} tone="danger" />
           <MessageField label="Message to visitors" value={s.publicMessage} onChange={(v) => set("publicMessage", v)} placeholder={defaultMaintenanceMessages.public} />
         </Card>

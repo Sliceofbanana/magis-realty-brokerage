@@ -10,12 +10,11 @@ describe("maintenanceDecision", () => {
     }
   });
 
-  it("public maintenance blocks the website but keeps sign-in pages and the portal reachable", () => {
+  it("public maintenance blocks the website but keeps sign-in and Request Access pages and the portal reachable", () => {
     const s = { ...off, publicMaintenance: true };
     expect(maintenanceDecision("/", s, false)).toMatchObject({ kind: "rewrite", to: "/maintenance?scope=public", status: 503 });
     expect(maintenanceDecision("/properties/azure-bay", s, false)).toMatchObject({ kind: "rewrite" });
-    expect(maintenanceDecision("/register", s, false)).toMatchObject({ kind: "rewrite" });
-    for (const p of ["/login", "/forgot-password", "/reset-password", "/verify-email", "/maintenance"]) {
+    for (const p of ["/login", "/register", "/register/success", "/forgot-password", "/reset-password", "/verify-email", "/maintenance"]) {
       expect(maintenanceDecision(p, s, false)).toEqual({ kind: "allow" });
     }
     expect(maintenanceDecision("/portal/leads", s, false)).toEqual({ kind: "allow" });
