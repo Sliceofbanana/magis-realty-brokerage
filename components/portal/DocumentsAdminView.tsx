@@ -16,6 +16,7 @@ import {
 import { DocumentFile } from "@/lib/types";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { UploadDocumentForm } from "@/components/portal/UploadDocumentForm";
+import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { deleteDocumentFormAction, deleteDocumentsAction } from "@/lib/actions/documents";
 import { useRowSelection } from "@/lib/useRowSelection";
@@ -153,32 +154,17 @@ export function DocumentsAdminView({
             </span>
           </div>
 
-          {selection.selectedIds.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3 border-b border-black/5 bg-gold-100 px-4 py-2.5 text-sm text-navy-900">
-              <span className="font-semibold">{selection.selectedIds.length} selected</span>
-              <button
-                type="button"
-                onClick={handleBulkDelete}
-                disabled={bulkPending}
-                className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
-              >
-                <Trash2 size={14} /> {bulkPending ? "Deleting…" : "Delete selected"}
-              </button>
-              <button
-                type="button"
-                onClick={selection.clear}
-                disabled={bulkPending}
-                className="text-xs font-semibold text-gray-600 hover:text-navy-900 disabled:opacity-50"
-              >
-                Clear selection
-              </button>
-            </div>
-          )}
-          {bulkError && (
-            <p role="alert" className="border-b border-black/5 bg-red-50 px-4 py-2 text-xs text-red-700">
-              {bulkError}
-            </p>
-          )}
+          <BulkActionBar
+            count={selection.selectedIds.length}
+            onClear={selection.clear}
+            busy={bulkPending}
+            error={bulkError}
+            className="border-b border-black/5"
+          >
+            <BulkActionButton onClick={handleBulkDelete} disabled={bulkPending}>
+              <Trash2 size={14} /> {bulkPending ? "Deleting…" : "Delete selected"}
+            </BulkActionButton>
+          </BulkActionBar>
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] text-left text-sm">

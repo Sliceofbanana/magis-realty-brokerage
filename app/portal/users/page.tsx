@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { Check, X as XIcon, UserX, UserCheck } from "lucide-react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useSession } from "next-auth/react";
+import { Archive, Check, X as XIcon, UserX } from "lucide-react";
 import { PageHeader } from "@/components/portal/PageHeader";
+import { ArchivedAccountsModal } from "@/components/portal/ArchivedAccountsModal";
+import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Toggle } from "@/components/ui/Toggle";
+import { useRowSelection } from "@/lib/useRowSelection";
 import {
   listPortalUsers,
   approveUserAction,
   rejectUserAction,
   deactivateUserAction,
-  reactivateUserAction,
+  bulkSetUserStatusAction,
   setPublicListingAction,
   type AdminUserRow,
 } from "@/lib/actions/users";
@@ -76,7 +81,40 @@ export default function UsersAdminPage() {
     load();
   }
 
-  const pendingCount = users?.filter((u) => u.status === "PENDING").length ?? 0;
+  const { data: session } = useSession();
+  const selfId = session?.user?.id;
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [bulkPending, startBulk] = useTransition();
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
+
+  const liveUsers = useMemo(
+    () => (users ?? []).filter((u) => u.status === "PENDING" || u.status === "ACTIVE"),
+    [users]
+  );
+  const archivedUsers = useMemo(
+    () => (users ?? []).filter((u) => u.status === "DEACTIVATED" || u.status === "REJECTED"),
+    [users]
+  );
+  const selectableIds = useMemo(() => liveUsers.filter((u) => u.id !== selfId).map((u) => u.id), [liveUsers, selfId]);
+  const selection = useRowSelection(selectableIds);
+
+  const selectedPendingIds = liveUsers.filter((u) => u.status === "PENDING" && selection.isSelected(u.id) && u.id !== selfId).map((u) => u.id);
+  const selectedActiveIds = liveUsers.filter((u) => u.status === "ACTIVE" && selection.isSelected(u.id) && u.id !== selfId).map((u) => u.id);
+
+  function bulkChange(ids: string[], status: "REJECTED" | "DEACTIVATED") {
+    if (ids.length === 0) return;
+    const verb = status === "REJECTED" ? "Reject" : "Deactivate and archive";
+    if (!confirm(`${verb} ${ids.length} account${ids.length === 1 ? "" : "s"}?`)) return;
+    setBulkMessage(null);
+    startBulk(async () => {
+      const result = await bulkSetUserStatusAction(ids, status);
+      if (result.error) setBulkMessage(result.error);
+      else selection.clear();
+      load();
+    });
+  }
+
+  const pendingCount = liveUsers.filter((u) => u.status === "PENDING").length;
 
   return (
     <div>
@@ -85,12 +123,42 @@ export default function UsersAdminPage() {
       <div className="rounded-2xl border border-black/5 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 p-6">
           <h2 className="font-serif text-lg font-bold text-navy-900">User Management</h2>
-          {pendingCount > 0 && (
-            <Badge tone="gold">
-              {pendingCount} Pending Approval{pendingCount === 1 ? "" : "s"}
-            </Badge>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            {pendingCount > 0 && (
+              <Badge tone="gold">
+                {pendingCount} Pending Approval{pendingCount === 1 ? "" : "s"}
+              </Badge>
+            )}
+            {users && (
+              <button
+                type="button"
+                onClick={() => setArchiveOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-navy-900 transition-colors hover:bg-offwhite"
+              >
+                <Archive size={14} /> Archived accounts ({archivedUsers.length})
+              </button>
+            )}
+          </div>
         </div>
+
+        <BulkActionBar
+          count={selection.selectedIds.length}
+          onClear={selection.clear}
+          busy={bulkPending}
+          error={bulkMessage}
+          className="border-b border-black/5"
+        >
+          {selectedPendingIds.length > 0 && (
+            <BulkActionButton onClick={() => bulkChange(selectedPendingIds, "REJECTED")} disabled={bulkPending}>
+              <XIcon size={14} /> Reject {selectedPendingIds.length}
+            </BulkActionButton>
+          )}
+          {selectedActiveIds.length > 0 && (
+            <BulkActionButton onClick={() => bulkChange(selectedActiveIds, "DEACTIVATED")} disabled={bulkPending}>
+              <UserX size={14} /> Deactivate {selectedActiveIds.length}
+            </BulkActionButton>
+          )}
+        </BulkActionBar>
 
         {loadError && <p className="px-6 py-6 text-sm text-red-600">{loadError}</p>}
 
@@ -102,11 +170,25 @@ export default function UsersAdminPage() {
           <p className="px-6 py-10 text-center text-sm text-gray-400">No users yet.</p>
         )}
 
-        {users && users.length > 0 && (
+        {users && users.length > 0 && liveUsers.length === 0 && (
+          <p className="px-6 py-10 text-center text-sm text-gray-400">
+            No active or pending users. Deactivated and rejected accounts are under Archived accounts.
+          </p>
+        )}
+
+        {liveUsers.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full min-w-150 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-wide text-gray-400">
+                  <th className="w-12 py-3 pl-6 pr-0">
+                    <Checkbox
+                      state={selection.headerState}
+                      onChange={selection.toggleAll}
+                      disabled={selectableIds.length === 0 || bulkPending}
+                      label="Select all users"
+                    />
+                  </th>
                   <th className="px-6 py-3 font-medium">User Profile</th>
                   <th className="px-6 py-3 font-medium">Role</th>
                   <th className="px-6 py-3 font-medium">Status</th>
@@ -115,11 +197,24 @@ export default function UsersAdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => {
+                {liveUsers.map((user) => {
                   const status = statusDisplay[user.status];
                   const busy = isPending && pendingId === user.id;
                   return (
-                    <tr key={user.id} className="border-t border-black/5">
+                    <tr
+                      key={user.id}
+                      className={`border-t border-black/5 ${selection.isSelected(user.id) ? "bg-gold-100/40" : ""}`}
+                    >
+                      <td className="w-12 py-4 pl-6 pr-0">
+                        {user.id !== selfId && (
+                          <Checkbox
+                            state={selection.isSelected(user.id) ? "checked" : "unchecked"}
+                            onChange={() => selection.toggle(user.id)}
+                            disabled={bulkPending}
+                            label={`Select ${user.name}`}
+                          />
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <Avatar src={user.photo ?? undefined} initials={getInitials(user.name)} size={36} />
@@ -198,17 +293,6 @@ export default function UsersAdminPage() {
                               <UserX size={15} />
                             </button>
                           )}
-                          {(user.status === "DEACTIVATED" || user.status === "REJECTED") && (
-                            <button
-                              type="button"
-                              aria-label="Reactivate user"
-                              disabled={busy}
-                              onClick={() => runAction(user.id, reactivateUserAction)}
-                              className="text-emerald-600 hover:text-emerald-700 disabled:opacity-40"
-                            >
-                              <UserCheck size={15} />
-                            </button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -219,6 +303,10 @@ export default function UsersAdminPage() {
           </div>
         )}
       </div>
+
+      {archiveOpen && (
+        <ArchivedAccountsModal users={archivedUsers} onClose={() => setArchiveOpen(false)} onChanged={load} />
+      )}
     </div>
   );
 }

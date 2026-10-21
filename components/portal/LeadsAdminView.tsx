@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useState, type DragEvent } from "react";
-import { Search, TrendingUp, UserRound, Zap } from "lucide-react";
+import { useMemo, useState, useTransition, type DragEvent } from "react";
+import { Search, Trash2, TrendingUp, UserRound, Zap } from "lucide-react";
 import { Lead } from "@/lib/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
+import { useRowSelection } from "@/lib/useRowSelection";
 import { StatCard } from "@/components/ui/StatCard";
 import { CreateLeadForm } from "@/components/portal/CreateLeadForm";
 import { leadStatusEnumKey, leadStatusTone } from "@/lib/adapters/lead";
-import { assignLeadAction, updateLeadStatusAction } from "@/lib/actions/leads";
+import { assignLeadAction, deleteLeadsAction, updateLeadStatusAction } from "@/lib/actions/leads";
 import type { TeamAgentRow } from "@/lib/actions/teams";
 
 type PropertyOption = { id: string; title: string };
@@ -60,6 +63,27 @@ export function LeadsAdminView({
     for (const lead of filtered) map.get(lead.status)?.push(lead);
     return map;
   }, [filtered]);
+
+  const selectableIds = useMemo(() => (isAdmin ? filtered.map((l) => l.id) : []), [filtered, isAdmin]);
+  const selection = useRowSelection(selectableIds);
+  const [bulkPending, startBulk] = useTransition();
+  const [bulkError, setBulkError] = useState<string | null>(null);
+
+  function handleBulkDelete() {
+    const ids = selection.selectedIds;
+    if (ids.length === 0) return;
+    if (!confirm(`Delete ${ids.length} selected lead${ids.length === 1 ? "" : "s"}? This can't be undone.`)) return;
+    setBulkError(null);
+    startBulk(async () => {
+      const result = await deleteLeadsAction(ids);
+      if (result.error) {
+        setBulkError(result.error);
+        return;
+      }
+      setRows((prev) => prev.filter((l) => !ids.includes(l.id)));
+      selection.clear();
+    });
+  }
 
   async function moveLead(leadId: string, status: Lead["status"]) {
     const current = rows.find((l) => l.id === leadId);
@@ -131,7 +155,30 @@ export function LeadsAdminView({
             className="rounded-lg border border-black/10 bg-white py-2 pl-8 pr-3 text-xs text-navy-900 focus:border-navy-900 focus:outline-none"
           />
         </div>
+        {isAdmin && (
+          <label className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <Checkbox
+              state={selection.headerState}
+              onChange={selection.toggleAll}
+              disabled={selectableIds.length === 0 || bulkPending}
+              label="Select all leads"
+            />
+            Select all ({selectableIds.length})
+          </label>
+        )}
       </div>
+
+      <BulkActionBar
+        count={selection.selectedIds.length}
+        onClear={selection.clear}
+        busy={bulkPending}
+        error={bulkError}
+        className="mt-3 rounded-lg"
+      >
+        <BulkActionButton onClick={handleBulkDelete} disabled={bulkPending}>
+          <Trash2 size={14} /> {bulkPending ? "Deleting…" : "Delete selected"}
+        </BulkActionButton>
+      </BulkActionBar>
 
       <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
         {columns.map((status) => {
@@ -167,11 +214,21 @@ export function LeadsAdminView({
                     key={lead.id}
                     draggable={isAdmin}
                     onDragStart={(e) => e.dataTransfer.setData("text/plain", lead.id)}
-                    className={`rounded-xl border border-black/5 bg-white p-3 shadow-sm ${
-                      isAdmin ? "cursor-grab active:cursor-grabbing" : ""
-                    }`}
+                    className={`rounded-xl border p-3 shadow-sm ${
+                      selection.isSelected(lead.id) ? "border-gold-400 bg-gold-100/40" : "border-black/5 bg-white"
+                    } ${isAdmin ? "cursor-grab active:cursor-grabbing" : ""}`}
                   >
                     <div className="flex items-start gap-2.5">
+                      {isAdmin && (
+                        <div className="pt-1">
+                          <Checkbox
+                            state={selection.isSelected(lead.id) ? "checked" : "unchecked"}
+                            onChange={() => selection.toggle(lead.id)}
+                            disabled={bulkPending}
+                            label={`Select ${lead.name}`}
+                          />
+                        </div>
+                      )}
                       <Avatar initials={lead.initials} size={30} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-navy-900">{lead.name}</p>

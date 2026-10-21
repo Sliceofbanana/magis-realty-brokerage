@@ -235,3 +235,33 @@ export async function updateLeadStatusAction(
   revalidatePath("/portal/leads");
   return { success: true };
 }
+
+export type DeleteLeadsResult = { error?: string; deleted?: number };
+
+const MAX_BULK_DELETE = 100;
+
+/** Admin-only: permanently deletes the selected leads. */
+export async function deleteLeadsAction(leadIds: string[]): Promise<DeleteLeadsResult> {
+  const session = await requireAdmin();
+
+  const unique = [...new Set(leadIds)];
+  if (unique.length === 0) return { error: "Select at least one lead." };
+  if (unique.length > MAX_BULK_DELETE) return { error: `Select at most ${MAX_BULK_DELETE} leads at a time.` };
+
+  const { count } = await prisma.lead.deleteMany({ where: { id: { in: unique } } });
+
+  if (count > 0) {
+    await prisma.activityLogEntry.create({
+      data: {
+        userId: session.user.id,
+        userLabel: session.user.name ?? session.user.email ?? "Unknown admin",
+        action: `Deleted ${count} lead${count === 1 ? "" : "s"}`,
+        module: "Leads",
+      },
+    });
+  }
+
+  revalidatePath("/portal");
+  revalidatePath("/portal/leads");
+  return { deleted: count };
+}
