@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import { Archive, Check, X as XIcon, UserX } from "lucide-react";
 import { PageHeader } from "@/components/portal/PageHeader";
+import { AddUserForm } from "@/components/portal/AddUserForm";
 import { ArchivedAccountsModal } from "@/components/portal/ArchivedAccountsModal";
 import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
 import { Badge } from "@/components/ui/Badge";
@@ -118,7 +119,11 @@ export default function UsersAdminPage() {
 
   return (
     <div>
-      <PageHeader title="Users" description="Approve new agent applications, manage platform accounts, and choose who appears on the public website." />
+      <PageHeader
+        title="Users"
+        description="Approve new agent applications, add accounts yourself, manage platform accounts, and choose who appears on the public website."
+        action={<AddUserForm onCreated={load} />}
+      />
 
       <div className="rounded-2xl border border-black/5 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 p-6">

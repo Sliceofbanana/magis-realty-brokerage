@@ -9,6 +9,9 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 // custom domain (RESEND_FROM_EMAIL) before this matters for real inboxes.
 const FROM = process.env.RESEND_FROM_EMAIL || "Magis Realty & Brokerage <onboarding@resend.dev>";
 
+/** False when RESEND_API_KEY is missing: sendEmail then skips silently, so callers that need the recipient to get something must hand over the link another way. */
+export const emailConfigured = resend !== null;
+
 export type SendEmailResult = { error?: string };
 
 /**
@@ -93,6 +96,16 @@ export function verifyEmailTemplate(name: string, link: string): string {
     <p>Thanks for requesting agent portal access. Please confirm this is your email address to continue — an administrator will still need to approve your account afterward.</p>
     ${button(link, "Verify Email Address")}
     <p style="margin-top:24px;color:#6b7280;font-size:12px;">This link expires in 24 hours. If you didn't request this, you can safely ignore this email.</p>
+  `);
+}
+
+export function inviteTemplate(name: string, roleLabel: string, link: string): string {
+  return emailShell(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#0f172a;">You've been added to the portal</h1>
+    <p style="margin:0;">Hi ${escapeHtml(name)},</p>
+    <p>An administrator created a Magis Realty portal account for you as <strong>${escapeHtml(roleLabel)}</strong>. Choose a password to activate it and sign in.</p>
+    ${button(link, "Set Your Password")}
+    <p style="margin-top:24px;color:#6b7280;font-size:12px;">This link expires in 7 days. If you weren't expecting this, you can safely ignore this email.</p>
   `);
 }
 

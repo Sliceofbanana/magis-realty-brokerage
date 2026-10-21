@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { formatAgentCode } from "@/lib/format";
+import { createToken } from "@/lib/tokens";
+import { emailConfigured, inviteTemplate, sendEmail } from "@/lib/email";
+import { getBaseUrl } from "@/lib/url";
+import { tooLong } from "@/lib/botSignals";
+import { isValidEmail } from "@/lib/validation";
 
 export type AdminUserRow = {
   id: string;
@@ -89,7 +94,85 @@ export async function listPortalUsers(): Promise<AdminUserRow[]> {
   }));
 }
 
-export type SetListingResult = { error?: string; success?: boolean };
+const ROLE_LABELS: Record<AdminUserRow["role"], string> = {
+  ADMINISTRATOR: "an Administrator",
+  BROKER: "a Broker",
+  AGENT: "an Agent",
+  MARKETING: "Marketing",
+};
+const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+export type CreateUserInput = {
+  name: string;
+  email: string;
+  phone?: string;
+  role: AdminUserRow["role"];
+};
+
+export type CreateUserResult = {
+  error?: string;
+  success?: boolean;
+  /** True when the invite email went out. */
+  emailed?: boolean;
+  /** Set-password link, returned only when the email could not be sent so the admin can pass it on. */
+  inviteLink?: string;
+};
+
+/**
+ * Admin-only: creates an Active, email-verified account and invites the person
+ * to choose their own password (the same single-use token flow as a password
+ * reset, valid 7 days). The admin never sets or sees a password.
+ */
+export async function createUserAction(input: CreateUserInput): Promise<CreateUserResult> {
+  const session = await requireAdmin();
+
+  const name = input.name?.trim();
+  const email = input.email?.trim().toLowerCase();
+  const phone = input.phone?.trim();
+
+  if (!name || !email) return { error: "Name and email are required." };
+  if (tooLong({ name, email, phone })) return { error: "One of the fields is too long." };
+  if (!isValidEmail(email)) return { error: "Enter a valid email address." };
+  if (!(input.role in ROLE_LABELS)) return { error: "Select a role." };
+
+  if (await prisma.user.findUnique({ where: { email }, select: { id: true } })) {
+    return { error: "An account with this email already exists." };
+  }
+
+  await prisma.user.create({
+    data: {
+      name,
+      email,
+      phone: phone || undefined,
+      role: input.role,
+      status: "ACTIVE",
+      emailVerified: new Date(),
+    },
+  });
+
+  await prisma.activityLogEntry.create({
+    data: {
+      userId: session.user.id,
+      userLabel: session.user.name ?? session.user.email ?? "Unknown admin",
+      action: `Created ${name}'s account (${input.role.toLowerCase()})`,
+      module: "User Auth",
+    },
+  });
+
+  const token = await createToken("password-reset", email, INVITE_TTL_MS);
+  const link = `${await getBaseUrl()}/reset-password?token=${token}`;
+  const sent = await sendEmail({
+    to: email,
+    subject: "You've been added to Magis Realty & Brokerage",
+    html: inviteTemplate(name, ROLE_LABELS[input.role], link),
+  });
+
+  revalidatePath("/portal/users");
+  const emailed = emailConfigured && !sent.error;
+  return emailed ? { success: true, emailed: true } : { success: true, emailed: false, inviteLink: link };
+}
+
+export type SetListingResult ={ error?: string; success?: boolean };
 
 /**
  * Admin-only: lists or hides a person on the public website. Listing needs an
