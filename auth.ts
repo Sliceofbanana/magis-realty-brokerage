@@ -3,6 +3,8 @@ import Credentials from "next-auth/providers/credentials";
 import type { PortalRole, UserStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { needsEmailVerification } from "@/lib/emailVerification";
 import { applyAccountState, type AccountState } from "@/lib/sessionRefresh";
 
 /** How long one server instance may reuse an account lookup — bounds how stale a revoked session can be. */
@@ -35,19 +37,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string | undefined;
+        const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
         const password = credentials?.password as string | undefined;
-        if (!email || !password) return null;
+        if (!email || !password || password.length > 200) return null;
+
+        // This is the real gate: Auth.js also exposes it directly at
+        // /api/auth/callback/credentials, bypassing loginAction. Everything
+        // loginAction enforces must therefore be enforced here too.
+        const [byIp, byAccount] = await Promise.all([
+          checkRateLimit("credentialsIp"),
+          checkRateLimit("credentialsAccount", email),
+        ]);
+        if (!byIp.allowed || !byAccount.allowed) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.passwordHash) return null;
 
-        // Only ACTIVE accounts may establish a session — the Odoo-style
-        // PENDING/DEACTIVATED/REJECTED gate. The login Server Action
-        // (lib/actions/auth.ts) checks status first and shows a specific
-        // message; this is the defensive second check inside the actual
-        // auth flow, so it fails closed even if that pre-check is bypassed.
+        // Only ACTIVE, email-verified accounts may establish a session. The
+        // login Server Action (lib/actions/auth.ts) runs the same checks
+        // first to show a specific message; these fail closed on their own.
         if (user.status !== "ACTIVE") return null;
+        if (needsEmailVerification(user)) return null;
 
         const valid = await verifyPassword(password, user.passwordHash);
         if (!valid) return null;

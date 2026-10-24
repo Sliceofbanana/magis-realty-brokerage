@@ -13,14 +13,9 @@ import { getSystemSettings } from "@/lib/system-settings";
 import { createToken, consumeToken } from "@/lib/tokens";
 import { sendEmail, verifyEmailTemplate, passwordResetTemplate, loginAlertTemplate } from "@/lib/email";
 import { getBaseUrl } from "@/lib/url";
+import { needsEmailVerification } from "@/lib/emailVerification";
 
 export type ActionState = { error?: string; success?: boolean } | null;
-
-// Anyone whose account predates this cutoff is grandfathered past the
-// "verify your email" login gate below — email verification didn't exist
-// before this feature shipped, so there's no verification link they could
-// ever have clicked. Only registrations from this point on are held to it.
-const EMAIL_VERIFICATION_LAUNCHED_AT = new Date("2026-09-01T00:00:00Z");
 
 /**
  * Checks account status first (with a specific, user-facing message for
@@ -46,7 +41,7 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
     return { error: "Invalid email or password." };
   }
 
-  if (!user.emailVerified && user.createdAt >= EMAIL_VERIFICATION_LAUNCHED_AT) {
+  if (needsEmailVerification(user)) {
     return { error: "Please verify your email address first — check your inbox for the verification link." };
   }
 

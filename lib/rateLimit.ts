@@ -33,6 +33,24 @@ const limiters = {
         prefix: "ratelimit:login",
       })
     : null,
+  // The credential check itself (auth.ts authorize()), which the Auth.js
+  // endpoint exposes directly — loginAction's limiter above is not on that
+  // path. One budget per IP and one per target account, so guessing is
+  // capped both for a single client and for a distributed one.
+  credentialsIp: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "5 m"),
+        prefix: "ratelimit:credentials-ip",
+      })
+    : null,
+  credentialsAccount: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "15 m"),
+        prefix: "ratelimit:credentials-account",
+      })
+    : null,
   // Registration: infrequent by nature, so a tighter window is fine.
   register: redis
     ? new Ratelimit({
@@ -72,12 +90,12 @@ export type RateLimitResult = { allowed: true } | { allowed: false; retryAfterSe
  * credentials yet), this fails open — rate limiting is a hardening layer,
  * not a correctness dependency, so its absence shouldn't break the form.
  */
-export async function checkRateLimit(bucket: RateLimitBucket): Promise<RateLimitResult> {
+export async function checkRateLimit(bucket: RateLimitBucket, key?: string): Promise<RateLimitResult> {
   const limiter = limiters[bucket];
   if (!limiter) return { allowed: true };
 
-  const ip = await getClientIp();
-  const { success, reset } = await limiter.limit(`${bucket}:${ip}`);
+  // Keyed by client IP unless the caller supplies its own subject (e.g. an email).
+  const { success, reset } = await limiter.limit(`${bucket}:${key ?? (await getClientIp())}`);
   if (success) return { allowed: true };
 
   return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((reset - Date.now()) / 1000)) };
