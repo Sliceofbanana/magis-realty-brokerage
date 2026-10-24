@@ -129,7 +129,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
                     id="password"
                     name="password"
                     autoComplete="new-password"
-                    placeholder="Min. 8 characters"
+                    placeholder="Min. 12 characters"
                     onChange={handlePasswordChange}
                     onBlur={handlePasswordBlur}
                     aria-invalid={!!errors.password}

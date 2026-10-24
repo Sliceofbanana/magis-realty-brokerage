@@ -5,6 +5,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { uploadFile } from "@/lib/storage";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { validatePassword } from "@/lib/passwordPolicy";
 
 export type MyProfile = {
   name: string;
@@ -231,9 +233,14 @@ export async function updatePasswordAction(
   const session = await auth();
   if (!session?.user) return { error: "You must be logged in." };
 
-  if (newPassword.length < 12) {
-    return { error: "New password must be at least 12 characters." };
+  const rateLimit = await checkRateLimit("passwordChange", session.user.id);
+  if (!rateLimit.allowed) {
+    return { error: `Too many attempts — please try again in ${rateLimit.retryAfterSeconds}s.` };
   }
+
+  const passwordError = validatePassword(newPassword);
+  if (passwordError) return { error: passwordError };
+  if (newPassword === currentPassword) return { error: "New password must be different from the current one." };
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -245,7 +252,9 @@ export async function updatePasswordAction(
   if (!matches) return { error: "Current password is incorrect." };
 
   const passwordHash = await hashPassword(newPassword);
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+  // passwordChangedAt ends every session signed in before this moment, this one included —
+  // the caller signs out and back in with the new password.
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash, passwordChangedAt: new Date() } });
 
   return { success: true };
 }

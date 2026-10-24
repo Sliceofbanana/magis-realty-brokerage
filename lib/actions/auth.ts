@@ -13,6 +13,7 @@ import { getSystemSettings } from "@/lib/system-settings";
 import { createToken, consumeToken } from "@/lib/tokens";
 import { sendEmail, verifyEmailTemplate, passwordResetTemplate, loginAlertTemplate } from "@/lib/email";
 import { getBaseUrl } from "@/lib/url";
+import { validatePassword } from "@/lib/passwordPolicy";
 import { needsEmailVerification } from "@/lib/emailVerification";
 
 export type ActionState = { error?: string; success?: boolean } | null;
@@ -129,15 +130,14 @@ export async function registerAction(_prevState: ActionState, formData: FormData
   const phone = String(formData.get("phone") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (tooLong({ name, email, phone }) || password.length > 200) {
+  if (tooLong({ name, email, phone })) {
     return { error: "One of the fields is too long." };
   }
   if (!name || !email || !password) {
     return { error: "Fill in your name, email, and password." };
   }
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." };
-  }
+  const passwordError = validatePassword(password);
+  if (passwordError) return { error: passwordError };
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -260,9 +260,8 @@ export async function resetPasswordAction(
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." };
-  }
+  const passwordError = validatePassword(password);
+  if (passwordError) return { error: passwordError };
   if (password !== confirmPassword) {
     return { error: "Passwords don't match." };
   }
@@ -274,7 +273,8 @@ export async function resetPasswordAction(
 
   await prisma.user.update({
     where: { email: result.email },
-    data: { passwordHash: await hashPassword(password) },
+    // passwordChangedAt ends every session signed in before this moment.
+    data: { passwordHash: await hashPassword(password), passwordChangedAt: new Date() },
   });
 
   return { success: true };

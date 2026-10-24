@@ -23,6 +23,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { listActivityLogAction, type ActivityLogResult } from "@/lib/actions/activity";
+import { logoutAction } from "@/lib/actions/auth";
 import { useRole } from "@/components/portal/RoleContext";
 import { useBirthdays } from "@/components/portal/BirthdayContext";
 import { PortalRole, AttendanceConfig } from "@/lib/types";
@@ -198,10 +199,12 @@ function GeneralTab() {
       setPasswordError(result.error);
       return;
     }
-    setPasswordMessage("Password updated.");
+    setPasswordMessage("Password updated. Signing you out so you can sign in with it…");
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    // The password change ends every session signed in before it — this one included.
+    setTimeout(() => void logoutAction(), 1500);
   }
 
   if (loadError) {

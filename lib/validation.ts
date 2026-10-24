@@ -8,7 +8,7 @@ export function isValidEmail(value: string): boolean {
   return EMAIL_PATTERN.test(value);
 }
 
-export const MIN_PASSWORD_LENGTH = 8;
+export { MIN_PASSWORD_LENGTH } from "@/lib/passwordPolicy";
 
 export type FieldStatus = "neutral" | "error" | "success";
 

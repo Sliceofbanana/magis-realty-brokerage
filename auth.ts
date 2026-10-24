@@ -17,7 +17,7 @@ async function loadAccountState(userId: string): Promise<AccountState | null> {
 
   const state = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true, status: true, photo: true, isSystemAdmin: true },
+    select: { role: true, status: true, photo: true, isSystemAdmin: true, passwordChangedAt: true },
   });
   if (accountCache.size > 500) accountCache.clear();
   accountCache.set(userId, { at: Date.now(), state });
@@ -82,6 +82,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.status = user.status;
         token.photo = user.photo;
         token.isSystemAdmin = user.isSystemAdmin;
+        token.authAt = Date.now(); // when this sign-in happened — see applyAccountState
         return token;
       }
       // The client can force a refresh (e.g. right after uploading a new

@@ -165,7 +165,7 @@ export default function RegisterPage() {
                 id="password"
                 name="password"
                 autoComplete="new-password"
-                placeholder="Min. 8 characters"
+                placeholder="Min. 12 characters"
                 onBlur={handleBlur("password")}
                 onChange={handleChange("password")}
                 aria-invalid={!!errors.password}

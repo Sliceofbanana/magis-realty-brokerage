@@ -27,5 +27,7 @@ declare module "next-auth/jwt" {
     status: UserStatus;
     photo?: string | null;
     isSystemAdmin?: boolean;
+    /** Epoch ms of the sign-in that created this token. */
+    authAt?: number;
   }
 }

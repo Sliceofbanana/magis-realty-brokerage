@@ -51,6 +51,15 @@ const limiters = {
         prefix: "ratelimit:credentials-account",
       })
     : null,
+  // Changing your own password asks for the current one, so it is a
+  // guessing oracle for anyone holding a signed-in session. Keyed by user.
+  passwordChange: redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "15 m"),
+        prefix: "ratelimit:password-change",
+      })
+    : null,
   // Registration: infrequent by nature, so a tighter window is fine.
   register: redis
     ? new Ratelimit({
