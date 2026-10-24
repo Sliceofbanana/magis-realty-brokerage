@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { PortalRole, UserStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword } from "@/lib/password";
+import { verifyPasswordUniform } from "@/lib/password";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { needsEmailVerification } from "@/lib/emailVerification";
 import { applyAccountState, type AccountState } from "@/lib/sessionRefresh";
@@ -51,16 +51,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!byIp.allowed || !byAccount.allowed) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !user.passwordHash) return null;
+        const valid = await verifyPasswordUniform(password, user?.passwordHash);
+        if (!user || !valid) return null;
 
         // Only ACTIVE, email-verified accounts may establish a session. The
-        // login Server Action (lib/actions/auth.ts) runs the same checks
-        // first to show a specific message; these fail closed on their own.
+        // login Server Action (lib/actions/auth.ts) shows a specific message for
+        // these only after the password has been proven; here they simply fail closed.
         if (user.status !== "ACTIVE") return null;
         if (needsEmailVerification(user)) return null;
-
-        const valid = await verifyPassword(password, user.passwordHash);
-        if (!valid) return null;
 
         return {
           id: user.id,

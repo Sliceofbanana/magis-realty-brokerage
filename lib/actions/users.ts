@@ -6,7 +6,7 @@ import { requirePermission } from "@/lib/authz";
 import { formatAgentCode } from "@/lib/format";
 import { createToken } from "@/lib/tokens";
 import { emailConfigured, inviteTemplate, sendEmail } from "@/lib/email";
-import { getBaseUrl } from "@/lib/url";
+import { getPublicBaseUrl } from "@/lib/url";
 import { tooLong } from "@/lib/botSignals";
 import { isValidEmail } from "@/lib/validation";
 
@@ -155,7 +155,7 @@ export async function createUserAction(input: CreateUserInput): Promise<CreateUs
   });
 
   const token = await createToken("password-reset", email, INVITE_TTL_MS);
-  const link = `${await getBaseUrl()}/reset-password?token=${token}`;
+  const link = `${await getPublicBaseUrl()}/reset-password?token=${token}`;
   const sent = await sendEmail({
     to: email,
     subject: "You've been added to Magis Realty & Brokerage",

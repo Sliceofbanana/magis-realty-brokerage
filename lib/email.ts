@@ -109,6 +109,17 @@ export function inviteTemplate(name: string, roleLabel: string, link: string): s
   `);
 }
 
+export function accountExistsTemplate(name: string, signInLink: string, resetLink: string): string {
+  return emailShell(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#0f172a;">You already have an account</h1>
+    <p style="margin:0;">Hi ${escapeHtml(name)},</p>
+    <p>Someone just tried to register for the Magis Realty portal using this email address, which already has an account. If that was you, sign in — or reset your password if you've forgotten it.</p>
+    ${button(signInLink, "Sign In")}
+    <p style="margin-top:16px;"><a href="${resetLink}" style="color:#0f172a;">Forgot your password?</a></p>
+    <p style="margin-top:24px;color:#6b7280;font-size:12px;">If it wasn't you, you can safely ignore this email — nothing has changed on your account.</p>
+  `);
+}
+
 export function passwordResetTemplate(name: string, link: string): string {
   return emailShell(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#0f172a;">Reset your password</h1>

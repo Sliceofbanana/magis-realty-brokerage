@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/lib/password";
+import { hashPassword, verifyPasswordUniform } from "@/lib/password";
 import { signIn, signOut } from "@/auth";
 import { createNotification } from "@/lib/notify";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
@@ -11,8 +11,8 @@ import { checkBot } from "@/lib/botGuard";
 import { botFromFormData, tooLong } from "@/lib/botSignals";
 import { getSystemSettings } from "@/lib/system-settings";
 import { createToken, consumeToken } from "@/lib/tokens";
-import { sendEmail, verifyEmailTemplate, passwordResetTemplate, loginAlertTemplate } from "@/lib/email";
-import { getBaseUrl } from "@/lib/url";
+import { sendEmail, verifyEmailTemplate, passwordResetTemplate, loginAlertTemplate, accountExistsTemplate } from "@/lib/email";
+import { getPublicBaseUrl } from "@/lib/url";
 import { validatePassword } from "@/lib/passwordPolicy";
 import { needsEmailVerification } from "@/lib/emailVerification";
 
@@ -37,11 +37,15 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
     return { error: "Enter your email and password to continue." };
   }
 
+  // Prove the password first. Until then every failure looks identical — and
+  // takes the same time — so this form can't be used to find out which emails
+  // have accounts, or what state they're in.
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
+  if (!(await verifyPasswordUniform(password, user?.passwordHash)) || !user) {
     return { error: "Invalid email or password." };
   }
 
+  // Only someone who knows the password sees why they can't get in.
   if (needsEmailVerification(user)) {
     return { error: "Please verify your email address first — check your inbox for the verification link." };
   }
@@ -141,7 +145,15 @@ export async function registerAction(_prevState: ActionState, formData: FormData
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    return { error: "An account with this email already exists." };
+    // Same response as a fresh registration, so the form doesn't reveal who
+    // has an account. The address's owner is told by email instead.
+    const baseUrl = await getPublicBaseUrl();
+    await sendEmail({
+      to: email,
+      subject: "You already have a Magis Realty account",
+      html: accountExistsTemplate(existing.name, `${baseUrl}/login`, `${baseUrl}/forgot-password`),
+    });
+    redirect("/register/success");
   }
 
   await prisma.user.create({
@@ -163,7 +175,7 @@ export async function registerAction(_prevState: ActionState, formData: FormData
   });
 
   const token = await createToken("email-verify", email, 24 * 60 * 60 * 1000);
-  const baseUrl = await getBaseUrl();
+  const baseUrl = await getPublicBaseUrl();
   await sendEmail({
     to: email,
     subject: "Verify your email — Magis Realty & Brokerage",
@@ -184,7 +196,7 @@ export async function resendVerificationEmailAction(email: string): Promise<Acti
   const user = await prisma.user.findUnique({ where: { email: normalized } });
   if (user && !user.emailVerified) {
     const token = await createToken("email-verify", normalized, 24 * 60 * 60 * 1000);
-    const baseUrl = await getBaseUrl();
+    const baseUrl = await getPublicBaseUrl();
     await sendEmail({
       to: normalized,
       subject: "Verify your email — Magis Realty & Brokerage",
@@ -233,7 +245,7 @@ export async function requestPasswordResetAction(_prevState: ActionState, formDa
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {
     const token = await createToken("password-reset", email, 60 * 60 * 1000);
-    const baseUrl = await getBaseUrl();
+    const baseUrl = await getPublicBaseUrl();
     await sendEmail({
       to: email,
       subject: "Reset your password — Magis Realty & Brokerage",
