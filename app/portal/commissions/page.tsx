@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { commissionRecordInclude, toTransactionRow } from "@/lib/adapters/commission";
 import { commissionReleaseSummary } from "@/lib/commissions";
@@ -6,8 +8,15 @@ import { CommissionsAdminView } from "@/components/portal/CommissionsAdminView";
 export const dynamic = "force-dynamic";
 
 export default async function CommissionsAdminPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  // Administrators and Brokers manage every record; everyone else sees only
+  // their own earnings — the server decides, not the UI.
+  const seesAll = session.user.role === "ADMINISTRATOR" || session.user.role === "BROKER";
+
   const [records, agents, properties] = await Promise.all([
     prisma.commissionRecord.findMany({
+      where: seesAll ? {} : { agentId: session.user.id },
       include: commissionRecordInclude,
       orderBy: { closedDate: "desc" },
     }),

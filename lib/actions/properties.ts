@@ -239,8 +239,10 @@ export async function getPropertyCommissionHistory(propertyId: string): Promise<
   const session = await auth();
   if (!session?.user) return [];
 
+  // Administrators and Brokers see every record; others only their own.
+  const seesAll = session.user.role === "ADMINISTRATOR" || session.user.role === "BROKER";
   const records = await prisma.commissionRecord.findMany({
-    where: { propertyId },
+    where: { propertyId, ...(seesAll ? {} : { agentId: session.user.id }) },
     include: commissionRecordInclude,
     orderBy: { closedDate: "desc" },
   });

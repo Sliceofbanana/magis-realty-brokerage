@@ -52,6 +52,14 @@ export default async function PortalDashboardPage() {
     isAdmin ||
     (session?.user ? await userHasPermission(session.user.id, session.user.role, "MANAGE_OWN_LISTINGS") : false);
 
+  // Leads and the activity log carry other people's details: admins (and,
+  // for the log, holders of View Activity Log) see everything; others only
+  // leads assigned to them.
+  const leadScope = isAdmin || !session?.user ? {} : { agentId: session.user.id };
+  const canViewActivityLog =
+    isAdmin ||
+    (session?.user ? await userHasPermission(session.user.id, session.user.role, "VIEW_ACTIVITY_LOG") : false);
+
   const [
     activeListings,
     soldProperties,
@@ -66,13 +74,16 @@ export default async function PortalDashboardPage() {
   ] = await Promise.all([
     prisma.property.count({ where: { status: { not: "SOLD" }, archived: false } }),
     prisma.property.count({ where: { status: "SOLD", archived: false } }),
-    prisma.lead.count(),
+    prisma.lead.count({ where: leadScope }),
     prisma.lead.findMany({
+      where: leadScope,
       orderBy: { createdAt: "desc" },
       take: 4,
       include: { property: { select: { title: true } } },
     }),
-    prisma.activityLogEntry.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
+    canViewActivityLog
+      ? prisma.activityLogEntry.findMany({ orderBy: { createdAt: "desc" }, take: 3 })
+      : Promise.resolve([]),
     prisma.attendanceConfig.findUnique({
       where: { id: "singleton" },
       include: attendanceConfigWithTiers,

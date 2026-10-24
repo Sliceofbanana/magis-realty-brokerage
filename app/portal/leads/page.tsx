@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { leadWithProperty, toLead } from "@/lib/adapters/lead";
@@ -13,13 +14,18 @@ export default async function LeadsAdminPage({
 }) {
   const { q } = await searchParams;
   const session = await auth();
-  const isAdmin = session?.user?.role === "ADMINISTRATOR";
+  if (!session?.user) redirect("/login");
+  const isAdmin = session.user.role === "ADMINISTRATOR";
+  // Leads hold visitors' contact details: administrators see the whole
+  // pipeline, everyone else only the leads assigned to them.
+  const leadScope = isAdmin ? {} : { agentId: session.user.id };
 
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
 
   const [rows, properties, newThisWeek, sourceGroups, agentsData] = await Promise.all([
     prisma.lead.findMany({
+      where: leadScope,
       include: leadWithProperty,
       orderBy: { createdAt: "desc" },
     }),
@@ -28,8 +34,8 @@ export default async function LeadsAdminPage({
       orderBy: { title: "asc" },
       select: { id: true, title: true },
     }),
-    prisma.lead.count({ where: { createdAt: { gte: weekAgo } } }),
-    prisma.lead.groupBy({ by: ["source"], _count: { _all: true } }),
+    prisma.lead.count({ where: { ...leadScope, createdAt: { gte: weekAgo } } }),
+    prisma.lead.groupBy({ by: ["source"], where: leadScope, _count: { _all: true } }),
     isAdmin ? listTeamsWithAgents() : Promise.resolve<{ teams: []; agents: TeamAgentRow[] }>({ teams: [], agents: [] }),
   ]);
 

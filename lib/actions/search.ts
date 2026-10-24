@@ -31,6 +31,8 @@ export async function searchPortalAction(query: string): Promise<PortalSearchRes
     }),
     prisma.lead.findMany({
       where: {
+        // Non-admins can only find leads assigned to them.
+        ...(session.user.role === "ADMINISTRATOR" ? {} : { agentId: session.user.id }),
         OR: [
           { name: { contains: q, mode: "insensitive" } },
           { email: { contains: q, mode: "insensitive" } },
