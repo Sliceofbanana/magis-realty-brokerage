@@ -3,7 +3,7 @@ import { Award, Users, TrendingUp, Compass, HeartHandshake, GraduationCap } from
 import { Button } from "@/components/ui/Button";
 import { CareersApplicationForm } from "@/components/public/CareersApplicationForm";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
-import { business, portraits } from "@/lib/stockPhotos";
+import { cebu } from "@/lib/stockPhotos";
 
 export const metadata = { title: "Careers | Magis Realty & Brokerage" };
 
@@ -120,8 +120,8 @@ export default async function CareersPage({
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
           <RevealOnScroll className="relative h-72 overflow-hidden rounded-2xl bg-gray-100 sm:h-96">
             <Image
-              src={business.teamCollaboration}
-              alt="The Magis Realty team collaborating"
+              src={cebu.cityAerialNight}
+              alt="Cebu City at night"
               fill
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"
@@ -166,8 +166,8 @@ export default async function CareersPage({
           <RevealItem>
           <div className="relative h-56 overflow-hidden rounded-2xl bg-gray-100 sm:h-auto">
             <Image
-              src={portraits.womanGrayBlazer}
-              alt="A Magis Realty broker"
+              src={cebu.cclexBridge}
+              alt="The Cebu-Cordova Link Expressway"
               fill
               sizes="(min-width: 640px) 50vw, 100vw"
               className="object-cover"

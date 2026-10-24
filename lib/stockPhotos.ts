@@ -12,7 +12,6 @@ export const exteriors = {
   suburbanHouseDay: img("1600047509358-9dc75507daeb"),
   resortPoolNight: img("1571896349842-33c89424de2d"),
   glassOfficeTowers: img("1554469384-e58fac16e23a"),
-  officeCorridor: img("1497366216548-37526070297c"),
   farmlandSunset: img("1500382017468-9049fed747ef"),
 };
 
@@ -23,31 +22,26 @@ export const interiors = {
   brightCondoLivingRoom: img("1522708323590-d24dbb6b0267"),
   officeLounge: img("1524758631624-e2822e304c36"),
   coffeeJournalFlatlay: img("1518481612222-68bbe828ecd1"),
+  officeCorridor: img("1497366216548-37526070297c"),
 };
 
-export const business = {
-  handshake: img("1521791136064-7986c2920216"),
-  highFiveDuo: img("1600880292203-757bb62b4baf"),
-  teamMeetingTable: img("1573167243872-43c6433b9d40"),
-  laptopOnDesk: img("1487017159836-4e23ece2e4cf"),
-  teamCollaboration: img("1622675363311-3e1904dc1885"),
+// Cebu, where Magis is based (Mandaue City). Each id was checked against its
+// Unsplash page's location tag; all are free under the Unsplash License.
+export const cebu = {
+  /** Cebu skyline across the water at sunset. Photo: Pao Dayag. */
+  skylineSunset: img("1615989387035-f78b2fc7c46d"),
+  /** Cebu City from above at dusk, Mindanao Ave. Photo: Fritz Gabriel Carilo. */
+  cityAerialDusk: img("1558029573-2de0fd6f62f9"),
+  /** Cebu Business Park lit up at night. Photo: Zany Jadraque. */
+  businessParkNight: img("1505261476952-32e25cbfc755"),
+  /** Cebu Business Park from above at night. Photo: Zany Jadraque. */
+  cityAerialNight: img("1505449307143-eb99f132e28f"),
+  /** Cebu-Cordova Link Expressway (CCLEX), joining Cebu City/Mandaue to Mactan. Photo: Josephus Bajo. */
+  cclexBridge: img("1758149739878-c87e468f31b3"),
 };
 
-// Portraits — kept unique per named person within the same page
-export const portraits = {
-  womanGrayBlazer: img("1573496359142-b8d87734a5a2", 800),
-  manConfidentSuit: img("1519085360753-af0119f7cbe7", 800),
-  manGlassesProfessional: img("1560250097-0b93528c311a", 800),
-  womanLaughingRed: img("1494790108377-be9c29b29330", 800),
-  manGraySweater: img("1500648767791-00dcc994a43e", 800),
-  womanStripedBlazer: img("1573497019940-1c28c88b4f3e", 800),
-  olderManGlasses: img("1472099645785-5658abf4ff4e", 800),
-  womanSmilingCasual: img("1580489944761-15a19d654956", 800),
-  manSmilingWhiteShirt: img("1507003211169-0a1dd7228f2d", 800),
-  manCleanCutGray: img("1590086782957-93c06ef21604", 800),
-  manCasualBeardedGlasses: img("1568602471122-7832951cc4c5", 800),
-  womanMoodyPortrait: img("1601412436009-d964bd02edbc", 800),
-};
+// No stock photos of people: the site must not pass them off as the Magis team.
+// Real team/agent photos belong in /public/images or Cloudinary.
 
 export const galleryPool = [
   interiors.brightLivingRoom,

@@ -14,7 +14,7 @@ import { propertyWithRelations, toProperty } from "@/lib/adapters/property";
 import { agentWithProfile, publicAgentWhere, toAgent } from "@/lib/adapters/agent";
 import { toTestimonial } from "@/lib/adapters/testimonial";
 import { blogPostWithAuthor, toBlogPost } from "@/lib/adapters/blog";
-import { business, exteriors } from "@/lib/stockPhotos";
+import { cebu, exteriors } from "@/lib/stockPhotos";
 
 const pillars = [
   {
@@ -200,8 +200,8 @@ export default async function HomePage() {
           </RevealOnScroll>
           <RevealOnScroll delay={0.15} className="relative h-80 overflow-hidden rounded-2xl lg:h-96">
             <Image
-              src={business.handshake}
-              alt="Magis Realty agents in consultation"
+              src={cebu.businessParkNight}
+              alt="Cebu Business Park at night"
               fill
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"

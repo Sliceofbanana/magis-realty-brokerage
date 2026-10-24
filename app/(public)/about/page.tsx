@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { RevealOnScroll, RevealStagger, RevealItem } from "@/components/public/RevealOnScroll";
-import { business, interiors } from "@/lib/stockPhotos";
+import { cebu, interiors } from "@/lib/stockPhotos";
 
 export const metadata = { title: "About Us | Magis Realty & Brokerage" };
 
@@ -60,8 +60,8 @@ export default function AboutPage() {
     <>
       <section className="relative flex h-[420px] items-end sm:h-[620px]">
         <Image
-          src={business.teamMeetingTable}
-          alt="The Magis Realty leadership team"
+          src={cebu.skylineSunset}
+          alt="The Cebu skyline at sunset"
           fill
           sizes="100vw"
           priority
@@ -132,8 +132,8 @@ export default function AboutPage() {
           <RevealOnScroll delay={0.15} className="relative">
             <div className="relative h-80 overflow-hidden rounded-2xl bg-gray-100 sm:h-96">
               <Image
-                src={business.highFiveDuo}
-                alt="Magis Realty consultants at work"
+                src={cebu.cityAerialDusk}
+                alt="Cebu City at dusk"
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
