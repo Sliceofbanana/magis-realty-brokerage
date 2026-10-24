@@ -1,5 +1,4 @@
 import Link from "next/link";
-import QRCode from "qrcode";
 import {
   CalendarCheck2,
   CalendarClock,
@@ -10,7 +9,6 @@ import {
 } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getBaseUrl } from "@/lib/url";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { AttendanceOverview } from "@/components/portal/AttendanceOverview";
 import { CreateMeetingForm } from "@/components/portal/CreateMeetingForm";
@@ -158,14 +156,10 @@ export default async function AttendancePage() {
   const needsCheckIn = myRecords.filter((r) => r.status === "UPCOMING");
   const resolved = myRecords.filter((r) => r.status !== "UPCOMING");
 
-  const baseUrl = await getBaseUrl();
-  const checkInItems = await Promise.all(
-    needsCheckIn.map(async (r) => {
-      const checkinUrl = `${baseUrl}/portal/attendance/checkin/${r.meetingId}?token=${r.meeting.checkInToken}`;
-      const qr = r.meeting.checkInMode === "QR" ? await QRCode.toDataURL(checkinUrl) : null;
-      return { record: r, checkinUrl, qr };
-    })
-  );
+  // The check-in token is deliberately not put on this page: showing it to every
+  // attendee would let anyone check in without being at the meeting. QR meetings
+  // are checked in by scanning the code the organiser displays.
+  const checkInItems = needsCheckIn.map((r) => ({ record: r }));
 
   return (
     <div>
@@ -179,7 +173,7 @@ export default async function AttendancePage() {
             <p className="mt-3 text-sm text-gray-400">Nothing to check in to right now.</p>
           ) : (
             <ul className="mt-4 space-y-3">
-              {checkInItems.map(({ record: r, checkinUrl, qr }) => (
+              {checkInItems.map(({ record: r }) => (
                 <li key={r.id} className="flex items-start gap-3 rounded-xl bg-offwhite p-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-gold-400">
                     {r.meeting.type === "MEETING" ? <CalendarCheck2 size={16} /> : <GraduationCap size={16} />}
@@ -196,18 +190,9 @@ export default async function AttendancePage() {
                         </Button>
                       </form>
                     ) : (
-                      <div className="mt-3 flex items-center gap-4">
-                        {qr && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={qr} alt="Check-in QR code" width={120} height={120} className="rounded-lg border border-black/5" />
-                        )}
-                        <a
-                          href={checkinUrl}
-                          className="text-xs font-semibold text-navy-900 underline hover:text-gold-600"
-                        >
-                          Open check-in link
-                        </a>
-                      </div>
+                      <p className="mt-3 text-xs text-gray-500">
+                        Scan the QR code shown at the meeting with your phone to check in.
+                      </p>
                     )}
                   </div>
                 </li>

@@ -147,6 +147,13 @@ export async function markAttendanceStatusAction(
   revalidatePath("/portal");
 }
 
+/** Constant-time comparison, so the check-in token can't be recovered by timing guesses. */
+function tokensMatch(given: string, expected: string): boolean {
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 export type CheckInResult = { error?: string; success?: boolean; meetingTitle?: string };
 
 /**
@@ -165,7 +172,13 @@ export async function performCheckIn(meetingId: string, token?: string): Promise
 
   const meeting = await prisma.meeting.findUnique({ where: { id: meetingId } });
   if (!meeting) return { error: "Meeting not found." };
-  if (token && meeting.checkInToken !== token) return { error: "Invalid check-in link." };
+  // A QR meeting is only valid with its token — that is the proof the person
+  // scanned the code shown at the meeting rather than just clicking a button.
+  // (The token is shown to administrators only; see the attendance pages.)
+  if (meeting.checkInMode === "QR") {
+    if (!token) return { error: "Scan the QR code shown at the meeting to check in." };
+  }
+  if (token && !tokensMatch(token, meeting.checkInToken)) return { error: "Invalid check-in link." };
 
   const record = await prisma.attendanceRecord.findUnique({
     where: { meetingId_agentId: { meetingId, agentId: session.user.id } },
