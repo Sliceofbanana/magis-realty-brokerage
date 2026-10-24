@@ -4,7 +4,7 @@ import { loginAs, ADMIN_EMAIL } from "./helpers/auth";
 test.describe("Login", () => {
   test("valid credentials reach the portal", async ({ page }) => {
     await loginAs(page, ADMIN_EMAIL);
-    await expect(page.getByText(/Welcome back/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Welcome back/i })).toBeVisible();
   });
 
   test("invalid credentials show an error and stay on login", async ({ page }) => {

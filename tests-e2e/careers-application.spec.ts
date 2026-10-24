@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { db } from "./helpers/db";
 import { loginAs, ADMIN_EMAIL } from "./helpers/auth";
+import { waitUntilHumanSpeed } from "./helpers/bot";
 
 test.describe("Careers application", () => {
   const applicantName = `E2E Applicant ${Date.now()}`;
@@ -19,6 +20,7 @@ test.describe("Careers application", () => {
 
     await page.locator("#name").fill(applicantName);
     await page.locator("#email").fill(applicantEmail);
+    await waitUntilHumanSpeed(page);
     await page.getByRole("button", { name: "Send Open Application" }).click();
 
     await expect(page.getByText(/Thank you!/i)).toBeVisible();

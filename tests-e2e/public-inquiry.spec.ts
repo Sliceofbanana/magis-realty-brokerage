@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { db } from "./helpers/db";
 import { loginAs, ADMIN_EMAIL } from "./helpers/auth";
+import { waitUntilHumanSpeed } from "./helpers/bot";
 
 test.describe("Public inquiry", () => {
   const testEmail = `e2e-inquiry-${Date.now()}@example.com`;
@@ -17,6 +18,7 @@ test.describe("Public inquiry", () => {
     await page.getByPlaceholder("alexander@luxe.com").fill(testEmail);
     await page.getByPlaceholder("+63 900 000 0000").fill("+639171234567");
     await page.getByLabel("Interest").selectOption("Penthouse Collections");
+    await waitUntilHumanSpeed(page);
     await page.getByRole("button", { name: "Send Inquiry" }).click();
 
     await expect(page.getByText(/Thank you!/i)).toBeVisible();
