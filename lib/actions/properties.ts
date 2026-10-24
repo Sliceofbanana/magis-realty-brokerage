@@ -27,7 +27,7 @@ export async function createPropertyAction(
     return { error: "Not authorized." };
   }
   const isAdmin = session.user.role === "ADMINISTRATOR";
-  if (!isAdmin && !(await userHasPermission(session.user.id, session.user.role, "MANAGE_OWN_LISTINGS"))) {
+  if (!(await userHasPermission(session.user.id, session.user.role, "MANAGE_OWN_LISTINGS"))) {
     return { error: "Only management can add listings." };
   }
 

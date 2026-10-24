@@ -49,16 +49,14 @@ export default async function PortalDashboardPage() {
   const isAdmin = session?.user?.role === "ADMINISTRATOR";
   // Adding listings is management-only (Administrators, or anyone granted "Add Listings").
   const canAddListings =
-    isAdmin ||
-    (session?.user ? await userHasPermission(session.user.id, session.user.role, "MANAGE_OWN_LISTINGS") : false);
+    session?.user ? await userHasPermission(session.user.id, session.user.role, "MANAGE_OWN_LISTINGS") : false;
 
   // Leads and the activity log carry other people's details: admins (and,
   // for the log, holders of View Activity Log) see everything; others only
   // leads assigned to them.
   const leadScope = isAdmin || !session?.user ? {} : { agentId: session.user.id };
   const canViewActivityLog =
-    isAdmin ||
-    (session?.user ? await userHasPermission(session.user.id, session.user.role, "VIEW_ACTIVITY_LOG") : false);
+    session?.user ? await userHasPermission(session.user.id, session.user.role, "VIEW_ACTIVITY_LOG") : false;
 
   const [
     activeListings,

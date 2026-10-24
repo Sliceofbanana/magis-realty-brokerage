@@ -13,6 +13,7 @@ import {
   Settings,
   ServerCog,
 } from "lucide-react";
+import type { PermissionKey } from "@/lib/types";
 
 export const portalNavItems = [
   { href: "/portal", label: "Dashboard", icon: LayoutGrid },
@@ -25,13 +26,14 @@ export const portalNavItems = [
   { href: "/portal/documents", label: "Documents", icon: FileText },
 ];
 
-/** Administrator-only — every page here already gates its data with requireAdmin(),
- *  so hiding them from other roles' nav isn't just tidiness, they're dead ends otherwise. */
-export const portalAdminNavItems = [
+/** Administration pages. Items with a `permission` follow that permission (so a per-user grant
+ *  surfaces them); the rest are Administrator-only. Each page's data is guarded server-side
+ *  either way, so hiding a link is tidiness, not the protection. */
+export const portalAdminNavItems: { href: string; label: string; icon: typeof Users; permission?: PermissionKey }[] = [
   { href: "/portal/teams", label: "Teams", icon: Users },
   { href: "/portal/careers", label: "Careers", icon: Briefcase },
-  { href: "/portal/users", label: "Users", icon: User },
-  { href: "/portal/permissions", label: "Permissions", icon: KeyRound },
+  { href: "/portal/users", label: "Users", icon: User, permission: "manage-users" },
+  { href: "/portal/permissions", label: "Permissions", icon: KeyRound, permission: "manage-permissions" },
 ];
 
 /** System Admin only — see app/portal/system. */

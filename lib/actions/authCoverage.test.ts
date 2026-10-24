@@ -26,7 +26,7 @@ const INTENTIONALLY_PUBLIC = new Set([
 
 /** Evidence the function checks who is calling, directly or through a guarded helper. */
 const GUARD =
-  /\bauth\(\)|requireAdmin\(|requireSystemAdmin\(|setStatus\(|deleteDocumentAction\(|archivePropertyAction\(|performCheckIn\(/;
+  /\bauth\(\)|requireAdmin\(|requirePermission\(|requireSystemAdmin\(|setStatus\(|deleteDocumentAction\(|archivePropertyAction\(|performCheckIn\(/;
 
 function exportedFunctions(source: string): { name: string; body: string }[] {
   const out: { name: string; body: string }[] = [];

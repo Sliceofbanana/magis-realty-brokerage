@@ -302,8 +302,8 @@ function MyPerformanceCard({
 
 export function LeaderboardView({ data }: { data: LeaderboardData }) {
   const { periods, teams, agents } = data;
-  const { hasPermission, role } = useRole();
-  const canSetQuotas = role === "Administrator" || hasPermission("set-agent-quotas");
+  const { hasPermission } = useRole();
+  const canSetQuotas = hasPermission("set-agent-quotas");
   const [periodId, setPeriodId] = useState<QuotaPeriod["id"]>("quarterly");
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<SortDir>("asc");

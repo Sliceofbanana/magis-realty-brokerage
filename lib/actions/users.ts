@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/authz";
+import { requirePermission } from "@/lib/authz";
 import { formatAgentCode } from "@/lib/format";
 import { createToken } from "@/lib/tokens";
 import { emailConfigured, inviteTemplate, sendEmail } from "@/lib/email";
@@ -57,7 +57,7 @@ function missingForListing(u: { photo: string | null; agentProfile: { bio: strin
 }
 
 export async function listPortalUsers(): Promise<AdminUserRow[]> {
-  await requireAdmin();
+  await requirePermission("MANAGE_USERS");
 
   const users = await prisma.user.findMany({
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
@@ -115,7 +115,7 @@ export type CreateUserResult = {
  * reset, valid 7 days). The admin never sets or sees a password.
  */
 export async function createUserAction(input: CreateUserInput): Promise<CreateUserResult> {
-  const session = await requireAdmin();
+  const session = await requirePermission("MANAGE_USERS");
 
   const name = input.name?.trim();
   const email = input.email?.trim().toLowerCase();
@@ -125,6 +125,10 @@ export async function createUserAction(input: CreateUserInput): Promise<CreateUs
   if (tooLong({ name, email, phone })) return { error: "One of the fields is too long." };
   if (!isValidEmail(email)) return { error: "Enter a valid email address." };
   if (!(input.role in ROLE_LABELS)) return { error: "Select a role." };
+  // Manage Users can be granted to non-admins; it must not be a route to becoming one.
+  if (input.role === "ADMINISTRATOR" && session.user.role !== "ADMINISTRATOR") {
+    return { error: "Only an Administrator can create Administrator accounts." };
+  }
 
   if (await prisma.user.findUnique({ where: { email }, select: { id: true } })) {
     return { error: "An account with this email already exists." };
@@ -171,7 +175,7 @@ export type SetListingResult ={ error?: string; success?: boolean };
  * hiding always works.
  */
 export async function setPublicListingAction(userId: string, listed: boolean): Promise<SetListingResult> {
-  const session = await requireAdmin();
+  const session = await requirePermission("MANAGE_USERS");
 
   const target = await prisma.user.findUnique({
     where: { id: userId },
@@ -209,11 +213,26 @@ export async function setPublicListingAction(userId: string, listed: boolean): P
   return { success: true };
 }
 
+/**
+ * Administrator and System Admin accounts can only be managed by an
+ * Administrator, so holding Manage Users never lets someone act on — or
+ * lock out — the people above them.
+ */
+function canManageTarget(actorRole: string, target: { role: string; isSystemAdmin: boolean }): boolean {
+  return actorRole === "ADMINISTRATOR" || (target.role !== "ADMINISTRATOR" && !target.isSystemAdmin);
+}
+
+/** Prisma filter for the same rule, for the bulk actions. */
+function manageableTargets(actorRole: string) {
+  return actorRole === "ADMINISTRATOR" ? {} : { role: { not: "ADMINISTRATOR" as const }, isSystemAdmin: false };
+}
+
 async function setStatus(userId: string, status: AdminUserRow["status"]) {
-  const session = await requireAdmin();
+  const session = await requirePermission("MANAGE_USERS");
 
   const target = await prisma.user.findUnique({ where: { id: userId } });
   if (!target) throw new Error("User not found.");
+  if (!canManageTarget(session.user.role, target)) throw new Error("Not authorized.");
 
   await prisma.user.update({ where: { id: userId }, data: { status } });
 
@@ -263,14 +282,18 @@ export async function bulkSetUserStatusAction(
   userIds: string[],
   status: "ACTIVE" | "DEACTIVATED" | "REJECTED"
 ): Promise<BulkUserStatusResult> {
-  const session = await requireAdmin();
+  const session = await requirePermission("MANAGE_USERS");
 
   const unique = [...new Set(userIds)];
   if (unique.length === 0) return { error: "Select at least one user." };
   if (unique.length > MAX_BULK_USERS) return { error: `Select at most ${MAX_BULK_USERS} users at a time.` };
 
   const { count } = await prisma.user.updateMany({
-    where: { id: { in: unique, not: session.user.id }, status: { in: BULK_FROM[status] } },
+    where: {
+      id: { in: unique, not: session.user.id },
+      status: { in: BULK_FROM[status] },
+      ...manageableTargets(session.user.role),
+    },
     data: { status },
   });
 
@@ -300,7 +323,7 @@ export type DeleteArchivedResult = { error?: string; deleted?: number; skipped?:
  * notifications go with the account.
  */
 export async function deleteArchivedUsersAction(userIds: string[]): Promise<DeleteArchivedResult> {
-  const session = await requireAdmin();
+  const session = await requirePermission("MANAGE_USERS");
 
   const unique = [...new Set(userIds)];
   if (unique.length === 0) return { error: "Select at least one account." };
@@ -311,6 +334,7 @@ export async function deleteArchivedUsersAction(userIds: string[]): Promise<Dele
       id: { in: unique, not: session.user.id },
       status: { in: ["DEACTIVATED", "REJECTED"] },
       isSystemAdmin: false,
+      ...(session.user.role === "ADMINISTRATOR" ? {} : { role: { not: "ADMINISTRATOR" as const } }),
     },
     select: { id: true, _count: { select: ACTIVITY_COUNT_SELECT } },
   });

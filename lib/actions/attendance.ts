@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { AttendanceCheckInMode, AttendancePeriod, AttendanceStatus, AttendanceType } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/authz";
+import { requireAdmin, requirePermission } from "@/lib/authz";
 import { attendanceConfigWithTiers, fallbackAttendanceConfig, toAttendanceConfig } from "@/lib/adapters/attendance";
 import { computePeriodBounds } from "@/lib/attendance";
 import type { AttendanceConfig } from "@/lib/types";
@@ -32,7 +32,7 @@ export type AttendanceConfigUpdateInput = {
 export type AttendanceConfigUpdateResult = { error?: string; success?: boolean };
 
 /**
- * Admin-only: updates the singleton AttendanceConfig row and replaces its
+ * Requires Configure Attendance Rules: updates the singleton AttendanceConfig row and replaces its
  * reward tiers. When the cycle type (period) changes, the period window
  * (label, start, cutoff) is recomputed from today's date rather than kept
  * at its previous — possibly stale — values.
@@ -40,7 +40,7 @@ export type AttendanceConfigUpdateResult = { error?: string; success?: boolean }
 export async function updateAttendanceConfigAction(
   values: AttendanceConfigUpdateInput
 ): Promise<AttendanceConfigUpdateResult> {
-  await requireAdmin();
+  await requirePermission("CONFIGURE_ATTENDANCE");
 
   const nextPeriod = values.period.toUpperCase() as AttendancePeriod;
   const current = await prisma.attendanceConfig.findUnique({

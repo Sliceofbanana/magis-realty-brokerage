@@ -1,8 +1,7 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { userHasPermission } from "@/lib/permissions-server";
+import { requirePermission } from "@/lib/authz";
 
 export type ActivityRow = {
   id: string;
@@ -28,14 +27,9 @@ const timestampFormatter = new Intl.DateTimeFormat("en-PH", {
   timeZone: "Asia/Manila",
 });
 
-/** Recent activity from Postgres — requires Administrator or the View Activity Log permission. */
+/** Recent activity from Postgres — requires the View Activity Log permission. */
 export async function listActivityLogAction(filters: { module?: string; action?: string } = {}): Promise<ActivityLogResult> {
-  const session = await auth();
-  if (!session?.user) throw new Error("Not authorized.");
-  const allowed =
-    session.user.role === "ADMINISTRATOR" ||
-    (await userHasPermission(session.user.id, session.user.role, "VIEW_ACTIVITY_LOG"));
-  if (!allowed) throw new Error("Not authorized.");
+  await requirePermission("VIEW_ACTIVITY_LOG");
 
   const where = {
     ...(filters.module ? { module: filters.module } : {}),

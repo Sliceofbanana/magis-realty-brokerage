@@ -1,21 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { requirePermission } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
 
 export type CreateBlogPostResult = { error?: string; success?: boolean };
 
-const ALLOWED_ROLES = ["ADMINISTRATOR", "MARKETING"];
-
-/** Creates a new blog post — Administrators and Marketing users only (matches the manage-blogs permission). */
+/** Creates a new blog post — requires the Manage Blog Content permission (Administrators and Marketing by default). */
 export async function createBlogPostAction(
   _prevState: CreateBlogPostResult,
   formData: FormData
 ): Promise<CreateBlogPostResult> {
-  const session = await auth();
-  if (!session?.user || !ALLOWED_ROLES.includes(session.user.role)) {
+  let session;
+  try {
+    session = await requirePermission("MANAGE_BLOGS");
+  } catch {
     return { error: "Not authorized." };
   }
 

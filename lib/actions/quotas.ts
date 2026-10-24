@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { userHasPermission } from "@/lib/permissions-server";
+import { requirePermission } from "@/lib/authz";
 import { currentQuotaPeriods } from "@/lib/quotaPeriods";
 import type { QuotaPeriodId } from "@/lib/types";
 
@@ -17,12 +16,12 @@ export async function setAgentQuotaAction(
   periodId: QuotaPeriodId,
   amount: number
 ): Promise<SetQuotaResult> {
-  const session = await auth();
-  if (!session?.user) return { error: "You must be logged in." };
-  const allowed =
-    session.user.role === "ADMINISTRATOR" ||
-    (await userHasPermission(session.user.id, session.user.role, "SET_AGENT_QUOTAS"));
-  if (!allowed) return { error: "Not authorized." };
+  let session;
+  try {
+    session = await requirePermission("SET_AGENT_QUOTAS");
+  } catch {
+    return { error: "Not authorized." };
+  }
 
   if (!PERIOD_IDS.includes(periodId)) return { error: "Unknown period." };
   if (!Number.isFinite(amount) || amount < 0 || amount > 100_000_000_000) {

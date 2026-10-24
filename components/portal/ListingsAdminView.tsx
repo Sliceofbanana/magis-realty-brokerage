@@ -94,7 +94,7 @@ export function ListingsAdminView({
   const currentUserId = session?.user?.id;
   const { hasPermission } = useRole();
   // Adding listings is management-only: Administrators, or whoever was granted "Add Listings".
-  const canAddListings = isAdmin || hasPermission("manage-own-listings");
+  const canAddListings = hasPermission("manage-own-listings");
 
   const filtered = useMemo(() => {
     let result = properties;

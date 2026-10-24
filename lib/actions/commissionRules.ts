@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/authz";
+import { requirePermission } from "@/lib/authz";
 
 export type CommissionRules = {
   brokerageSplitPercent: number;
@@ -48,11 +48,11 @@ export async function getCommissionRules(): Promise<CommissionRules> {
 
 export type CommissionRulesUpdateResult = { error?: string; success?: boolean };
 
-/** Admin-only: upserts the singleton commission rules row. */
+/** Requires Configure Commission Rules: upserts the singleton commission rules row. */
 export async function updateCommissionRulesAction(
   values: CommissionRules
 ): Promise<CommissionRulesUpdateResult> {
-  await requireAdmin();
+  await requirePermission("CONFIGURE_COMMISSIONS");
 
   const data = {
     brokerageSplitPercent: values.brokerageSplitPercent,

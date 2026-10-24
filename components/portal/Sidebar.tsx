@@ -18,7 +18,10 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
-  const { role } = useRole();
+  const { role, hasPermission } = useRole();
+  const visibleAdminItems = portalAdminNavItems.filter((item) =>
+    item.permission ? hasPermission(item.permission) : role === "Administrator"
+  );
   const { data: session } = useSession();
   const isSystemAdmin = session?.user?.isSystemAdmin === true;
 
@@ -65,12 +68,12 @@ export function Sidebar({
           <NavLink key={item.href} item={item} />
         ))}
 
-        {role === "Administrator" && (
+        {visibleAdminItems.length > 0 && (
           <>
             <p className="mb-1 mt-5 px-3 text-[11px] font-semibold uppercase tracking-wide text-white/40">
               Administration
             </p>
-            {portalAdminNavItems.map((item) => (
+            {visibleAdminItems.map((item) => (
               <NavLink key={item.href} item={item} />
             ))}
           </>
