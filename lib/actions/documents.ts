@@ -4,11 +4,12 @@ import { revalidatePath } from "next/cache";
 import { DocumentCategory, DocumentType } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { uploadFile, deleteFile } from "@/lib/storage";
+import { uploadFile, deleteFile, InvalidFileError } from "@/lib/storage";
 
 export type DocumentActionResult = { error?: string; success?: boolean };
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB — mirrors next.config.ts's serverActions.bodySizeLimit
+const DOCUMENT_KINDS = ["pdf", "docx", "xlsx", "jpg", "png"] as const;
 const EXT_TO_TYPE: Record<string, DocumentType> = {
   pdf: "PDF",
   docx: "DOCX",
@@ -43,14 +44,23 @@ export async function createDocumentAction(
     return { error: "Select a property for a Property Document." };
   }
   if (propertyIdRaw) {
-    const property = await prisma.property.findUnique({ where: { id: propertyIdRaw }, select: { id: true } });
+    const property = await prisma.property.findUnique({
+      where: { id: propertyIdRaw },
+      select: { id: true, agentId: true },
+    });
     if (!property) return { error: "Selected property not found." };
+    // A document attached to a property shows up for that listing's agent, so
+    // only the agent (or an Administrator) may attach one.
+    if (session.user.role !== "ADMINISTRATOR" && property.agentId !== session.user.id) {
+      return { error: "You can only attach documents to your own listings." };
+    }
   }
 
   let uploaded;
   try {
-    uploaded = await uploadFile(file, category.toLowerCase());
+    uploaded = await uploadFile(file, category.toLowerCase(), DOCUMENT_KINDS);
   } catch (err) {
+    if (err instanceof InvalidFileError) return { error: err.message };
     console.error("Cloudinary upload failed:", err);
     return { error: "Upload failed. Please check your connection and try again." };
   }

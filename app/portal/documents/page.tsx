@@ -25,7 +25,8 @@ export default async function DocumentsAdminPage() {
       orderBy: { uploadedAt: "desc" },
     }),
     prisma.property.findMany({
-      where: { archived: false },
+      // Documents may only be attached to listings you own (Administrators: any).
+      where: { archived: false, ...(isAdmin ? {} : { agentId: session.user.id }) },
       select: { id: true, title: true },
       orderBy: { title: "asc" },
     }),

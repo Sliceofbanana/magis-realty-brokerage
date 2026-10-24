@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
-import { uploadFile } from "@/lib/storage";
+import { uploadFile, InvalidFileError } from "@/lib/storage";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { validatePassword } from "@/lib/passwordPolicy";
 
@@ -201,8 +201,9 @@ export async function updateProfilePhotoAction(
 
   let uploaded;
   try {
-    uploaded = await uploadFile(file, "avatars");
+    uploaded = await uploadFile(file, "avatars", ["jpg", "png"]);
   } catch (err) {
+    if (err instanceof InvalidFileError) return { error: err.message };
     console.error("Cloudinary upload failed:", err);
     return { error: "Upload failed. Please check your connection and try again." };
   }

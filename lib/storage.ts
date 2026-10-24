@@ -1,4 +1,5 @@
 import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
+import { IMAGE_KINDS, MIME_BY_KIND, detectFileKind, kindFromExtension, type FileKind } from "@/lib/fileSignature";
 
 let configured = false;
 
@@ -19,8 +20,6 @@ function ensureConfigured() {
   configured = true;
 }
 
-const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
-
 export type UploadedFile = {
   url: string;
   publicId: string;
@@ -29,13 +28,38 @@ export type UploadedFile = {
   resourceType: "image" | "raw";
 };
 
-/** Uploads a browser `File` (from a Server Action's FormData) to Cloudinary under `magis-realty/<folder>`. */
-export async function uploadFile(file: File, folder: string): Promise<UploadedFile> {
-  ensureConfigured();
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  const resourceType: "image" | "raw" = IMAGE_EXTENSIONS.has(ext) ? "image" : "raw";
+/** The upload isn't a file we accept; `message` is safe to show the uploader. */
+export class InvalidFileError extends Error {}
+
+/**
+ * Checks a browser `File` really is one of `allowed`: its extension must name
+ * an allowed kind AND its bytes must be that same kind. The Content-Type the
+ * browser sent is ignored — the uploader controls it. Returns the kind and
+ * contents so the caller doesn't read the file twice.
+ */
+export async function inspectUpload(file: File, allowed: readonly FileKind[]): Promise<{ kind: FileKind; buffer: Buffer }> {
+  const claimed = kindFromExtension(file.name.split(".").pop() ?? "");
+  if (!claimed || !allowed.includes(claimed)) {
+    throw new InvalidFileError("Unsupported file type.");
+  }
   const buffer = Buffer.from(await file.arrayBuffer());
-  const dataUri = `data:${file.type || "application/octet-stream"};base64,${buffer.toString("base64")}`;
+  if (detectFileKind(buffer) !== claimed) {
+    throw new InvalidFileError("That file doesn't look like a real " + claimed.toUpperCase() + " — it may be damaged or renamed.");
+  }
+  return { kind: claimed, buffer };
+}
+
+/**
+ * Validates (see inspectUpload) and uploads a browser `File` to Cloudinary under
+ * `magis-realty/<folder>`. The file is sent with the MIME type its contents
+ * prove, never the one the browser claimed. Throws InvalidFileError for a file
+ * that isn't an allowed type.
+ */
+export async function uploadFile(file: File, folder: string, allowed: readonly FileKind[]): Promise<UploadedFile> {
+  const { kind, buffer } = await inspectUpload(file, allowed);
+  ensureConfigured();
+  const resourceType: "image" | "raw" = IMAGE_KINDS.includes(kind) ? "image" : "raw";
+  const dataUri = `data:${MIME_BY_KIND[kind]};base64,${buffer.toString("base64")}`;
 
   const result: UploadApiResponse = await cloudinary.uploader.upload(dataUri, {
     folder: `magis-realty/${folder}`,

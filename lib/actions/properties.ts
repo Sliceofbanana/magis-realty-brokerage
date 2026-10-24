@@ -5,7 +5,7 @@ import { PropertyStatus, PropertyType, CebuRegion } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
-import { uploadFile } from "@/lib/storage";
+import { uploadFile, InvalidFileError } from "@/lib/storage";
 import { userHasPermission } from "@/lib/permissions-server";
 import { commissionRecordInclude, toCommissionRecord } from "@/lib/adapters/commission";
 import type { CommissionRecord } from "@/lib/types";
@@ -13,6 +13,8 @@ import type { CommissionRecord } from "@/lib/types";
 export type CreatePropertyResult = { error?: string; success?: boolean };
 
 const ALLOWED_ROLES = ["ADMINISTRATOR", "BROKER", "AGENT"];
+const COVER_PHOTO_KINDS = ["jpg", "png", "webp"] as const;
+const MAX_COVER_PHOTO_BYTES = 10 * 1024 * 1024;
 
 /**
  * Creates a new property listing. Reserved for management: Administrators, plus
@@ -74,10 +76,12 @@ export async function createPropertyAction(
 
   let imageUrl: string | null = null;
   if (image instanceof File && image.size > 0) {
+    if (image.size > MAX_COVER_PHOTO_BYTES) return { error: "Cover photo is larger than 10MB." };
     try {
-      const uploaded = await uploadFile(image, "properties");
+      const uploaded = await uploadFile(image, "properties", COVER_PHOTO_KINDS);
       imageUrl = uploaded.url;
     } catch (err) {
+      if (err instanceof InvalidFileError) return { error: err.message };
       console.error("Cloudinary upload failed:", err);
       return { error: "Cover photo upload failed. Please check your connection and try again." };
     }
@@ -183,10 +187,12 @@ export async function updatePropertyAction(
 
   let imageUrl: string | null = null;
   if (image instanceof File && image.size > 0) {
+    if (image.size > MAX_COVER_PHOTO_BYTES) return { error: "Cover photo is larger than 10MB." };
     try {
-      const uploaded = await uploadFile(image, "properties");
+      const uploaded = await uploadFile(image, "properties", COVER_PHOTO_KINDS);
       imageUrl = uploaded.url;
     } catch (err) {
+      if (err instanceof InvalidFileError) return { error: err.message };
       console.error("Cloudinary upload failed:", err);
       return { error: "Cover photo upload failed. Please check your connection and try again." };
     }
