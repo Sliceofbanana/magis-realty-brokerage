@@ -12,6 +12,8 @@ import type { AttendanceConfig } from "@/lib/types";
 
 /** Returns the singleton AttendanceConfig (+ reward tiers) for the Settings > Attendance Rules tab. */
 export async function getAttendanceConfig(): Promise<AttendanceConfig> {
+  if (!(await auth())?.user) throw new Error("Not authorized.");
+
   const row = await prisma.attendanceConfig.findUnique({
     where: { id: "singleton" },
     include: attendanceConfigWithTiers,

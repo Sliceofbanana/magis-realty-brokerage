@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { LeadPriority, LeadStatus } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { createNotification } from "@/lib/actions/notifications";
+import { createNotification } from "@/lib/notify";
 import { requireAdmin } from "@/lib/authz";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { checkBot } from "@/lib/botGuard";

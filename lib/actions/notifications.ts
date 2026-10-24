@@ -5,28 +5,6 @@ import { NotificationType } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-export type CreateNotificationInput = {
-  type: NotificationType;
-  title: string;
-  body: string;
-  link?: string;
-  /** Omit to broadcast to every Administrator. */
-  recipientId?: string;
-};
-
-/** Internal helper — called from other Server Actions (leads, careers, registration) to raise a notification. */
-export async function createNotification(input: CreateNotificationInput): Promise<void> {
-  await prisma.notification.create({
-    data: {
-      type: input.type,
-      title: input.title,
-      body: input.body,
-      link: input.link,
-      recipientId: input.recipientId,
-    },
-  });
-}
-
 export type NotificationRow = {
   id: string;
   type: NotificationType;

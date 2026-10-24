@@ -1,6 +1,7 @@
 "use server";
 
 import { PortalRole as PrismaPortalRole } from "@prisma/client";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { TeamMember } from "@/lib/types";
 
@@ -17,6 +18,10 @@ const roleToPortalRole: Record<PrismaPortalRole, TeamMember["role"]> = {
  * Settings > General, not by a hardcoded fixture.
  */
 export async function getBirthdayTeamAction(): Promise<TeamMember[]> {
+  // Staff names, photos and birth dates — signed-in team members only.
+  const session = await auth();
+  if (!session?.user) return [];
+
   const rows = await prisma.user.findMany({
     where: { status: "ACTIVE", birthDate: { not: null } },
     select: { id: true, name: true, position: true, photo: true, birthDate: true, role: true },

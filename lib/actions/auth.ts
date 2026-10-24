@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { signIn, signOut } from "@/auth";
-import { createNotification } from "@/lib/actions/notifications";
+import { createNotification } from "@/lib/notify";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { checkBot } from "@/lib/botGuard";
 import { botFromFormData, tooLong } from "@/lib/botSignals";

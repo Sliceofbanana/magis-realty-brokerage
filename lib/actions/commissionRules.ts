@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authz";
 
@@ -28,6 +29,8 @@ const fallbackCommissionRules: CommissionRules = {
 
 /** Returns the singleton commission rules row (or sensible defaults if never saved). */
 export async function getCommissionRules(): Promise<CommissionRules> {
+  if (!(await auth())?.user) throw new Error("Not authorized.");
+
   const row = await prisma.commissionRules.findUnique({ where: { id: "singleton" } });
   if (!row) return fallbackCommissionRules;
 
