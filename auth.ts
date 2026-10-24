@@ -3,6 +3,24 @@ import Credentials from "next-auth/providers/credentials";
 import type { PortalRole, UserStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
+import { applyAccountState, type AccountState } from "@/lib/sessionRefresh";
+
+/** How long one server instance may reuse an account lookup — bounds how stale a revoked session can be. */
+const ACCOUNT_CACHE_MS = 15_000;
+const accountCache = new Map<string, { at: number; state: AccountState | null }>();
+
+async function loadAccountState(userId: string): Promise<AccountState | null> {
+  const hit = accountCache.get(userId);
+  if (hit && Date.now() - hit.at < ACCOUNT_CACHE_MS) return hit.state;
+
+  const state = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, status: true, photo: true, isSystemAdmin: true },
+  });
+  if (accountCache.size > 500) accountCache.clear();
+  accountCache.set(userId, { at: Date.now(), state });
+  return state;
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -47,21 +65,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id as string;
         token.role = user.role;
         token.status = user.status;
         token.photo = user.photo;
         token.isSystemAdmin = user.isSystemAdmin;
+        return token;
       }
-      // Lets the client force a token refresh (e.g. right after uploading a
-      // new profile photo) without requiring a full re-login — the JWT
-      // otherwise only ever picks up `user` on the initial sign-in.
-      if (trigger === "update" && session?.photo !== undefined) {
-        token.photo = session.photo;
+      // The client can force a refresh (e.g. right after uploading a new
+      // profile photo) — drop the cached lookup so it reads the new value.
+      if (trigger === "update") accountCache.delete(token.id);
+      // Every later request re-reads the account, so deactivation and role
+      // changes apply within ACCOUNT_CACHE_MS instead of at token expiry.
+      // Returning null ends the session.
+      try {
+        return applyAccountState(token, await loadAccountState(token.id));
+      } catch {
+        return null; // fail closed if the account can't be verified
       }
-      return token;
     },
     session({ session, token }) {
       session.user.id = token.id as string;

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { PermissionKey } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/actions/users";
+import { requireAdmin } from "@/lib/authz";
 import { permissionDefs } from "@/lib/data/permissions";
 import type { PermissionKey as KebabPermissionKey } from "@/lib/types";
 

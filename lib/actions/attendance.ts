@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { AttendanceCheckInMode, AttendancePeriod, AttendanceStatus, AttendanceType } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/actions/users";
+import { requireAdmin } from "@/lib/authz";
 import { attendanceConfigWithTiers, fallbackAttendanceConfig, toAttendanceConfig } from "@/lib/adapters/attendance";
 import { computePeriodBounds } from "@/lib/attendance";
 import type { AttendanceConfig } from "@/lib/types";

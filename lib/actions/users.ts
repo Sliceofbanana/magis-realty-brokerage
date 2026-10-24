@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
+import { requireAdmin } from "@/lib/authz";
 import { formatAgentCode } from "@/lib/format";
 import { createToken } from "@/lib/tokens";
 import { emailConfigured, inviteTemplate, sendEmail } from "@/lib/email";
@@ -54,15 +54,6 @@ function missingForListing(u: { photo: string | null; agentProfile: { bio: strin
   if (!u.photo) missing.push("profile photo");
   if (!u.agentProfile || u.agentProfile.bio.length === 0) missing.push("bio");
   return missing;
-}
-
-/** Requires manage-users; throws if the caller isn't an Administrator. */
-export async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user || session.user.role !== "ADMINISTRATOR") {
-    throw new Error("Not authorized.");
-  }
-  return session;
 }
 
 export async function listPortalUsers(): Promise<AdminUserRow[]> {

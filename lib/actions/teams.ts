@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/actions/users";
+import { requireAdmin } from "@/lib/authz";
 import { uniqueSlug } from "@/lib/slug";
 import { teamToneFor } from "@/lib/teamTones";
 
