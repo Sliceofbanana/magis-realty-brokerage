@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { buildSecurityHeaders } from "./lib/securityHeaders";
 
 const nextConfig: NextConfig = {
   images: {
@@ -16,6 +17,9 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+  },
+  async headers() {
+    return [{ source: "/:path*", headers: buildSecurityHeaders(process.env.NODE_ENV === "production") }];
   },
   experimental: {
     serverActions: {
