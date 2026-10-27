@@ -100,3 +100,33 @@ export async function updateJobApplicationStatusAction(
   revalidatePath("/portal/careers");
   return { success: true };
 }
+
+export type DeleteJobApplicationsResult = { error?: string; deleted?: number };
+
+const MAX_BULK_DELETE = 100;
+
+/** Admin-only: permanently deletes the selected applications (junk, spam or bot submissions). */
+export async function deleteJobApplicationsAction(ids: string[]): Promise<DeleteJobApplicationsResult> {
+  const session = await requireAdmin();
+
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return { error: "Select at least one application." };
+  if (unique.length > MAX_BULK_DELETE) return { error: `Select at most ${MAX_BULK_DELETE} applications at a time.` };
+
+  const { count } = await prisma.jobApplication.deleteMany({ where: { id: { in: unique } } });
+
+  if (count > 0) {
+    await prisma.activityLogEntry.create({
+      data: {
+        userId: session.user.id,
+        userLabel: session.user.name ?? session.user.email ?? "Unknown admin",
+        action: `Deleted ${count} job application${count === 1 ? "" : "s"}`,
+        module: "Careers",
+      },
+    });
+  }
+
+  revalidatePath("/portal");
+  revalidatePath("/portal/careers");
+  return { deleted: count };
+}
