@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Globe, LayoutGrid, ShieldCheck, UserPlus, Inbox, TriangleAlert } from "lucide-react";
-import { PageHeader } from "@/components/portal/PageHeader";
+import { Card } from "@/components/portal/system/ui";
 import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -25,21 +25,6 @@ function StatusPill({ on, onLabel, offLabel, danger = false }: { on: boolean; on
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {active ? onLabel : offLabel}
     </span>
-  );
-}
-
-function Card({ icon, title, description, children }: { icon: React.ReactNode; title: string; description?: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-navy-700">{icon}</span>
-        <div className="min-w-0">
-          <h2 className="font-serif text-lg font-bold text-navy-900">{title}</h2>
-          {description && <p className="mt-0.5 text-sm text-gray-500">{description}</p>}
-        </div>
-      </div>
-      <div className="mt-5">{children}</div>
-    </section>
   );
 }
 
@@ -135,11 +120,6 @@ export function SystemSettingsView({ overview }: { overview: SystemOverview }) {
 
   return (
     <div>
-      <PageHeader
-        title="System"
-        description="Platform controls for System Admins: maintenance mode, sign-ups, public forms and who else has this access."
-      />
-
       {/* Live status */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[

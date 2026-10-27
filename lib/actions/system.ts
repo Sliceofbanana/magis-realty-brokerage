@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireSystemAdmin } from "@/lib/authz";
 import { getSystemSettings, invalidateSystemSettings } from "@/lib/system-settings";
 import {
   MESSAGE_MAX_LENGTH,
@@ -19,18 +19,6 @@ export type SystemOverview = {
   administrators: SystemAdminRow[];
   currentUserId: string;
 };
-
-/** Checks the database (not the sign-in token) so a freshly tagged or untagged System Admin is honoured immediately. */
-async function requireSystemAdmin() {
-  const session = await auth();
-  if (!session?.user) throw new Error("Not authorized.");
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true, name: true, email: true, isSystemAdmin: true, status: true },
-  });
-  if (!user || user.status !== "ACTIVE" || !user.isSystemAdmin) throw new Error("Not authorized.");
-  return user;
-}
 
 export async function getSystemOverviewAction(): Promise<SystemOverview> {
   const me = await requireSystemAdmin();

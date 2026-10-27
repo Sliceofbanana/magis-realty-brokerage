@@ -47,6 +47,18 @@ const BUCKETS = {
 
 export type RateLimitBucket = keyof typeof BUCKETS;
 
+/** The configured limits, for the System page's read-only security overview. */
+export const RATE_LIMIT_BUCKETS: Record<RateLimitBucket, { limit: number; minutes: number }> = BUCKETS;
+
+/** "redis" when Upstash is configured, else per-instance "memory" (weak on serverless). */
+export const rateLimitBackend: "redis" | "memory" = redis ? "redis" : "memory";
+
+/** Pings Upstash; rejects if it's unreachable. Only meaningful when rateLimitBackend is "redis". */
+export async function pingRateLimitBackend(): Promise<void> {
+  if (!redis) throw new Error("Upstash is not configured.");
+  await redis.ping();
+}
+
 type Verdict = { success: boolean; reset: number };
 type Limiter = { limit: (key: string) => Promise<Verdict> | Verdict };
 

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPasswordUniform } from "@/lib/password";
 import { signIn, signOut } from "@/auth";
 import { createNotification } from "@/lib/notify";
+import { logActivity, logFailedSignIn } from "@/lib/activityLog";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { checkBot } from "@/lib/botGuard";
 import { botFromFormData, tooLong } from "@/lib/botSignals";
@@ -40,8 +41,13 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
   // Prove the password first. Until then every failure looks identical — and
   // takes the same time — so this form can't be used to find out which emails
   // have accounts, or what state they're in.
+  const ip = await getClientIp();
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!(await verifyPasswordUniform(password, user?.passwordHash)) || !user) {
+    // Recorded after the response so a real account and an unknown email take
+    // the same time and look the same; only existing accounts are logged.
+    if (user) after(() => logFailedSignIn(user, ip));
     return { error: "Invalid email or password." };
   }
 
@@ -68,7 +74,6 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
   // Scheduled after the response is sent — doesn't add latency to the
   // sign-in redirect, and (unlike a plain un-awaited promise) is guaranteed
   // to actually finish running on platforms like Vercel.
-  const ip = await getClientIp();
   const when = new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Manila" });
   after(() =>
     sendEmail({
@@ -77,6 +82,7 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
       html: loginAlertTemplate(user.name, `${when} (PHT)`, ip),
     })
   );
+  after(() => logActivity({ userId: user.id, userLabel: user.name || user.email, action: "Signed in", module: "Security", ip }));
 
   redirect("/portal");
 }

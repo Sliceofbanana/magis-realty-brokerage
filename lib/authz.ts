@@ -35,6 +35,23 @@ export async function requirePermission(permission: PermissionKey) {
 }
 
 /**
+ * Requires an ACTIVE System Admin — the platform owner's tag, held by an
+ * Administrator and granted on /portal/system. Checked against the database,
+ * not the sign-in token, so a freshly tagged or untagged System Admin is
+ * honoured immediately. Throws "Not authorized." otherwise.
+ */
+export async function requireSystemAdmin() {
+  const session = await auth();
+  if (!session?.user) throw new Error("Not authorized.");
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, name: true, email: true, isSystemAdmin: true, status: true },
+  });
+  if (!user || user.status !== "ACTIVE" || !user.isSystemAdmin) throw new Error("Not authorized.");
+  return user;
+}
+
+/**
  * Requires an ACTIVE Administrator. For admin-only operations that have no
  * permission key (leads, careers, teams, meetings); everything with a key
  * goes through requirePermission instead.

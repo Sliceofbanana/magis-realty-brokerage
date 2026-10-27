@@ -5,6 +5,7 @@ import { PermissionKey } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/authz";
+import { logActivity } from "@/lib/activityLog";
 import { permissionDefs } from "@/lib/data/permissions";
 import { isAdminLocked, resolvePermission, toEnumKey } from "@/lib/permissionResolution";
 import type { PermissionKey as KebabPermissionKey } from "@/lib/types";
@@ -64,13 +65,13 @@ export async function setUserPermissionAction(
   permission: PermissionKey,
   granted: boolean
 ): Promise<SetPermissionResult> {
-  await requirePermission("MANAGE_PERMISSIONS");
+  const session = await requirePermission("MANAGE_PERMISSIONS");
 
   if (!ALL_PERMISSIONS.includes(permission) || typeof granted !== "boolean") {
     return { error: "Unknown permission." };
   }
 
-  const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, name: true } });
   if (!target) return { error: "User not found." };
 
   if (isAdminLocked(permission)) {
@@ -86,6 +87,14 @@ export async function setUserPermissionAction(
     where: { userId_permission: { userId, permission } },
     update: { granted },
     create: { userId, permission, granted },
+  });
+
+  const permissionLabel = permission.replace(/_/g, " ").toLowerCase();
+  await logActivity({
+    userId: session.user.id,
+    userLabel: session.user.name ?? session.user.email ?? "Unknown admin",
+    action: `${granted ? "Granted" : "Revoked"} "${permissionLabel}" ${granted ? "to" : "from"} ${target.name}`,
+    module: "Permissions",
   });
 
   revalidatePath("/portal/permissions");

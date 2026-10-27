@@ -9,6 +9,10 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 // custom domain (RESEND_FROM_EMAIL) before this matters for real inboxes.
 const FROM = process.env.RESEND_FROM_EMAIL || "Magis Realty & Brokerage <onboarding@resend.dev>";
 
+/** The address mail is sent from, and whether it's Resend's shared sandbox sender (no custom domain yet). */
+export const emailSender = FROM;
+export const emailUsingSandboxSender = !process.env.RESEND_FROM_EMAIL;
+
 /** False when RESEND_API_KEY is missing: sendEmail then skips silently, so callers that need the recipient to get something must hand over the link another way. */
 export const emailConfigured = resend !== null;
 

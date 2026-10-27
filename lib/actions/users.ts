@@ -42,7 +42,9 @@ const ACTIVITY_COUNT_SELECT = {
   birthdayGreetingsReceived: true,
   birthdayGreetingsSent: true,
   birthdayReactions: true,
-  activityLogEntries: true,
+  // Sign-ins and other Security entries are history about the account, not work it owns:
+  // they must not stop an archived account from being deleted.
+  activityLogEntries: { where: { module: { not: "Security" } } },
 } as const;
 
 function sumCounts(counts: Record<string, number>) {

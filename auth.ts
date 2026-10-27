@@ -8,7 +8,7 @@ import { needsEmailVerification } from "@/lib/emailVerification";
 import { applyAccountState, type AccountState } from "@/lib/sessionRefresh";
 
 /** How long one server instance may reuse an account lookup — bounds how stale a revoked session can be. */
-const ACCOUNT_CACHE_MS = 15_000;
+export const ACCOUNT_CACHE_MS = 15_000;
 const accountCache = new Map<string, { at: number; state: AccountState | null }>();
 
 async function loadAccountState(userId: string): Promise<AccountState | null> {

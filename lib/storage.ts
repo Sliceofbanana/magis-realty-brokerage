@@ -82,3 +82,35 @@ export async function deleteFile(publicId: string, resourceType: "image" | "raw"
   ensureConfigured();
   await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
 }
+
+/** True when all three Cloudinary credentials are set (says nothing about whether they work). */
+export function storageConfigured(): boolean {
+  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+  return Boolean(CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET);
+}
+
+/** Round-trips to Cloudinary with the configured credentials; rejects if they're wrong or it's unreachable. */
+export async function pingStorage(): Promise<void> {
+  ensureConfigured();
+  await cloudinary.api.ping();
+}
+
+export type StorageUsage = {
+  plan: string | null;
+  /** Bytes stored. */
+  storageBytes: number | null;
+  /** Share of the plan's credits used so far this cycle, 0–100. */
+  creditsUsedPercent: number | null;
+};
+
+/** Reads the account's usage from Cloudinary's Admin API. Fields it doesn't return come back null. */
+export async function getStorageUsage(): Promise<StorageUsage> {
+  ensureConfigured();
+  const usage = await cloudinary.api.usage();
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  return {
+    plan: typeof usage?.plan === "string" ? usage.plan : null,
+    storageBytes: num(usage?.storage?.usage),
+    creditsUsedPercent: num(usage?.credits?.used_percent),
+  };
+}
