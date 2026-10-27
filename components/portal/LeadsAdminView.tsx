@@ -6,6 +6,7 @@ import { Lead } from "@/lib/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
 import { useRowSelection } from "@/lib/useRowSelection";
 import { StatCard } from "@/components/ui/StatCard";
@@ -68,11 +69,17 @@ export function LeadsAdminView({
   const selection = useRowSelection(selectableIds);
   const [bulkPending, startBulk] = useTransition();
   const [bulkError, setBulkError] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
-  function handleBulkDelete() {
+  async function handleBulkDelete() {
     const ids = selection.selectedIds;
     if (ids.length === 0) return;
-    if (!confirm(`Delete ${ids.length} selected lead${ids.length === 1 ? "" : "s"}? This can't be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete ${ids.length} selected lead${ids.length === 1 ? "" : "s"}?`,
+      description: "This can't be undone.",
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
     setBulkError(null);
     startBulk(async () => {
       const result = await deleteLeadsAction(ids);
@@ -295,6 +302,7 @@ export function LeadsAdminView({
           </div>
         )}
       </div>
+      {confirmDialog}
     </div>
   );
 }

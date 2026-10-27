@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Trash2, UserCheck, X } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
 import { useRowSelection } from "@/lib/useRowSelection";
 import {
@@ -38,6 +39,7 @@ export function ArchivedAccountsModal({
   const selection = useRowSelection(ids);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -74,10 +76,15 @@ export function ArchivedAccountsModal({
     });
   }
 
-  function remove(targets: string[]) {
+  async function remove(targets: string[]) {
     const n = targets.length;
     if (n === 0) return;
-    if (!confirm(`Permanently delete ${n} account${n === 1 ? "" : "s"}? This can't be undone.`)) return;
+    const ok = await confirm({
+      title: `Permanently delete ${n} account${n === 1 ? "" : "s"}?`,
+      description: "This can't be undone.",
+      confirmLabel: "Delete permanently",
+    });
+    if (!ok) return;
     run(async () => {
       const r = await deleteArchivedUsersAction(targets);
       return { error: r.error, note: r.skipped ? `${r.skipped} couldn't be deleted and were kept.` : undefined };
@@ -227,6 +234,7 @@ export function ArchivedAccountsModal({
           )}
         </div>
       </div>
+      {confirmDialog}
     </div>
   );
 }

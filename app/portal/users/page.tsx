@@ -10,6 +10,7 @@ import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionB
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { Toggle } from "@/components/ui/Toggle";
 import { useRowSelection } from "@/lib/useRowSelection";
 import {
@@ -87,6 +88,7 @@ export default function UsersAdminPage() {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [bulkPending, startBulk] = useTransition();
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   const liveUsers = useMemo(
     () => (users ?? []).filter((u) => u.status === "PENDING" || u.status === "ACTIVE"),
@@ -102,10 +104,14 @@ export default function UsersAdminPage() {
   const selectedPendingIds = liveUsers.filter((u) => u.status === "PENDING" && selection.isSelected(u.id) && u.id !== selfId).map((u) => u.id);
   const selectedActiveIds = liveUsers.filter((u) => u.status === "ACTIVE" && selection.isSelected(u.id) && u.id !== selfId).map((u) => u.id);
 
-  function bulkChange(ids: string[], status: "REJECTED" | "DEACTIVATED") {
+  async function bulkChange(ids: string[], status: "REJECTED" | "DEACTIVATED") {
     if (ids.length === 0) return;
     const verb = status === "REJECTED" ? "Reject" : "Deactivate and archive";
-    if (!confirm(`${verb} ${ids.length} account${ids.length === 1 ? "" : "s"}?`)) return;
+    const ok = await confirm({
+      title: `${verb} ${ids.length} account${ids.length === 1 ? "" : "s"}?`,
+      confirmLabel: verb,
+    });
+    if (!ok) return;
     setBulkMessage(null);
     startBulk(async () => {
       const result = await bulkSetUserStatusAction(ids, status);
@@ -312,6 +318,7 @@ export default function UsersAdminPage() {
       {archiveOpen && (
         <ArchivedAccountsModal users={archivedUsers} onClose={() => setArchiveOpen(false)} onChanged={load} />
       )}
+      {confirmDialog}
     </div>
   );
 }

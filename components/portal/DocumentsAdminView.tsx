@@ -18,7 +18,8 @@ import { PageHeader } from "@/components/portal/PageHeader";
 import { UploadDocumentForm } from "@/components/portal/UploadDocumentForm";
 import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { deleteDocumentFormAction, deleteDocumentsAction } from "@/lib/actions/documents";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { deleteDocumentAction, deleteDocumentsAction } from "@/lib/actions/documents";
 import { useRowSelection } from "@/lib/useRowSelection";
 
 type PropertyOption = { id: string; title: string };
@@ -72,6 +73,7 @@ export function DocumentsAdminView({
   const selection = useRowSelection(selectableIds);
   const [bulkPending, startBulk] = useTransition();
   const [bulkError, setBulkError] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   function selectFolder(key: DocumentFile["categoryKey"]) {
     setActiveFolder(key);
@@ -83,14 +85,30 @@ export function DocumentsAdminView({
     selection.clear();
   }
 
-  function handleDeleteSubmit(e: React.FormEvent) {
-    if (!confirm("Delete this document? This can't be undone.")) e.preventDefault();
+  async function handleDelete(doc: DocumentFile) {
+    const ok = await confirm({
+      title: "Delete this document?",
+      description: `"${doc.name}" will be removed permanently. This can't be undone.`,
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
+    setBulkError(null);
+    startBulk(async () => {
+      const result = await deleteDocumentAction(doc.id);
+      if (result.error) setBulkError(result.error);
+      else selection.clear();
+    });
   }
 
-  function handleBulkDelete() {
+  async function handleBulkDelete() {
     const count = selection.selectedIds.length;
     if (count === 0) return;
-    if (!confirm(`Delete ${count} selected document${count === 1 ? "" : "s"}? This can't be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete ${count} selected document${count === 1 ? "" : "s"}?`,
+      description: "This can't be undone.",
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
     setBulkError(null);
     startBulk(async () => {
       const result = await deleteDocumentsAction(selection.selectedIds);
@@ -233,11 +251,15 @@ export function DocumentsAdminView({
                             <Download size={16} />
                           </a>
                           {canDelete && (
-                            <form action={deleteDocumentFormAction.bind(null, doc.id)} onSubmit={handleDeleteSubmit}>
-                              <button type="submit" aria-label="Delete" className="hover:text-red-600">
-                                <Trash2 size={16} />
-                              </button>
-                            </form>
+                            <button
+                              type="button"
+                              aria-label="Delete"
+                              disabled={bulkPending}
+                              onClick={() => handleDelete(doc)}
+                              className="hover:text-red-600 disabled:opacity-50"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           )}
                         </div>
                       </td>
@@ -256,6 +278,7 @@ export function DocumentsAdminView({
           </div>
         </div>
       </div>
+      {confirmDialog}
     </div>
   );
 }

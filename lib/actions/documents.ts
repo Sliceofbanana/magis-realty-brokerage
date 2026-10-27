@@ -138,8 +138,3 @@ export async function deleteDocumentsAction(ids: string[]): Promise<BulkDeleteRe
   revalidatePath("/portal/documents");
   return { deleted: count, skipped: unique.length - count };
 }
-
-/** Form-action wrapper for deleteDocumentAction, for use with `.bind(null, id)` on a `<form action>`. */
-export async function deleteDocumentFormAction(id: string, _formData: FormData): Promise<void> {
-  await deleteDocumentAction(id);
-}

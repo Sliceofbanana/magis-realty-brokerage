@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/portal/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { BulkActionBar, BulkActionButton } from "@/components/portal/BulkActionBar";
 import { useRowSelection } from "@/lib/useRowSelection";
 import {
@@ -57,10 +58,17 @@ export function CareersAdminView({ applications }: { applications: JobApplicatio
   const selection = useRowSelection(selectableIds);
   const [bulkPending, startBulk] = useTransition();
   const [bulkError, setBulkError] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
-  function removeApplications(ids: string[]) {
+  async function removeApplications(ids: string[]) {
     if (ids.length === 0) return;
-    if (!confirm(`Delete ${ids.length} application${ids.length === 1 ? "" : "s"}? This can't be undone.`)) return;
+    const n = ids.length;
+    const ok = await confirm({
+      title: `Delete ${n} application${n === 1 ? "" : "s"}?`,
+      description: "This can't be undone.",
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
     setBulkError(null);
     startBulk(async () => {
       const result = await deleteJobApplicationsAction(ids);
@@ -211,6 +219,7 @@ export function CareersAdminView({ applications }: { applications: JobApplicatio
           </table>
         </div>
       </div>
+      {confirmDialog}
     </div>
   );
 }

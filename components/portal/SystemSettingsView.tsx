@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/portal/PageHeader";
 import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { saveSystemSettingsAction, setSystemAdminAction, type SystemOverview } from "@/lib/actions/system";
 import {
   MESSAGE_MAX_LENGTH,
@@ -79,6 +80,7 @@ export function SystemSettingsView({ overview }: { overview: SystemOverview }) {
   const [saved, setSaved] = useState<SystemSettingsValue>(overview.settings);
   const [s, setS] = useState<SystemSettingsValue>(overview.settings);
   const [saving, setSaving] = useState(false);
+  const { confirm, confirmDialog } = useConfirm();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [adminBusy, setAdminBusy] = useState<string | null>(null);
   const [adminError, setAdminError] = useState("");
@@ -95,7 +97,14 @@ export function SystemSettingsView({ overview }: { overview: SystemOverview }) {
     const turningOn: string[] = [];
     if (s.publicMaintenance && !saved.publicMaintenance) turningOn.push("the whole public website");
     if (s.portalMaintenance && !saved.portalMaintenance) turningOn.push("the entire portal");
-    if (turningOn.length && !window.confirm(`This will take ${turningOn.join(" and ")} offline for everyone except System Admins. Continue?`)) return;
+    if (turningOn.length) {
+      const ok = await confirm({
+        title: "Take it offline?",
+        description: `This will take ${turningOn.join(" and ")} offline for everyone except System Admins.`,
+        confirmLabel: "Take offline",
+      });
+      if (!ok) return;
+    }
 
     setSaving(true);
     setMessage(null);
@@ -245,6 +254,7 @@ export function SystemSettingsView({ overview }: { overview: SystemOverview }) {
           </div>
         </div>
       </div>
+      {confirmDialog}
     </div>
   );
 }
