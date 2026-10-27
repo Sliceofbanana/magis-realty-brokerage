@@ -19,7 +19,8 @@ test.describe("Login", () => {
 
   test("logging out returns to the login page", async ({ page }) => {
     await loginAs(page, ADMIN_EMAIL);
-    await page.locator('button[title="Log out"]').click();
+    await page.getByRole("button", { name: /account menu/i }).click();
+    await page.getByRole("menuitem", { name: "Log out" }).click();
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole("button", { name: "Enter Portal" })).toBeVisible();
   });

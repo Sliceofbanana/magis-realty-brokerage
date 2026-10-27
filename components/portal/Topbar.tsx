@@ -1,12 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent, type MouseEvent } from "react";
-import { Bell, Check, Menu, Search, LogOut, Cake, UserPlus, Briefcase, UserCheck } from "lucide-react";
-import { Avatar } from "@/components/ui/Avatar";
-import { logoutAction } from "@/lib/actions/auth";
+import { Bell, Check, Menu, Search, Cake, UserPlus, Briefcase, UserCheck } from "lucide-react";
 import { useBirthdays } from "./BirthdayContext";
+import { UserMenu } from "./UserMenu";
 import { searchPortalAction, type PortalSearchResult } from "@/lib/actions/search";
 import {
   listMyNotifications,
@@ -315,7 +313,6 @@ function GlobalSearch() {
 }
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
-  const { data: session } = useSession();
   return (
     <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-black/5 bg-white px-4 sm:px-6">
       <button
@@ -332,26 +329,7 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
       <div className="flex flex-1 items-center justify-end gap-4">
         <NotificationsMenu />
 
-        <div className="flex items-center gap-2">
-          <Avatar
-            src={session?.user?.photo ?? undefined}
-            name={session?.user?.name ?? undefined}
-            size={36}
-          />
-          <span className="hidden text-sm font-semibold text-navy-900 sm:block">
-            {session?.user?.name ?? "…"}
-          </span>
-        </div>
-
-        <form action={logoutAction}>
-          <button
-            type="submit"
-            className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-navy-900"
-            title="Log out"
-          >
-            <LogOut size={16} />
-          </button>
-        </form>
+        <UserMenu />
       </div>
     </header>
   );
