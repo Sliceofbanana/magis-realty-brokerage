@@ -35,7 +35,7 @@ export function CommissionProgress({ records }: { records: CommissionRecord[] })
         </div>
         <Link
           href="/portal/commissions"
-          className="text-xs font-semibold text-navy-900 hover:text-gold-600"
+          className="-my-3.5 inline-block py-3.5 text-xs font-semibold text-navy-900 hover:text-gold-600"
         >
           View Full Commission Report
         </Link>

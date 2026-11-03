@@ -105,7 +105,7 @@ export function CreateListingForm({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="collection" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Collection (optional)
@@ -149,7 +149,7 @@ export function CreateListingForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label htmlFor="status" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Status
@@ -197,7 +197,7 @@ export function CreateListingForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="location" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Location
@@ -223,7 +223,7 @@ export function CreateListingForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label htmlFor="price" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Price
@@ -265,7 +265,7 @@ export function CreateListingForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label htmlFor="beds" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Beds

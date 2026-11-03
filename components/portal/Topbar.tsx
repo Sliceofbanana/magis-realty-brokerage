@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent, type MouseEvent } from "react";
-import { Bell, Check, Menu, Search, Cake, UserPlus, Briefcase, UserCheck } from "lucide-react";
+import { Bell, Check, Menu, Search, X, Cake, UserPlus, Briefcase, UserCheck } from "lucide-react";
 import { useBirthdays } from "./BirthdayContext";
 import { UserMenu } from "./UserMenu";
 import { searchPortalAction, type PortalSearchResult } from "@/lib/actions/search";
@@ -75,7 +75,7 @@ function NotificationsMenu() {
         onClick={toggle}
         aria-label="Notifications"
         aria-expanded={open}
-        className="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-offwhite hover:text-navy-900"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:bg-offwhite hover:text-navy-900"
       >
         <Bell size={18} />
         {count > 0 && (
@@ -93,7 +93,8 @@ function NotificationsMenu() {
             className="fixed inset-0 z-30 cursor-default"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 z-40 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-black/5 bg-white shadow-lg">
+          {/* Phones: pinned under the header across the screen (anchored to the bell it ran off the left edge). */}
+          <div className="fixed inset-x-4 top-20 z-40 mt-2 overflow-hidden rounded-xl border border-black/5 bg-white shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:w-80">
             <div className="flex items-center justify-between border-b border-black/5 px-4 py-3">
               <p className="text-sm font-semibold text-navy-900">Notifications</p>
               {unreadCount > 0 && (
@@ -198,7 +199,7 @@ function NotificationsMenu() {
 
 const EMPTY_RESULTS: PortalSearchResult = { properties: [], leads: [] };
 
-function GlobalSearch() {
+function GlobalSearch({ autoFocus = false }: { autoFocus?: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PortalSearchResult>(EMPTY_RESULTS);
@@ -237,10 +238,14 @@ function GlobalSearch() {
   const showDropdown = open && query.trim().length >= 2;
 
   return (
-    <div className="relative hidden max-w-md flex-1 sm:block">
+    <div className="relative w-full max-w-md">
       <form onSubmit={handleSubmit}>
         <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
+          type="search"
+          enterKeyHint="search"
+          autoFocus={autoFocus}
+          aria-label="Search listings and leads"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -248,7 +253,7 @@ function GlobalSearch() {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Search listings, leads..."
-          className="w-full rounded-lg bg-offwhite py-2.5 pl-11 pr-4 text-sm text-navy-900 focus:outline-none"
+          className="w-full rounded-lg bg-offwhite py-3 pl-11 pr-4 text-sm text-navy-900 focus:outline-none sm:py-2.5"
         />
       </form>
 
@@ -313,24 +318,47 @@ function GlobalSearch() {
 }
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-black/5 bg-white px-4 sm:px-6">
-      <button
-        type="button"
-        onClick={onMenuClick}
-        aria-label="Open menu"
-        className="text-navy-900 lg:hidden"
-      >
-        <Menu size={22} />
-      </button>
+    <header className="sticky top-0 z-40 border-b border-black/5 bg-white">
+      <div className="flex h-20 items-center gap-2 px-4 sm:gap-4 sm:px-6">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-navy-900 hover:bg-offwhite lg:hidden"
+        >
+          <Menu size={22} />
+        </button>
 
-      <GlobalSearch />
+        <div className="hidden min-w-0 flex-1 sm:block">
+          <GlobalSearch />
+        </div>
 
-      <div className="flex flex-1 items-center justify-end gap-4">
-        <NotificationsMenu />
+        <div className="flex flex-1 items-center justify-end gap-1 sm:gap-4">
+          <button
+            type="button"
+            onClick={() => setSearchOpen((v) => !v)}
+            aria-label={searchOpen ? "Close search" : "Search"}
+            aria-expanded={searchOpen}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:bg-offwhite hover:text-navy-900 sm:hidden"
+          >
+            {searchOpen ? <X size={18} /> : <Search size={18} />}
+          </button>
 
-        <UserMenu />
+          <NotificationsMenu />
+
+          <UserMenu />
+        </div>
       </div>
+
+      {/* Phones: search lives in a row under the header rather than being dropped. */}
+      {searchOpen && (
+        <div className="border-t border-black/5 px-4 py-3 sm:hidden">
+          <GlobalSearch autoFocus />
+        </div>
+      )}
     </header>
   );
 }

@@ -28,7 +28,7 @@ export function Checkbox({
       aria-label={label}
       disabled={disabled}
       onClick={onChange}
-      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 ${
+      className={`relative flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors before:absolute before:-inset-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 ${
         filled ? "border-navy-900 bg-navy-900 text-white" : "border-gray-300 bg-white hover:border-navy-900"
       } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
     >

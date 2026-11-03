@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +26,21 @@ export function Sidebar({
   const { data: session } = useSession();
   const isSystemAdmin = session?.user?.isSystemAdmin === true;
 
+  // While the drawer is open: keep the page behind it from scrolling and let Escape close it.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen, onClose]);
+
   function NavLink({ item }: { item: NavItem }) {
     const active =
       item.href === "/portal" ? pathname === "/portal" : pathname.startsWith(item.href);
@@ -32,7 +48,7 @@ export function Sidebar({
       <Link
         href={item.href}
         onClick={onClose}
-        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+        className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors ${
           active ? "bg-gold-500 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
         }`}
       >
@@ -58,7 +74,7 @@ export function Sidebar({
           type="button"
           onClick={onClose}
           aria-label="Close menu"
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white lg:hidden"
+          className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-white/70 hover:text-white lg:hidden"
         >
           <X size={22} />
         </button>

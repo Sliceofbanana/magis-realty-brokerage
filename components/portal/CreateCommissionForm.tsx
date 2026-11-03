@@ -138,7 +138,7 @@ export function CreateCommissionForm({
                 <input type="hidden" name="propertyId" value={propertyId} />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label htmlFor="closedDate" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Closed Date

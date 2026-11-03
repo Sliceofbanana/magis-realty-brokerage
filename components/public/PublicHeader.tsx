@@ -69,7 +69,7 @@ export function PublicHeader() {
 
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center text-navy-900 lg:hidden"
+          className="-mr-2 flex h-11 w-11 items-center justify-center rounded-lg text-navy-900 hover:bg-navy-900/5 lg:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}

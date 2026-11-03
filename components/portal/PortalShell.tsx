@@ -23,7 +23,7 @@ export function PortalShell({
   return (
     <RoleProvider>
       <BirthdayProvider>
-        <div className="flex min-h-screen bg-offwhite">
+        <div className="flex min-h-dvh bg-offwhite">
           <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
           <div className="flex min-w-0 flex-1 flex-col">
             <Topbar onMenuClick={() => setMobileOpen(true)} />

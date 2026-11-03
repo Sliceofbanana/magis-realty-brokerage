@@ -23,7 +23,7 @@ export function Pagination({
         aria-label="Previous page"
         disabled={page <= 1}
         onClick={() => onChange(page - 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-navy-900 disabled:opacity-30"
+        className="flex h-11 w-11 items-center justify-center rounded-full sm:h-9 sm:w-9 border border-black/10 text-navy-900 disabled:opacity-30"
       >
         <ChevronLeft size={16} />
       </button>
@@ -33,7 +33,7 @@ export function Pagination({
           type="button"
           onClick={() => onChange(p)}
           aria-current={p === page}
-          className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium ${
+          className={`flex h-11 w-11 items-center justify-center rounded-full sm:h-9 sm:w-9 text-sm font-medium ${
             p === page
               ? "bg-navy-900 text-white"
               : "text-navy-900 hover:bg-navy-900/5"
@@ -47,7 +47,7 @@ export function Pagination({
         aria-label="Next page"
         disabled={page >= totalPages}
         onClick={() => onChange(page + 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-navy-900 disabled:opacity-30"
+        className="flex h-11 w-11 items-center justify-center rounded-full sm:h-9 sm:w-9 border border-black/10 text-navy-900 disabled:opacity-30"
       >
         <ChevronRight size={16} />
       </button>

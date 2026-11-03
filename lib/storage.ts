@@ -3,13 +3,20 @@ import { IMAGE_KINDS, MIME_BY_KIND, detectFileKind, kindFromExtension, type File
 
 let configured = false;
 
+/** The upload isn't a file we accept; `message` is safe to show the uploader. */
+export class InvalidFileError extends Error {}
+
+/** Cloudinary credentials are missing. A server problem, not a connection one, so say so rather than "check your connection". */
+class StorageNotConfiguredError extends InvalidFileError {}
+
 function ensureConfigured() {
   if (configured) return;
   const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    throw new Error(
+    console.error(
       "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET."
     );
+    throw new StorageNotConfiguredError("File uploads aren't set up on this server yet. Please contact an administrator.");
   }
   cloudinary.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
@@ -27,9 +34,6 @@ export type UploadedFile = {
   format: string;
   resourceType: "image" | "raw";
 };
-
-/** The upload isn't a file we accept; `message` is safe to show the uploader. */
-export class InvalidFileError extends Error {}
 
 /**
  * Checks a browser `File` really is one of `allowed`: its extension must name

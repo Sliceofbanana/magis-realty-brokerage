@@ -35,7 +35,7 @@ export function Toggle({
       aria-label={label}
       disabled={disabled}
       onClick={handleClick}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors before:absolute before:-inset-x-1 before:-inset-y-2.5 ${
         isOn ? "bg-gold-500" : "bg-gray-300"
       } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
     >

@@ -71,7 +71,7 @@ export function CreateBlogPostForm() {
                   className="w-full rounded-lg border border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="category" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Category

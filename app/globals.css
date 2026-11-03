@@ -64,8 +64,36 @@ h1, h2, h3, h4 {
   font-family: var(--font-serif), Georgia, serif;
 }
 
-* {
-  scroll-behavior: smooth;
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* Touch screens (phones, tablets): taps register immediately, with no double-tap-zoom delay. */
+a,
+button,
+label,
+select,
+summary,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* iOS Safari zooms the page when a field under 16px is focused, and often doesn't zoom back out.
+   Unlayered on purpose so it wins over the Tailwind text-sm on the fields. */
+@media (max-width: 1023px), (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 @keyframes birthday-confetti-fall {

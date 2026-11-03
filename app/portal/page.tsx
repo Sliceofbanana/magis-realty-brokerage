@@ -69,6 +69,7 @@ export default async function PortalDashboardPage() {
     myCommissionRecords,
     pendingApprovals,
     unassignedAgents,
+    upcomingMeetings,
   ] = await Promise.all([
     prisma.property.count({ where: { status: { not: "SOLD" }, archived: false } }),
     prisma.property.count({ where: { status: "SOLD", archived: false } }),
@@ -113,6 +114,8 @@ export default async function PortalDashboardPage() {
           select: { user: { select: { id: true, name: true } } },
         })
       : Promise.resolve([]),
+    // Meeting dates are stored as UTC midnight of the chosen day, so compare against today's UTC date.
+    prisma.meeting.count({ where: { date: { gte: new Date(new Date().toISOString().slice(0, 10)) } } }),
   ]);
 
   const pendingApprovalsCount = pendingApprovals.length;
@@ -203,7 +206,9 @@ export default async function PortalDashboardPage() {
         <StatCard icon={<Building2 size={20} />} label="Active Listings" value={activeListings} iconBg="bg-sky-100 text-navy-700" />
         <StatCard icon={<Tag size={20} />} label="Sold Properties" value={soldProperties} iconBg="bg-gold-100 text-gold-600" />
         <StatCard icon={<Users size={20} />} label="Total Leads" value={totalLeads} iconBg="bg-sky-100 text-navy-700" />
-        <StatCard icon={<CalendarDays size={20} />} label="Appointments" value={3} iconBg="bg-red-100 text-red-600" />
+        <Link href="/portal/attendance" className="block min-w-0 rounded-2xl transition-shadow hover:shadow-md">
+          <StatCard icon={<CalendarDays size={20} />} label="Upcoming Meetings" value={upcomingMeetings} iconBg="bg-red-100 text-red-600" />
+        </Link>
       </div>
 
       <AttendanceOverview sessions={attendanceSessions} config={attendanceConfig} />
@@ -213,7 +218,7 @@ export default async function PortalDashboardPage() {
       <div className="mt-6 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
           <h2 className="font-serif text-lg font-bold text-navy-900">Recent Inquiries</h2>
-          <Link href="/portal/leads" className="text-xs font-semibold text-navy-900 hover:text-gold-600">
+          <Link href="/portal/leads" className="-my-3.5 inline-block py-3.5 text-xs font-semibold text-navy-900 hover:text-gold-600">
             View All Leads
           </Link>
         </div>
@@ -325,7 +330,7 @@ export default async function PortalDashboardPage() {
             </p>
             <Link
               href="/portal/settings"
-              className="mt-2 inline-block text-sm font-semibold text-gold-600 hover:underline"
+              className="-mb-3 mt-2 inline-block py-3 text-sm font-semibold text-gold-600 hover:underline"
             >
               Complete Now
             </Link>

@@ -49,7 +49,7 @@ export function CreateLeadForm({ properties }: { properties: PropertyOption[] })
             </div>
 
             <form action={formAction} className="space-y-4 px-6 py-5">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Full Name
@@ -73,7 +73,7 @@ export function CreateLeadForm({ properties }: { properties: PropertyOption[] })
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Email
@@ -116,7 +116,7 @@ export function CreateLeadForm({ properties }: { properties: PropertyOption[] })
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="status" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-navy-900">
                     Status
