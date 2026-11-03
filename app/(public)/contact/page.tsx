@@ -124,8 +124,8 @@ export default function ContactPage() {
                     <p className="text-[11px] uppercase tracking-wide text-gray-500">
                       Email Adress
                     </p>
-                    <a href="mailto:magisrealty@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
-                      magisrealty@gmail.com
+                    <a href="mailto:magisrealtybr@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
+                      magisrealtybr@gmail.com
                     </a>
                   </div>
                 </div>
@@ -156,12 +156,12 @@ export default function ContactPage() {
                       Instagram
                     </p>
                     <a
-                      href="https://instagram.com/magis.realty"
+                      href="https://instagram.com/magisrealtybr"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold text-navy-900 hover:text-gold-600"
                     >
-                      @magis.realty
+                      @magisrealtybr
                     </a>
                   </div>
                 </div>

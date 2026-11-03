@@ -273,7 +273,7 @@ export default async function CareersPage({
             <div className="mt-6 flex flex-wrap gap-10 text-sm">
               <div>
                 <p className="font-semibold text-navy-900">Direct Contact</p>
-                <p className="mt-1 text-gray-500">talent@magisrealty.com</p>
+                <p className="mt-1 text-gray-500">magisrealtybr@gmail.com</p>
               </div>
               <div>
                 <p className="font-semibold text-navy-900">Office Hours</p>

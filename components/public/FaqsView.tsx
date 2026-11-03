@@ -197,8 +197,8 @@ export function FaqsView({
                 </span>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-gray-500">Email Us</p>
-                  <a href="mailto:magisrealty@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
-                    magisrealty@gmail.com
+                  <a href="mailto:magisrealtybr@gmail.com" className="font-semibold text-navy-900 hover:text-gold-600">
+                    magisrealtybr@gmail.com
                   </a>
                 </div>
               </div>

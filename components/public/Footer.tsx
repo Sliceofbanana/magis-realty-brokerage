@@ -6,7 +6,7 @@ import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants";
 
 const socialLinks: { platform: SocialPlatform; href: string; label: string }[] = [
   { platform: "facebook", href: "https://www.facebook.com/magisrealty", label: "Facebook" },
-  { platform: "instagram", href: "https://instagram.com/magis.realty", label: "Instagram" },
+  { platform: "instagram", href: "https://instagram.com/magisrealtybr", label: "Instagram" },
 ];
 
 const columns = [

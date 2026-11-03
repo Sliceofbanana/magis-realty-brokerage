@@ -141,10 +141,10 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="relative mt-5 flex flex-wrap gap-6 text-sm">
               <a
-                href="mailto:privacy@magisrealty.com"
+                href="mailto:magisrealtybr@gmail.com"
                 className="flex items-center gap-2 font-semibold hover:text-gold-400"
               >
-                <Mail size={16} className="text-gold-400" /> privacy@magisrealty.com
+                <Mail size={16} className="text-gold-400" /> magisrealtybr@gmail.com
               </a>
               <a
                 href={`tel:${COMPANY_PHONE_TEL}`}
