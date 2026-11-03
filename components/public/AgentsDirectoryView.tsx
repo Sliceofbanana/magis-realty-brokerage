@@ -121,9 +121,9 @@ export function AgentsDirectoryView({ agents }: { agents: Agent[] }) {
             Join our network of elite brokers.
           </h2>
           <p className="mt-3 text-sm text-gray-600">
-            We are always looking for driven, architectural-minded individuals
-            to join our prestigious collective of agents. Unlock access to
-            exclusive listings and high-net-worth clientele.
+            We are always looking for driven people who want to do more and be more.
+            Join our team of agents and enjoy flex-time work, trainings, and
+            local and international travel incentives.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button href="/careers">Apply to Join</Button>

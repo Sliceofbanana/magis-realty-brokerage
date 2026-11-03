@@ -34,7 +34,7 @@ const capabilities = [
   },
   {
     icon: HeartHandshake,
-    title: "Unlimited After-Sales Support",
+    title: "After-Sales Support",
     description:
       "Support doesn't end at closing — from title transfer questions to tenant handover, our brokers stay reachable long after the deal is done.",
   },

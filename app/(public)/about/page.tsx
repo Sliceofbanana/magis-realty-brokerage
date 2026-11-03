@@ -18,40 +18,40 @@ const pillars = [
     icon: Flag,
     title: "Our Mission",
     description:
-      "To provide world-class real estate brokerage services by combining deep local expertise with a global standard of professional integrity and personal attention.",
+      "To provide quality service to clients and great income opportunity to our agents. To be the pillar of the philosophy of Magis of doing more for Christ by doing more for others.",
   },
   {
     icon: Eye,
     title: "Our Vision",
     description:
-      "To be the most trusted and preferred property partner in the Philippines, known for cultivating long-term wealth and thriving communities through strategic investments.",
+      "To be a trusted and leading realty firm, transforming the way people find, own, and invest in properties through exceptional service, integrity, and innovation. Build a reputation that clients and partners can confidently recommend.",
   },
   {
     icon: Gem,
     title: "Our Values",
     description: null,
-    list: ["Integrity Above All", "Radical Client-Centricity", "Continuous Growth (Magis)"],
+    list: ["Integrity", "Excellence", "Service", "Teamwork", "Growth"],
   },
 ];
 
 const advantages = [
   {
     icon: ShieldCheck,
-    title: "Uncompromising Integrity",
+    title: "Integrity",
     description:
-      "We operate with radical transparency. No hidden fees, no opaque contracts — just honest, data-driven advice for your investment.",
+      "We tell the truth, keep our commitments, and protect your trust, with full disclosure and transparency.",
   },
   {
     icon: LineChart,
-    title: "Deep Market Expertise",
+    title: "Knowledgeable Agents",
     description:
-      "Our brokers are neighborhood specialists who understand the micro-trends that drive property appreciation in the local market.",
+      "We keep our agents and brokers updated on real estate projects and equipped with the knowledge to deliver quality service.",
   },
   {
     icon: Users,
-    title: "Client-Centricity",
+    title: "Service With Care",
     description:
-      "We don't just sell property; we curate experiences and build portfolios tailored to your specific life goals and risk appetite.",
+      "We understand each client's needs and create value, and we stay with you through after-sales services with professionalism and care.",
   },
 ];
 
@@ -99,25 +99,22 @@ export default function AboutPage() {
               Our Journey in Philippine Real Estate
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
-              Founded in the heart of Metro Manila, Magis Realty &amp; Brokerage
-              emerged from a vision to redefine the local property landscape.
-              What began as a boutique advisory has evolved into a premier
-              full-service brokerage, serving the discerning needs of investors
-              and families across the Philippines.
+              Founded in Cebu, Magis Realty &amp; Brokerage provides quality and
+              premium services for all real estate needs. Buying, selling and
+              rentals are some of the services we offer, with after-sales
+              services delivered with professionalism and care.
             </p>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
-              Our name, &ldquo;Magis,&rdquo; reflects our Ignatian heritage of
-              striving for the more&mdash;the greater good in all of our
-              professional dealings. In a rapidly evolving market, we have
-              remained steadfast in our commitment to transparency, technical
-              expertise, and an unwavering focus on our client&rsquo;s
-              long-term prosperity.
+              &ldquo;Magis&rdquo; is a Latin word that means &ldquo;more&rdquo; or
+              &ldquo;greater.&rdquo; It is related to <em>ad majorem Dei gloriam</em>,
+              the motto of the Society of Jesus, and refers to the philosophy of
+              doing more for Christ, and therefore doing more for others.
             </p>
             <div className="mt-8 grid grid-cols-3 gap-6 border-t border-black/10 pt-6">
               {[
-                ["15+", "Years Experience"],
-                ["₱12B+", "Property Value Sold"],
-                ["500+", "Families Rehomed"],
+                ["Licensed", "PRC-Licensed Broker"],
+                ["Registered", "DHSUD-Registered Firm"],
+                ["After-Sales", "Service & Support"],
               ].map(([value, label]) => (
                 <div key={label}>
                   <p className="font-serif text-2xl font-bold text-gold-600">{value}</p>
@@ -261,9 +258,8 @@ export default function AboutPage() {
               The Magis Advantage
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
-              Choosing a broker is more than a transaction; it&rsquo;s a
-              strategic partnership. Here&rsquo;s why Magis remains the
-              standard for real estate in the Philippines.
+              Choosing a broker is more than a transaction. Here&rsquo;s what
+              you can expect when you work with Magis.
             </p>
             <ul className="mt-8 space-y-6">
               {advantages.map((item) => (
@@ -302,9 +298,9 @@ export default function AboutPage() {
               </div>
             </div>
             <Card className="absolute -bottom-6 left-4 bg-navy-950 p-4 text-white">
-              <p className="font-serif text-2xl font-bold text-gold-400">98%</p>
+              <p className="font-serif text-2xl font-bold text-gold-400">Magis</p>
               <p className="text-[11px] uppercase tracking-wide text-white/70">
-                Broker Network Rank
+                Latin for &ldquo;more&rdquo;
               </p>
             </Card>
           </RevealOnScroll>

@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 const consultationFields: FormField[] = [
   { name: "name", label: "Full Name", type: "text", placeholder: "John Doe", span: "full" },
-  { name: "email", label: "Email Address", type: "email", placeholder: "john@luxury.com", span: "full" },
+  { name: "email", label: "Email Address", type: "email", placeholder: "john@example.com", span: "full" },
   {
     name: "interest",
     label: "Interest Area",

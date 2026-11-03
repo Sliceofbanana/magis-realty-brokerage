@@ -53,7 +53,7 @@ export function Footer() {
           />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
             Cebu&apos;s trusted brokerage for OFWs, investors &amp; families —
-            with unlimited after-sales support. Buy. Sell. Rent.
+            with after-sales support. Buy. Sell. Rent.
           </p>
           <a
             href={`tel:${COMPANY_PHONE_TEL}`}
@@ -101,7 +101,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p>&copy; {new Date().getFullYear()} Magis Realty &amp; Brokerage. All rights reserved.</p>
-          <p>PRC LICENSE NO. 0020102 &nbsp;&nbsp; DHSUD REG NO. B-01/19-0204</p>
+          <p>PRC LICENSE NO. 0020102 &nbsp;&nbsp; DHSUD REG NO. CVRFO-B-01/19-0204</p>
         </div>
       </div>
     </footer>

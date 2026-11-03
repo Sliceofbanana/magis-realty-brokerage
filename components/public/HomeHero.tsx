@@ -47,7 +47,7 @@ export function HomeHero() {
             variants={fadeUp}
             className="max-w-2xl font-serif text-4xl font-bold leading-tight text-white sm:text-5xl"
           >
-            Discover Your Legacy Through{" "}
+            Find Your Dream Home Through{" "}
             <span className="text-gold-400">Premium Real Estate</span>
           </motion.h1>
           <motion.p
@@ -57,8 +57,8 @@ export function HomeHero() {
             variants={fadeUp}
             className="mt-4 max-w-lg text-base text-white/80"
           >
-            Magis Realty connects discerning clients with exceptional properties,
-            offering a curated portfolio of residences and strategic investments.
+            Magis Realty provides quality service for all your real estate needs.
+            Buy, sell or rent with professionalism, care and after-sales support.
           </motion.p>
         </div>
       </div>

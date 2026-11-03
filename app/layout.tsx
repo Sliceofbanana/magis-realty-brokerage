@@ -17,7 +17,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Magis Realty & Brokerage",
   description:
-    "Magis Realty & Brokerage — Cebu's trusted brokerage for OFWs, investors & families. Licensed brokers (PRC #0020102 | DHSUD #B-01/19-0204). Unlimited after-sales support. Buy. Sell. Rent.",
+    "Magis Realty & Brokerage — Cebu's trusted brokerage for OFWs, investors & families. Licensed brokers (PRC #0020102 | DHSUD #CVRFO-B-01/19-0204). After-sales support. Buy. Sell. Rent.",
   manifest: "/site.webmanifest",
 };
 

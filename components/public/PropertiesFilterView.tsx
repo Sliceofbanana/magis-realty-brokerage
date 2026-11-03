@@ -116,8 +116,8 @@ export function PropertiesFilterView({
             Premium Property Collections
           </h1>
           <p className="mt-2 max-w-xl text-sm text-gray-500">
-            Explore our curated selection of high-end residential and commercial
-            estates across the region&rsquo;s most prestigious locations.
+            Explore our residential and commercial properties across Cebu, and find
+            the one that fits your needs and your budget.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 sm:shrink-0">

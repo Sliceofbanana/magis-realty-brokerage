@@ -131,8 +131,8 @@ export function BlogDirectoryView({ posts }: { posts: BlogPost[] }) {
             <div className="rounded-2xl bg-navy-950 p-6 text-white">
               <h2 className="font-serif text-xl font-bold">The Magis Letter</h2>
               <p className="mt-2 text-sm text-white/70">
-                Receive weekly curated market insights, exclusive off-market
-                listings, and luxury lifestyle news directly to your inbox.
+                Receive the latest listings, project updates and news from Magis
+                directly in your inbox.
               </p>
               <div className="mt-4">
                 <NewsletterForm />

@@ -71,7 +71,7 @@ export default function ServicesPage() {
           </h1>
           <p className="mt-4 max-w-xl text-sm text-white/80">
             Cebu&apos;s trusted brokerage for OFWs, investors &amp; families —
-            with unlimited after-sales support at every stage.
+            with after-sales support at every stage.
           </p>
         </div>
       </section>
@@ -126,14 +126,14 @@ export default function ServicesPage() {
             <ShieldCheck size={20} />
           </span>
           <p className="font-serif text-2xl font-bold">
-            Licensed brokers, unlimited after-sales support
+            Licensed brokers, after-sales support
           </p>
           <p className="max-w-xl text-sm text-white/70">
             Every transaction is handled by a PRC-licensed broker under a
             DHSUD-registered brokerage — support doesn&apos;t end at closing.
           </p>
           <p className="text-xs uppercase tracking-wide text-white/50">
-            PRC License No. 0020102 &nbsp;&nbsp; DHSUD Reg No. B-01/19-0204
+            PRC License No. 0020102 &nbsp;&nbsp; DHSUD Reg No. CVRFO-B-01/19-0204
           </p>
           <Button href="/contact" className="mt-2">
             Start a Conversation

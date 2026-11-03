@@ -66,7 +66,7 @@ export default function ContactPage() {
             Connect With Magis Realty &amp; Brokerage
           </span>
           <h1 className="mt-3 max-w-xl font-serif text-3xl font-bold leading-tight text-white sm:text-4xl">
-            Expert Guidance for Your Luxury Property Journey
+            Expert Guidance for Your Property Journey
           </h1>
         </div>
       </section>
@@ -84,7 +84,7 @@ export default function ContactPage() {
               fields={contactFields}
               submitLabel="Send Inquiry"
               className="mt-6"
-              successMessage="One of our luxury specialists will reach out shortly."
+              successMessage="One of our agents will reach out shortly."
               action={submitContactInquiry}
             />
           </Card>

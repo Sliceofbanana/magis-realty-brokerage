@@ -8,17 +8,17 @@ import { cebu } from "@/lib/stockPhotos";
 export const metadata = { title: "Careers | Magis Realty & Brokerage" };
 
 const stats = [
-  ["250+", "Premium Listings"],
-  ["₱2.4B+", "Transaction Volume"],
-  ["12", "Years of Excellence"],
-  ["150+", "Expert Brokers"],
+  ["Flex-Time", "Work From Anywhere"],
+  ["Free", "Local & International Travel"],
+  ["Quarterly", "Recognitions"],
+  ["On-Time", "Commission Releases"],
 ] as const;
 
 const cultureFeatures = [
   {
     icon: Award,
     title: "Unparalleled Resources",
-    description: "Access to proprietary market data and elite marketing tools for every listing.",
+    description: "Up-to-date developer project information and contact details, back-office support, and a project album for every location.",
   },
   {
     icon: Users,
@@ -28,40 +28,30 @@ const cultureFeatures = [
   {
     icon: TrendingUp,
     title: "Performance Incentives",
-    description: "Competitive commission structures and exclusive rewards for our top-tier talent.",
+    description: "Great income opportunity with on-time commission releases and full disclosure of developer commission reports.",
   },
 ];
 
 const openings = [
   {
-    badge: "Full Time",
+    badge: "Flex-Time",
     tone: "navy" as const,
-    location: "Remote / Hybrid",
-    title: "Senior Real Estate Consultant",
+    location: "Cebu · Work from anywhere",
+    title: "Real Estate Agent",
     description:
-      "Lead high-net-worth clients through luxury property acquisitions with expert advisory and market analysis.",
-    experience: "5+ Years",
+      "Sell with the support of Magis: updated developer project information, back-office support, trainings and quarterly recognitions, plus local and international travel incentives.",
+    experience: "New agents welcome",
     expertise: "Sales & Brokerage",
   },
   {
-    badge: "New Opening",
+    badge: "Join Us",
     tone: "gold" as const,
-    location: "Downtown Office",
-    title: "Senior Marketing Specialist",
+    location: "Cebu · Work from anywhere",
+    title: "Licensed Real Estate Broker",
     description:
-      "Develop editorial-grade digital campaigns and oversee brand presentation for premier listings.",
-    experience: "3+ Years",
-    expertise: "Marketing",
-  },
-  {
-    badge: "Full Time",
-    tone: "navy" as const,
-    location: "Regional Portfolio",
-    title: "Luxury Property Manager",
-    description:
-      "Oversee the operational excellence and tenant relations for a portfolio of premium residential assets.",
-    experience: "4+ Years",
-    expertise: "Property Management",
+      "Bring your PRC license to the Magis team and guide clients through the whole home-buying process, with after-sales support every step of the way.",
+    experience: "PRC license",
+    expertise: "Brokerage",
   },
 ];
 
@@ -84,13 +74,13 @@ export default async function CareersPage({
             Career Opportunities
           </p>
           <h1 className="mt-3 max-w-2xl font-serif text-4xl font-bold leading-tight sm:text-5xl">
-            Elevate the Standard of Modern Living.{" "}
+            To Do More and Be More.{" "}
             <span className="text-gold-400">Join Our Team.</span>
           </h1>
           <p className="mt-4 max-w-xl text-sm text-white/70">
-            At Magis Realty, we don&rsquo;t just sell properties; we curate legacies. We
-            are looking for visionary professionals to help us redefine high-end
-            brokerage through architectural appreciation and unmatched client service.
+            At Magis Realty, we offer quality service to our clients and great income
+            opportunity to our agents. Join a team that does more for others, with
+            flex-time work, trainings and recognition along the way.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button href="#openings" variant="gold">
@@ -132,9 +122,8 @@ export default async function CareersPage({
               Built on a Foundation of Excellence
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
-              Our culture is rooted in mutual respect and the relentless pursuit of
-              quality. We provide an environment where expertise is celebrated, and
-              growth is facilitated through mentorship and industry-leading technology.
+              Our culture is built on integrity, excellence, service, teamwork and
+              growth. We share knowledge, support one another, and win together.
             </p>
             <ul className="mt-6 space-y-5">
               {cultureFeatures.map((feature) => (
@@ -156,10 +145,10 @@ export default async function CareersPage({
           <RevealItem>
           <div className="relative overflow-hidden rounded-2xl bg-navy-950 p-8 text-white">
             <Compass className="absolute -right-2 -top-2 text-white/10" size={96} />
-            <h3 className="relative font-serif text-xl font-bold">A Legacy of Quality</h3>
+            <h3 className="relative font-serif text-xl font-bold">Full Transparency</h3>
             <p className="relative mt-2 max-w-xs text-sm text-white/70">
-              Join a firm that prioritizes architectural integrity and sustainable urban
-              development in every transaction.
+              Full disclosure on every deal, including the full commission report
+              from the developers.
             </p>
           </div>
           </RevealItem>
@@ -180,10 +169,10 @@ export default async function CareersPage({
           <RevealItem>
           <div className="rounded-2xl bg-gold-500 p-6 text-white">
             <HeartHandshake size={22} />
-            <h3 className="mt-3 font-serif text-lg font-bold">Well-being First</h3>
+            <h3 className="mt-3 font-serif text-lg font-bold">Flexibility &amp; Rewards</h3>
             <p className="mt-2 text-sm text-white/90">
-              Comprehensive health benefits, flexible remote options, and wellness
-              retreats.
+              Flex-time work from home or anywhere, free local and international
+              travel incentives, and quarterly recognitions.
             </p>
           </div>
           </RevealItem>
@@ -194,8 +183,8 @@ export default async function CareersPage({
                 Professional Mentorship
               </h3>
               <p className="mt-1 text-sm text-gray-600">
-                Learn from industry veterans through our quarterly &lsquo;Legacy
-                Series&rsquo; workshops.
+                Regular trainings and seminars keep you updated on real estate
+                projects and equipped to serve every client well.
               </p>
             </div>
             <div className="flex shrink-0 gap-2">
@@ -219,7 +208,7 @@ export default async function CareersPage({
                 Current Openings
               </h2>
               <p className="mt-2 text-sm text-gray-500">
-                Find your next challenge in our curated list of opportunities.
+                Find where you belong in the Magis team.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -255,7 +244,7 @@ export default async function CareersPage({
                 <div className="flex shrink-0 items-center gap-6">
                   <div className="text-right">
                     <p className="text-[11px] uppercase tracking-wide text-gray-400">
-                      Exp. Required
+                      Experience
                     </p>
                     <p className="font-semibold text-navy-900">{job.experience}</p>
                   </div>
@@ -277,9 +266,9 @@ export default async function CareersPage({
               Don&rsquo;t see the right role?
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-gray-600">
-              We are always looking for exceptional talent. Submit an open application
-              and tell us how your unique skills can contribute to our mission of
-              redefining the luxury real estate experience.
+              We are always looking for people who want to do more and be more. Submit
+              an open application and tell us how you can contribute to our mission of
+              doing more for others.
             </p>
             <div className="mt-6 flex flex-wrap gap-10 text-sm">
               <div>

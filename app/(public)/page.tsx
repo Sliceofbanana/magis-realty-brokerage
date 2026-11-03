@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ShieldCheck, Target, LineChart, ArrowRight } from "lucide-react";
+import { ShieldCheck, Target, HeartHandshake, ArrowRight } from "lucide-react";
 import { HomeHero } from "@/components/public/HomeHero";
 import { DeveloperStrip } from "@/components/public/DeveloperStrip";
 import { PropertyCard } from "@/components/public/PropertyCard";
@@ -19,21 +19,21 @@ import { cebu, exteriors } from "@/lib/stockPhotos";
 const pillars = [
   {
     icon: ShieldCheck,
-    title: "Unrivaled Expertise",
+    title: "Licensed & Trusted",
     description:
-      "Over 20 years of navigating the complex terrain of luxury real estate and commercial portfolios.",
+      "PRC-licensed brokers under a DHSUD-registered firm, guiding you with integrity at every step.",
   },
   {
     icon: Target,
-    title: "Client-Centric Philosophy",
+    title: "Quality Service",
     description:
-      "Every search is a partnership. We prioritize your long-term goals and architectural preferences.",
+      "Quality, premium service for all your real estate needs: buying, selling and renting, with professionalism and care.",
   },
   {
-    icon: LineChart,
-    title: "Data-Driven Insights",
+    icon: HeartHandshake,
+    title: "After-Sales Support",
     description:
-      "Proprietary market analysis providing our clients with a competitive edge in pricing and timing.",
+      "Our service doesn't end at the sale. We assist our clients through after-sales services.",
   },
 ];
 
@@ -108,8 +108,8 @@ export default async function HomePage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/10 to-transparent" />
             <div className="absolute bottom-5 left-5 text-white">
-              <p className="font-serif text-xl font-bold">Luxury Residential</p>
-              <p className="text-sm text-white/80">The pinnacle of private living</p>
+              <p className="font-serif text-xl font-bold">Residential</p>
+              <p className="text-sm text-white/80">Find your dream home</p>
             </div>
           </Link>
           </RevealItem>
@@ -221,7 +221,7 @@ export default async function HomePage() {
                 You May Contact Our Agents
               </h2>
               <p className="mt-2 text-sm text-gray-500">
-                The experts behind our most successful acquisitions.
+                Licensed agents and brokers ready to guide you every step of the way.
               </p>
             </div>
             <Link
@@ -287,8 +287,8 @@ export default async function HomePage() {
             The Magis Newsletter
           </h2>
           <p className="mt-3 text-sm text-gray-500">
-            Receive exclusive invitations to off-market listings and bespoke
-            market analysis directly to your inbox.
+            Receive the latest listings, project updates and news from Magis
+            directly in your inbox.
           </p>
           <NewsletterForm variant="light" className="mt-6" />
         </RevealOnScroll>
